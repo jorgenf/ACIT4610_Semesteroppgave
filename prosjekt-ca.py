@@ -4,24 +4,23 @@ from pylab import *
 
 
 n = 120
-p = 0.1
+p = 0.01
 th = 3
 nh = 1
 
 def initialize():
-    global config, nextconfig, y
+    global config, nextconfig, step
     config = zeros([n,n])
     nextconfig = config
-    y = 0
+    step = 0
 def observe():
-    global config, nextconfig,y
+    global config, nextconfig, step
     subplot(2, 1, 1)
-    plot(config)
-    imshow(config, vmin = 0, vmax = 5, cmap = cm.binary)
     cla()
+    imshow(config, vmin = 0, vmax = 5, cmap = cm.binary)
     subplot(2,1,2)
-    plot(y,config.sum()/n**2,"ro")
-    y += 1
+    plot(step,config.sum()/n**2,"ro")
+    step += 1
 
 def update():
     global config, nextconfig
@@ -33,8 +32,9 @@ def update():
                 count = 0
                 for dx in [-nh, nh]:
                     for dy in [-nh, nh]:
-                        if config[(x + dx) % n, (y + dy) % n] == 5:
-                            count += 1
+                        if 0 <= x + dx < n and 0 <= y + dy < n:
+                            if config[(x + dx), (y + dy)] == 5:
+                                count += 1
                 if count > th:
                     nextconfig[x,y] = 5
             else:
