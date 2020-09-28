@@ -1,12 +1,27 @@
+import matplotlib.pyplot as plt
+
 import pycxsimulator
 from pylab import *
 
-width = 100
-height = 100
+# params for CA model
+width = 64
+height = width # want a square
 initProb = 0.01
 maxState = 12
 
+# params for MEA
+mea_width = 8
+mea_height = mea_width
+inactive_cells = ( # 59 electrodes in experiment. corners inactive + a ground node
+    (0,0),
+    (1, 0), # ground node
+    (mea_width-1, 0),
+    (mea_width-1, mea_height-1),
+    (0, mea_height-1)
+    )
+
 cell_data = []
+mea_data = zeros([mea_height, mea_width])
 
 def initialize():
     global time, config, nextConfig
@@ -24,16 +39,25 @@ def initialize():
 
     nextConfig = zeros([height, width])
 
+    # make the inactive electrodes appear black
+    for row, col in inactive_cells:
+        mea_data[row][col] = maxState
+
 def observe():
     global config
 
-    subplot(2, 1, 1)
+    subplot(2, 2, 1)
     cla()
     imshow(config, vmin = 0, vmax = maxState, cmap = cm.binary)
     axis('image')
     title('t = ' + str(time))
 
-    subplot(2, 1, 2)
+    subplot(2, 2, 2)
+    cla()
+    imshow(mea_data, vmin=0, vmax=maxState, cmap=cm.binary)
+    axis('image')
+
+    subplot(2, 2, 3)
     cla()
     plot(cell_data, label = 'exited')
     legend()
