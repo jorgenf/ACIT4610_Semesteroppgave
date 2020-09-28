@@ -1,7 +1,8 @@
 from operator import itemgetter
 
-
-filename = r"D:\OneDrive\Dokumenter\skole\ASIC\ACIT4410 Evo AI\semesteroppgave\git\Data\Dense - 2-1-20.spk.txt"
+# example file
+# filename = r"D:\OneDrive\Dokumenter\skole\ASIC\ACIT4410 Evo AI\semesteroppgave\git\Data\Dense - 2-1-20.spk.txt"
+filename = r"C:\Users\weyhak\OneDrive - Bane NOR\Dokumenter\GitHub\ACIT4610_Semesteroppgave\Data\Dense - 2-1-20.spk.txt"
 f = open(filename, "r")
 data_points = [line.split(" ") for line in f]
  
@@ -55,12 +56,22 @@ for key in data_by_electrode:
             sequence += 1
         else:
             if sequence >= 4:
-                core_burstlets[key].append((data_by_electrode[key][i-sequence], data_by_electrode[key][i])) # start/end
+                core_burstlets[key].append((
+                    (i-sequence, data_by_electrode[key][i-sequence]), # burst start
+                    (i, data_by_electrode[key][i]) # burst end
+                ))
+                # extended_sequence += 1
+
                 sequence = 0
 
-for key in core_burstlets:
-    if key in range(10):
-        print(key, core_burstlets[key][:5])
+
+# discard if no burstlets on electrode
+core_burstlets = {key:core_burstlets[key] for key in core_burstlets if core_burstlets[key]}
+
+# for key in core_burstlets:
+#     if key in range(10):
+#         print(key, core_burstlets[key][:5])
+
 """
 After these ‘core’ burstlets have been found, they are extended into the past and
 the future to also contain spikes that have ISIs less than 200 ms,
@@ -68,6 +79,10 @@ the future to also contain spikes that have ISIs less than 200 ms,
 of a core of at least four very closely spaced spikes, with an ‘entourage’
 of any number of slightly less closely spaced spikes, all on one electrode.
 """
+for key in core_burstlets:
+    for core_burstlet in core_burstlets[key]:
+        pass
+
 
 """
 Once all burstlets on all electrodes have been found, they are sorted in
@@ -94,8 +109,9 @@ these humps, and splits the bursts accordingly.
 
 
 # print(firing_rates)
-# for key in data_by_electrode:
-#     print(key, data_by_electrode[key][:10])
+for key in data_by_electrode:
+    if key in range(10):
+        print(key, data_by_electrode[key][:20])
 # for line in (data_points[:10]):
 #     print(line)
 f.close
