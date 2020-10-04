@@ -109,9 +109,9 @@ these humps, and splits the bursts accordingly.
 
 
 # print(firing_rates)
-for key in data_by_electrode:
-    if key in range(10):
-        print(key, data_by_electrode[key][:20])
+# for key in data_by_electrode:
+#     if key in range(10):
+        # print(key, data_by_electrode[key][:20])
 # for line in (data_points[:10]):
 #     print(line)
 f.close
