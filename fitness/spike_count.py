@@ -1,37 +1,32 @@
-def read_recording():
+def read_recording(filename, recording_start=0, recording_len=30*60):
     from operator import itemgetter
     import numpy as np
-    # example file
-    filename = r"Data\Dense - 2-1-20.spk.txt"
+
+    # cleaning data, making array
     f = open(filename, "r")
     data_points = [line.split(" ") for line in f]
-    
-    # sort by electrode
-    data_points.sort(key=itemgetter(1))
+    data_points = np.array(
+        [(row[0].rstrip(), row[1].rstrip()) for row in data_points], 
+        dtype=[("t", "float64"), ("electrode", "int64")])
 
-    # cleaning data
-    data_points = [(float(row[0].rstrip()), int(row[1].rstrip())) for row in data_points]
+    # edit to requested recording length
+    start_index, stop_index = np.searchsorted(data_points["t"], [recording_start, recording_start+recording_len])
+    data_points = data_points[start_index:stop_index]
 
     # sort data by electrode ID
-    data_by_electrode = {i:[] for i in range(59+1)} # 59 electrodes in experiment, but both 0 and 59 is present?
+    data_by_electrode = [ [] for _ in range(64)]
     for row in data_points:
-        data_by_electrode[row[1]].append(row[0])
-    # create numpy array for matplotlib
-    spike_array = np.array([np.array(x) for x in [*data_by_electrode.values()]])
-    
+        data_by_electrode[row["electrode"]].append(row["t"])
+
+    # convert to array
+    spike_array = np.array(data_by_electrode)
 
     # count average fire rate per electrode (spikes per second)
-    spike_rates = {key:[] for key in data_by_electrode}
-    for key in data_by_electrode:
+    spike_rates = {key:[] for key in range(64)}
+    for key, item in enumerate(data_by_electrode):
         f_c = len(data_by_electrode[key]) / (30*60) # 30 min recording
         spike_rates[key] = f_c # spike rate
     spike_rates_array = np.array([*spike_rates.values()])
-
-
-    # for key in spike_rates:
-    #     print(key, spike_rates[key])
-    # spike_rate_all_electrodes = sum(spike_rates.values()) / len(spike_rates.values())
-    # print("All: ", spike_rate_all_electrodes)
 
     f.close
     return (spike_array, spike_rates_array)
@@ -39,6 +34,35 @@ def read_recording():
 
     
 if __name__ == "__main__":
-    spikes, spike_rates = read_recording()
-    print(spikes[:3][:5])
-    print(spike_rates[:3])
+    import matplotlib.pyplot as plt
+
+    neural_data_filepath = r"Data\Dense - 2-1-20.spk.txt"
+    simulation_data_filepath = r"CA_excitable\simulation_data.txt"
+
+    neuron_spikes, neuron_spike_rates = read_recording(
+        neural_data_filepath, 
+        recording_start=60*1, # starting point in seconds
+        recording_len=10 # simlation length in seconds, set to match simulation
+        )
+
+    sim_spikes, sim_spike_rates = read_recording(simulation_data_filepath)
+
+    # plot neural spikes
+    fig, (ax1, ax2) = plt.subplots(nrows=2)
+    ax1.eventplot(
+        neuron_spikes,
+        linewidths=0.5
+        )
+    ax1.set_xlabel("Seconds")
+    ax1.set_ylabel("Electrode ID")
+    ax1.set_title("Neural raster plot")
+    
+    # plot simulation spikes
+    ax2.eventplot(
+        sim_spikes,
+        linewidths=0.5
+        )
+    ax2.set_xlabel("Seconds")
+    ax2.set_title("Simulation raster plot")
+
+    plt.show()

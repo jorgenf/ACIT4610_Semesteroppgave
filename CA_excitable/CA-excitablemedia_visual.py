@@ -1,13 +1,17 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 import pycxsimulator
 from pylab import *
 
 # params for CA model
-width = 64
+width = 32
 height = width # want a square
 initProb = 0.01
-maxState = 12
+maxState = 5
+dt = 10 # ms
+simulation_length = 30 # seconds
+
+
 
 # params for MEA
 mea_width = 8
@@ -20,7 +24,8 @@ inactive_cells = ( # 59 electrodes in experiment. corners inactive + a ground no
     (0, mea_height-1)
     )
 
-cell_data = []
+ca_exite_data = []
+mea_exite_data = []
 mea_data = zeros([mea_height, mea_width])
 
 def initialize():
@@ -59,13 +64,19 @@ def observe():
 
     subplot(2, 2, 3)
     cla()
-    plot(cell_data, label = 'exited')
+    plot(ca_exite_data, label = 'CA exited')
+
+    subplot(2, 2, 4)
+    cla()
+    plot(mea_exite_data, label = 'MEA exited')
     legend()
+
 
 def update():
     global time, config, nextConfig
 
-    exite_count = 0
+    ca_exite_count = 0
+    mea_exite_count = 0
     time += 1
 
     for x in range(width):
@@ -79,15 +90,22 @@ def update():
                             num += 1
                 if random() * 3 < num:
                     state = maxState
-                    exite_count += 1
+                    ca_exite_count += 1
                 else:
                     state = 0
             else:
                 state -= 1
             nextConfig[y, x] = state
+            if x%8 == 0 and y%8==0:
+                mea_data[y//8, x//8] = state
+                if state == maxState:
+                    mea_exite_count += 1
+
 
     config, nextConfig = nextConfig, config
-    cell_data.append(exite_count)
-    exite_count = 0
+    ca_exite_data.append(ca_exite_count)
+    mea_exite_data.append(mea_exite_count)
+    ca_exite_count = 0
+    mea_exite_count = 0
 
 pycxsimulator.GUI().start(func=[initialize, observe, update])
