@@ -4,7 +4,7 @@ import pycxsimulator
 from pylab import *
 
 # params for CA model
-width = 32
+width = 64
 height = width # want a square
 initProb = 0.01
 maxState = 5
