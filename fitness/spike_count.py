@@ -48,7 +48,7 @@ if __name__ == "__main__":
     sim_spikes, sim_spike_rates = read_recording(simulation_data_filepath)
 
     # plot neural spikes
-    fig, (ax1, ax2) = plt.subplots(nrows=2)
+    fig, (ax1, ax2) = plt.subplots(ncols=2)
     ax1.eventplot(
         neuron_spikes,
         linewidths=0.5
