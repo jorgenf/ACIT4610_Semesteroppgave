@@ -1,11 +1,11 @@
 from pylab import *
 
 # params for CA model
-width = 10*10 # multiples of ten
+width = 10*50 # multiples of ten
 height = width # want a square
-initProb = 0.01
-maxState = 5
-dt = .01 # t = seconds
+initProb = 0.001
+maxState = 12
+dt = .02 # t = seconds
 
 # params for simulation recording
 simulation_length = 10 # seconds
@@ -87,12 +87,12 @@ while time < ((simulation_length // dt) + start_t):
                 if state == maxState:
                     if coords not in inactive_cells: # dont want to record the inactive electrodes
                         if time > start_t: # dont want to record first iterations
-                            simulation_output.append(f"{(time-start_t)*dt} {1*coords[1] + 8*coords[0]}")
+                            simulation_output.append(f"{(time-start_t+1)*dt} {1*coords[1] + 8*coords[0]}")
 
 
     config, nextConfig = nextConfig, config
     if time%(1//dt) == 0:
-        print(time)
+        print(f"Recorded seconds: {(time - start_t + 1) * dt}")
 
 with open("CA_excitable\simulation_data.txt", "w") as f:
     for line in simulation_output:
