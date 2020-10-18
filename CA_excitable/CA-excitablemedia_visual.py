@@ -8,8 +8,8 @@ width = 64
 height = width # want a square
 initProb = 0.0001
 maxState = 15
-dt = 10 # ms
-simulation_length = 30 # seconds
+dt = 100 # ms
+simulation_length = 120 # seconds
 randomExcite = 1 / (width*width*40)
 
 
