@@ -1,10 +1,8 @@
 import matplotlib
 matplotlib.use("TkAgg")
 from pylab import *
-from CA import data as d
 import math as m
 import numpy as np
-from CA import fitness as f
 
 DENSE = 50000
 SMALL = 12500
@@ -14,18 +12,15 @@ ULTRA_SPARSE = 3125
 NUM_ELECTRODES = 64
 THRESHOLD = 100
 
-
-class CA_neuron_model:
-    def __init__(self, comparing_file = None, n = int(m.ceil(m.sqrt(SMALL))), p = 0.3,neighbor_width = 1,spont_p = 0.0001,reset_n = 20,initial_p = 0.01, steps = 6000):
-        self.comparing_file = comparing_file
+class Neuron_model:
+    def __init__( self, DNA, initial_p = 0.01, n = int(m.ceil(m.sqrt(SMALL))), steps = 600):
         self.n = n
-        self.p = p
-        self.neighbor_width = neighbor_width
-        self.spont_p = spont_p
-        self.reset_n = reset_n
+        self.p = DNA.p
+        self.neighbor_width = DNA.neighbour_width
+        self.spont_p = DNA.spont_p
+        self.reset_n = DNA.reset_n
         self.initial_p = initial_p
         self.steps = steps
-        self.fr = d.get_firing_rate("Small - 7-1-35.spk.txt")[0:int(steps/10)]
 
     def run_simulation(self):
         global step
@@ -34,15 +29,7 @@ class CA_neuron_model:
         while step < self.steps:
             self.__update()
             step += 1
-
-        avg_dist = f.average_distance(self.fr, spikes)
-        fig, (p1,p2) = subplots(2,1)
-        title("Average distance: " + avg_dist, y=2.2)
-        p1.plot(spikes, "r-", linewidth=1)
-        p2.plot(self.fr, "b-", linewidth=1)
-        savefig("CA/plot_output/" + str(avg_dist) + "_" + str(self.n) + "_" + str(self.p) + "_" + str(self.neighbor_width) + "_" + str(self.spont_p) + "_" + str(self.reset_n) + "_" + ".png")
-        close(fig)
-        return avg_dist
+        return spikes
 
     def __initialize(self):
         global config, nextconfig, step,spikes
