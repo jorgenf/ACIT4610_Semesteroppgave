@@ -4,7 +4,7 @@ from pylab import *
 from CA import data as d
 import math as m
 import numpy as np
-from CA import fitness as f
+from CA import fitness_functions as f
 
 DENSE = 50000
 SMALL = 12500

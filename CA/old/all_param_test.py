@@ -1,13 +1,8 @@
-from matplotlib.pyplot import cla
-from CA import CA_neuron_model as c
-import numpy as np
+from CA.old import CA_neuron_model as c
 from multiprocessing import Process
-from CA import data as d
 import matplotlib
 matplotlib.use("TkAgg")
 from pylab import *
-import random
-import time
 
 DENSE = 50000
 SMALL = 12500

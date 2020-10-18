@@ -2,11 +2,11 @@ from multiprocessing import Process, Queue
 import matplotlib
 matplotlib.use("TkAgg")
 from pylab import *
-from CA import fitness, neuron_simulation, data, evolution
+from CA import fitness_functions, CA_model, data, population
 
 def __run_proc(DNA, queue):
-    result = neuron_simulation.Neuron_model(DNA, steps = 10).run_simulation()
-    correlation = fitness.normalized_circular_cross_correlation(result, data.get_firing_rate("Small - 7-1-35.spk.txt"))
+    result = CA_model.Neuron_model(DNA, duration= 10).run_simulation()
+    correlation = fitness_functions.normalized_circular_cross_correlation(result, data.get_firing_rate("Small - 7-1-35.spk.txt"))
     print(correlation)
     DNA.set_correlation(correlation)
     queue.put(DNA)
@@ -31,7 +31,7 @@ def evolve_generation(DNAs):
             DNAs.append(queue.get())
     return DNAs
 
-population = evolution.Population(10)
+population = population.Population(10)
 DNAs = population.get_DNAs()
 new_gen = evolve_generation(DNAs)
 print(new_gen)

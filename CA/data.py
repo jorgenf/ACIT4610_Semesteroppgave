@@ -16,3 +16,12 @@ def get_firing_rate(file_name, interval_decimal_places = 0):
         else:
             firing_rate[n] += 1
     return(firing_rate)
+
+'''
+import matplotlib
+matplotlib.use("TkAgg")
+from pylab import *
+f = get_firing_rate("Small - 7-1-35.spk.txt",1)
+plot(f)
+show()
+'''

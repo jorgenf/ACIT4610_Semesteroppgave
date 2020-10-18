@@ -13,14 +13,16 @@ NUM_ELECTRODES = 64
 THRESHOLD = 100
 
 class Neuron_model:
-    def __init__( self, DNA, initial_p = 0.01, n = int(m.ceil(m.sqrt(SMALL))), steps = 600):
+    def __init__(self, DNA, initial_p = 0.01, n = int(m.ceil(m.sqrt(SMALL))), duration = 600, resolution = 10):
         self.n = n
         self.p = DNA.p
         self.neighbor_width = DNA.neighbour_width
         self.spont_p = DNA.spont_p
         self.reset_n = DNA.reset_n
         self.initial_p = initial_p
-        self.steps = steps
+        self.steps = duration*resolution
+        self.duration = duration
+        self.resolution = resolution
 
     def run_simulation(self):
         global step
@@ -39,7 +41,7 @@ class Neuron_model:
                 config[row][col] = self.reset_n if random() < self.initial_p else 0
         nextconfig = config
         step = 0
-        spikes = np.zeros(int(self.steps/10))
+        spikes = np.zeros(self.duration)
 
     def __update(self):
         global config, nextconfig,step,spikes
@@ -57,7 +59,7 @@ class Neuron_model:
                 elif config[x,y] > 0:
                     nextconfig[x,y] = config[x,y] - 1
         config = nextconfig
-        spikes[int(step//10)] += self.__get_spikes()
+        spikes[int(step//self.resolution)] += self.__get_spikes()
 
     def __get_spikes(self):
         spikes = np.zeros((int(m.sqrt(NUM_ELECTRODES)),int(m.sqrt(NUM_ELECTRODES))))
