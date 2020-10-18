@@ -6,10 +6,11 @@ from pylab import *
 # params for CA model
 width = 64
 height = width # want a square
-initProb = 0.01
-maxState = 5
+initProb = 0.0001
+maxState = 15
 dt = 10 # ms
 simulation_length = 30 # seconds
+randomExcite = 1 / (width*width*40)
 
 
 
@@ -88,7 +89,7 @@ def update():
                     for dy in range(-1, 2):
                         if config[(y+dy)%height, (x+dx)%width] == maxState:
                             num += 1
-                if random() * 3 < num:
+                if random() * 3 < num or random() < randomExcite:
                     state = maxState
                     ca_exite_count += 1
                 else:
