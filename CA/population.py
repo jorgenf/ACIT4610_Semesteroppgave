@@ -7,61 +7,64 @@ SPLIT = 2
 MUTATION = 0.1
 
 class Population:
-    def __init__(self, num_DNA=100):
-        self.num_DNA = num_DNA
-        self.DNAs = self.__initiate_DNAs(self.num_DNA)
+    def __init__(self, num_genotypes=100):
+        self.num_genotypes = num_genotypes
+        self.genotypes = self.__initiate_genotypes(self.num_genotypes)
 
-    def __initiate_DNAs(self, num_DNA):
-        DNAs = []
-        for n in range(num_DNA):
+    def __initiate_genotypes(self, num_genotypes):
+        genotypes = []
+        for n in range(num_genotypes):
             while True:
                 p = randint(3, 11) / 10
                 neighbor_width = randint(1, 11)
                 spont_p = randint(1, 20) / 100000
                 reset_n = randint(1, 21)
-                if DNAs:
+                if genotypes:
                     exist = False
-                    for dna in DNAs:
-                        if p == dna.p and neighbor_width == dna.neighbour_width and spont_p == dna.spont_p and reset_n == dna.reset_n:
+                    for genotype in genotypes:
+                        if p == genotype.p and neighbor_width == genotype.neighbour_width and spont_p == genotype.spont_p and reset_n == genotype.reset_n:
                             exist = True
                     if not exist:
-                        DNAs.append(DNA(p, neighbor_width, spont_p, reset_n))
+                        genotypes.append(genotype(p, neighbor_width, spont_p, reset_n))
                         break
                 else:
-                    DNAs.append(DNA(p, neighbor_width, spont_p, reset_n))
+                    genotypes.append(genotype(p, neighbor_width, spont_p, reset_n))
                     break
-        return DNAs
+        return genotypes
 
-    def get_DNAs(self):
-        return self.DNAs
+    def get_genotypes(self):
+        return self.genotypes
 
-    def update_DNAs(self, DNAs):
-        self.DNAs = DNAs
+    def update_genotypes(self, genotypes):
+        self.genotypes = genotypes
 
-    def mix_DNAs(self):
-        self.DNAs.sort(key = lambda x : x.corr, reverse=True)
-        best_DNAs = self.DNAs[:len(self.DNAs)//SPLIT]
-        mixed_DNAs = []
-        for dna in range(len(self.DNAs)):
-            mixed_DNAs.append(DNA(randint(3, 11) / 10 if random() < MUTATION else best_DNAs[randint(len(best_DNAs))].p, randint(1, 11) if random() < MUTATION else best_DNAs[randint(len(best_DNAs))].neighbour_width, randint(1, 20) / 100000 if random() < MUTATION else best_DNAs[randint(len(best_DNAs))].spont_p, randint(1, 21) if random() < MUTATION else best_DNAs[randint(len(best_DNAs))].reset_n))
-        self.DNAs = mixed_DNAs
+    def select_parents(self):
+        self.genotypes.sort(key = lambda x : x.corr, reverse=True)
+        best_genotypes = self.genotypes[:len(self.genotypes) // SPLIT]
+        return best_genotypes
+
+    def reproduce(self, best_genotypes):
+        next_generation = []
+        for genotype in range(len(self.genotypes)):
+            next_generation.append(genotype(randint(3, 11) / 10 if random() < MUTATION else best_genotypes[randint(len(best_genotypes))].p, randint(1, 11) if random() < MUTATION else best_genotypes[randint(len(best_genotypes))].neighbour_width, randint(1, 20) / 100000 if random() < MUTATION else best_genotypes[randint(len(best_genotypes))].spont_p, randint(1, 21) if random() < MUTATION else best_genotypes[randint(len(best_genotypes))].reset_n))
+        self.genotypes = next_generation
 
 
-class DNA:
+class genotype:
     def __init__(self, p, neighbour_width, spont_p, reset_n):
         self.p = p
         self.neighbour_width = neighbour_width
         self.spont_p = spont_p
         self.reset_n = reset_n
 
-    def set_correlation(self, corr):
-        self.corr = corr
+    def set_fitness(self, fitness):
+        self.fitness = fitness
 
-    def get_correlation(self):
-        return self.corr
+    def get_fitness(self):
+        return self.fitness
 
-    def set_spike_graph(self, spike_graph):
-        self.spike_graph = spike_graph
+    def set_phenotype(self, phenotype):
+        self.phenotype = phenotype
 
-    def get_spike_graph(self):
-        return self.spike_graph
+    def get_phenotype(self):
+        return self.phenotype

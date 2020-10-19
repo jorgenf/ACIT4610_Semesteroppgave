@@ -1,14 +1,14 @@
 from pylab import *
 
 # params for CA model
-width = 10*50 # multiples of ten
+width = 10*10 # multiples of ten
 height = width # want a square
 initProb = 0.001
-maxState = 12
-dt = .02 # t = seconds
+maxState = 10
+dt = .1 # t = seconds
 
 # params for simulation recording
-simulation_length = 10 # seconds
+simulation_length = 120 # seconds
 start_t = 50 # ignore first iterations
 dt = dt # set here or as CA param?
 

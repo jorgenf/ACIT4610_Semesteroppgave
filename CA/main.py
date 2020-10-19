@@ -1,8 +1,11 @@
 from multiprocessing import *
 import matplotlib
+
+from ACIT4610_Semesteroppgave.CA import fitness_functions, CA_model, data, population
+
 matplotlib.use("TkAgg")
 from pylab import *
-from CA import fitness_functions, CA_model, data, population
+#from CA import fitness_functions, CA_model, data, population
 import os
 
 MODEL_TYPE = "CA"
@@ -12,20 +15,20 @@ SIMULATION_DURATION = 10
 TIME_STEP_RESOLUTION = 10
 FITNESS_FUNCTION = "Normalized cross correlation"
 
-def run_proc(DNA):
+def run_proc(genotype):
     print(current_process().name, end="  ")
-    result = CA_model.Neuron_model(DNA, duration= SIMULATION_DURATION, resolution = TIME_STEP_RESOLUTION).run_simulation()
-    DNA.set_spike_graph(result)
-    fitness = fitness_functions.cross_correlation(result, data.get_firing_rate("Small - 7-1-35.spk.txt"))
-    DNA.set_correlation(fitness)
-    return DNA
+    phenotype = CA_model.Neuron_model(genotype, duration= SIMULATION_DURATION, resolution = TIME_STEP_RESOLUTION).run_simulation()
+    genotype.set_phenotype(phenotype)
+    fitness = fitness_functions.cross_correlation(phenotype, data.get_firing_rate("Small - 7-1-35.spk.txt"))
+    genotype.set_fitness(fitness)
+    return genotype
 
 if __name__ == '__main__':
 
-    def evolve_generation(DNAs):
+    def generate_phenotypes(genotypes):
         p = Pool(os.cpu_count()-1)
-        DNAs = p.map(run_proc, DNAs)
-        return DNAs
+        genotypes = p.map(run_proc, genotypes)
+        return genotypes
 
     print("Choose model type:\n1. CA\n2. Network")
     MODEL_TYPE = int(input("Choice: "))
@@ -42,9 +45,10 @@ if __name__ == '__main__':
     for i in range(NUM_GENERATIONS):
         print("\nGeneration:", i)
         print("Workers: ", end="")
-        population.update_DNAs(evolve_generation(population.get_DNAs()))
-        population.mix_DNAs()
-    dnas = population.get_DNAs()
+        population.update_genotypes(generate_phenotypes(population.get_genotypes()))
+        parents = population.select_parents()
+        population.update_genotypes(population.reproduce(parents))
+    dnas = population.get_genotypes()
     print(len(dnas))
     for i in range(len(dnas)):
         print(dnas[i].p,dnas[i].reset_n, dnas[i].spont_p, dnas[i].neighbour_width)
