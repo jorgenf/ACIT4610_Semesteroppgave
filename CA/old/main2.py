@@ -8,7 +8,7 @@ def __run_proc(DNA, queue):
     result = CA_model.Neuron_model(DNA, duration= 10).run_simulation()
     correlation = fitness_functions.normalized_circular_cross_correlation(result, data.get_firing_rate("Small - 7-1-35.spk.txt"))
     print(correlation)
-    DNA.set_correlation(correlation)
+    DNA.set_fitness(correlation)
     queue.put(DNA)
 
 def evolve_generation(DNAs):
@@ -32,19 +32,19 @@ def evolve_generation(DNAs):
     return DNAs
 
 population = population.Population(10)
-DNAs = population.get_DNAs()
+DNAs = population.get_genotypes()
 new_gen = evolve_generation(DNAs)
 print(new_gen)
 while not new_gen:
     pass
-print(new_gen[0].get_correlation())
+print(new_gen[0].get_fitness())
 population.update_DNAs(new_gen)
-dnas = population.get_DNAs()
+dnas = population.get_genotypes()
 print("First")
 for i in range(len(dnas)):
-    print(dnas[i].p,dnas[i].reset_n, dnas[i].spont_p, dnas[i].neighbour_width, dnas[i].get_correlation())
+    print(dnas[i].p, dnas[i].reset_n, dnas[i].spont_p, dnas[i].neighbour_width, dnas[i].get_fitness())
 population.mix_DNAs()
-dnas = population.get_DNAs()
+dnas = population.get_genotypes()
 print("Second")
 for i in range(len(dnas)):
     print(dnas[i].p,dnas[i].reset_n, dnas[i].spont_p, dnas[i].neighbour_width, dnas[i].corr)
