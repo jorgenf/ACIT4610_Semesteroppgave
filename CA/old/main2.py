@@ -32,19 +32,19 @@ def evolve_generation(DNAs):
     return DNAs
 
 population = population.Population(10)
-DNAs = population.get_genotypes()
+DNAs = population.get_individuals()
 new_gen = evolve_generation(DNAs)
 print(new_gen)
 while not new_gen:
     pass
 print(new_gen[0].get_fitness())
 population.update_DNAs(new_gen)
-dnas = population.get_genotypes()
+dnas = population.get_individuals()
 print("First")
 for i in range(len(dnas)):
     print(dnas[i].p, dnas[i].reset_n, dnas[i].spont_p, dnas[i].neighbour_width, dnas[i].get_fitness())
 population.mix_DNAs()
-dnas = population.get_genotypes()
+dnas = population.get_individuals()
 print("Second")
 for i in range(len(dnas)):
     print(dnas[i].p,dnas[i].reset_n, dnas[i].spont_p, dnas[i].neighbour_width, dnas[i].corr)

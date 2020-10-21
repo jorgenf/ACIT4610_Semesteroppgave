@@ -1,61 +1,55 @@
 import matplotlib
 matplotlib.use("TkAgg")
 from pylab import *
-
+import evolution
 
 SPLIT = 2
 MUTATION = 0.1
 
 class Population:
-    def __init__(self, num_genotypes=100):
-        self.num_genotypes = num_genotypes
-        self.genotypes = self.__initiate_genotypes(self.num_genotypes)
+    def __init__(self, num_individuals):
+        self.num_individuals = num_individuals
+        self.individuals = self.__initiate_individuals(self.num_individuals)
 
-    def __initiate_genotypes(self, num_genotypes):
-        genotypes = []
-        for n in range(num_genotypes):
+    def __initiate_individuals(self, num_individuals):
+        individuals = []
+        for n in range(num_individuals):
             while True:
                 p = randint(3, 11) / 10
                 neighbor_width = randint(1, 11)
                 spont_p = randint(1, 20) / 100000
                 reset_n = randint(1, 21)
-                if genotypes:
+                if individuals:
                     exist = False
-                    for genotype in genotypes:
-                        if p == genotype.p and neighbor_width == genotype.neighbour_width and spont_p == genotype.spont_p and reset_n == genotype.reset_n:
+                    for i in individuals:
+                        if p == i.genotype[0] and neighbor_width == i.genotype[1] and spont_p == i.genotype[2] and reset_n == i.genotype[3]:
                             exist = True
                     if not exist:
-                        genotypes.append(genotype(p, neighbor_width, spont_p, reset_n))
+                        individuals.append(Individual(p, neighbor_width, spont_p, reset_n))
                         break
                 else:
-                    genotypes.append(genotype(p, neighbor_width, spont_p, reset_n))
+                    individuals.append(Individual(p, neighbor_width, spont_p, reset_n))
                     break
-        return genotypes
+        return individuals
 
-    def get_genotypes(self):
-        return self.genotypes
+    def get_individuals(self):
+        return self.individuals
 
-    def update_genotypes(self, genotypes):
-        self.genotypes = genotypes
-
-    def select_parents(self):
-        self.genotypes.sort(key = lambda x : x.corr, reverse=True)
-        best_genotypes = self.genotypes[:len(self.genotypes) // SPLIT]
-        return best_genotypes
-
-    def reproduce(self, best_genotypes):
-        next_generation = []
-        for genotype in range(len(self.genotypes)):
-            next_generation.append(genotype(randint(3, 11) / 10 if random() < MUTATION else best_genotypes[randint(len(best_genotypes))].p, randint(1, 11) if random() < MUTATION else best_genotypes[randint(len(best_genotypes))].neighbour_width, randint(1, 20) / 100000 if random() < MUTATION else best_genotypes[randint(len(best_genotypes))].spont_p, randint(1, 21) if random() < MUTATION else best_genotypes[randint(len(best_genotypes))].reset_n))
-        self.genotypes = next_generation
+    def update_individuals(self, individuals):
+        self.individuals = individuals
 
 
-class genotype:
+
+
+class Individual:
     def __init__(self, p, neighbour_width, spont_p, reset_n):
-        self.p = p
-        self.neighbour_width = neighbour_width
-        self.spont_p = spont_p
-        self.reset_n = reset_n
+        self.genotype = [p,neighbour_width,spont_p,reset_n]
+
+    def set_phenotype(self, phenotype):
+        self.phenotype = phenotype
+
+    def get_phenotype(self):
+        return self.phenotype
 
     def set_fitness(self, fitness):
         self.fitness = fitness
@@ -63,8 +57,3 @@ class genotype:
     def get_fitness(self):
         return self.fitness
 
-    def set_phenotype(self, phenotype):
-        self.phenotype = phenotype
-
-    def get_phenotype(self):
-        return self.phenotype
