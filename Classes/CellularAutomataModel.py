@@ -10,11 +10,9 @@ SMALL = 12500
 SPARSE = 12500
 SMALL_SPARSE = 3125
 ULTRA_SPARSE = 3125
-NUM_ELECTRODES = 64
-THRESHOLD = 100
 
 
-class CellularAutomataModel(Model):
+class CellularAutomataModel():
     def __init__(self, DNA, initial_p = 0.01, dimension = int(m.ceil(m.sqrt(SMALL))), duration = 600, resolution = 10):
         self.dimension = dimension
         self.p = DNA.p
@@ -75,10 +73,10 @@ class CellularAutomataModel(Model):
     def __get_electrodes(self, dimension):
         electrodes = np.zeros((8, 8, 2))
         r = 0
-        f = 1 if len(dimension) % 9 == 0 else 0
-        for row in range(len(dimension) // 9, len(dimension) + f - (len(dimension) // 9), len(dimension) // 9):
+        f = 1 if dimension % 9 == 0 else 0
+        for row in range(dimension // 9, dimension + f - (dimension // 9), dimension // 9):
             c = 0
-            for col in range(len(dimension) // 9, len(dimension[0]) + f - (len(dimension) // 9), len(dimension[0]) // 9):
+            for col in range(dimension // 9, dimension + f - (dimension // 9), dimension // 9):
                 if (r == 0 or r == 7) and (c == 0 or c == 7):
                     c += 1
                     continue

@@ -1,4 +1,7 @@
-import Population
+from Classes import CellularAutomataModel, Population, Data, Fitness
+from random import randint, random, choice, shuffle
+from multiprocessing import Pool, current_process
+import os
 
 #Model type, NOT IMPLEMENTED!
 MODEL_TYPE = "CA"
@@ -34,11 +37,10 @@ def reproduce(array_one):
     next_generation = retained_adults if retained_adults else []
     i = 0
     while len(next_generation) < POPULATION_SIZE:
-        gene_1 = randint(3, 11) / 10 if random() < MUTATION_P else choice([array_one[i].genotype[0], array_one[i + 1].genotype[0]])
-        gene_2 = randint(1, 11) if random() < MUTATION_P else choice([array_one[i].genotype[1], array_one[i + 1].genotype[1]])
-        gene_3 = randint(1,20) / 100000 if random() < MUTATION_P else choice([array_one[i].genotype[2], array_one[i + 1].genotype[2]])
-        gene_4 = randint(1, 21) if random() < MUTATION_P else choice([array_one[i].genotype[3], array_one[i + 1].genotype[3]])
-        next_generation.append(population.Individual(gene_1, gene_2, gene_3, gene_4))
+        genes = []
+        for gene1, gene2 in zip(array_one[i].genotype, array_one[i+1].genotype):
+            genes.append(choice(gene1,gene2))
+        next_generation.append(Population.Individual(g_type=genes))
         i = (i + 2) % (len(array_one) - 1)
     return next_generation
 
@@ -46,10 +48,10 @@ def reproduce(array_one):
 #Runs simulation and adds phenotype list to individual. Gets fitness score and adds to individual.
 def run_thread(individual):
     print(current_process().name, end="  ")
-    phenotype = CA_model.Neuron_model(individual, duration= SIMULATION_DURATION, resolution = TIME_STEP_RESOLUTION).run_simulation()
-    fitness = fitness_functions.cross_correlation(phenotype, data.get_firing_rate("Small - 7-1-35.spk.txt"))
-    individual.set_phenotype(phenotype)
-    individual.set_fitness(fitness)
+    phenotype = CellularAutomataModel.CellularAutomataModel(individual, duration= SIMULATION_DURATION, resolution = TIME_STEP_RESOLUTION).run_simulation()
+    fitness = Fitness.get_fitness(phenotype, Data.get_spikes("Small - 7-1-35.spk.txt"))
+    individual.phenotype = phenotype
+    individual.fitness = fitness
     return individual
 
 if __name__ == '__main__':
@@ -61,12 +63,14 @@ if __name__ == '__main__':
         return new_individuals
 
 #Creates population object with POPULATION_SIZE. Runs loop for NUM_GENERATIONS.
-    pop = Population.Population(POPULATION_SIZE)
+#Creates the set of genes that apply to this specific population
+    genome = [Population.Gene(3, 11, 10), Population.Gene(1, 11), Population.Gene(1, 20, 100000), Population.Gene(1, 21)]
+    pop = Population.Population(POPULATION_SIZE, genome)
     print("Running simulation...")
     for i in range(NUM_GENERATIONS):
         print("\nGeneration:", i)
         print("Workers: ", end="")
-        pop_with_phenotypes = generate_phenotypes(pop.get_individuals())
+        pop_with_phenotypes = generate_phenotypes(pop.individuals)
         parents = select_parents(pop_with_phenotypes)
         new_gen = reproduce(parents)
-        pop.update_individuals(new_gen)
+        pop.individuals = new_gen
