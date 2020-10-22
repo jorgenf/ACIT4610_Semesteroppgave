@@ -39,15 +39,17 @@ def make_raster_plot(neural_data, simulation_data, simulation_length):
     import matplotlib.pyplot as plt
     import numpy as np
 
-    neuron_spikes, neuron_spikes_per_array, neuron_sps = read_recording(
+    neuron_spikes, neuron_spikes_per_array = read_recording(
         neural_data_filepath, 
         recording_start=60*1, # starting point in seconds
         recording_len=simulation_length # simlation length in seconds, set to match simulation
         )
 
-    sim_spikes, sim_spikes_per_array, sim_sps = read_recording(
+    sim_spikes, sim_spikes_per_array = read_recording(
         simulation_data_filepath,
         recording_len=simulation_length)
+    
+    print(type(sim_spikes))
 
     # plot neural spikes
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2)
@@ -110,4 +112,5 @@ if __name__ == "__main__":
     neural_data_filepath = r"Data\Dense - 2-1-20.spk.txt"
     simulation_data_filepath = r"CA_excitable\simulation_data.txt"
 
-    make_xcorr_plot(neural_data_filepath, simulation_data_filepath, 120)
+    # make_xcorr_plot(neural_data_filepath, simulation_data_filepath, 120)
+    make_raster_plot(neural_data_filepath, simulation_data_filepath, 120)

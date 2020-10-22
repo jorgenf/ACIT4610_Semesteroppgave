@@ -3,6 +3,7 @@ matplotlib.use("TkAgg")
 from pylab import *
 import math as m
 import numpy as np
+from CA import population
 
 DENSE = 50000
 SMALL = 12500
@@ -13,19 +14,19 @@ NUM_ELECTRODES = 64
 THRESHOLD = 100
 
 class Neuron_model:
-    def __init__(self, DNA, initial_p = 0.01, n = int(m.ceil(m.sqrt(SMALL))), duration = 600, resolution = 10):
+    def __init__(self, individual, initial_p = 0.01, n = int(m.ceil(m.sqrt(SMALL))), duration = 600, resolution = 10):
         self.n = n
-        self.p = DNA.p
-        self.neighbor_width = DNA.neighbour_width
-        self.spont_p = DNA.spont_p
-        self.reset_n = DNA.reset_n
+        self.p = individual.genotype[0]
+        self.neighbor_width = individual.genotype[1]
+        self.spont_p = individual.genotype[2]
+        self.reset_n = individual.genotype[3]
         self.initial_p = initial_p
         self.steps = duration*resolution
         self.duration = duration
         self.resolution = resolution
 
     def run_simulation(self):
-        global step
+        global config, nextconfig, step,spikes
         step = 0
         self.__initialize()
         while step < self.steps:
@@ -36,6 +37,7 @@ class Neuron_model:
     def __initialize(self):
         global config, nextconfig, step,spikes
         config = zeros([self.n,self.n])
+        self.electrodes = self.__get_electrodes()
         for row in range(len(config)):
             for col in range(len(config[0])):
                 config[row][col] = self.reset_n if random() < self.initial_p else 0
@@ -62,11 +64,22 @@ class Neuron_model:
         spikes[int(step//self.resolution)] += self.__get_spikes()
 
     def __get_spikes(self):
-        spikes = np.zeros((int(m.sqrt(NUM_ELECTRODES)),int(m.sqrt(NUM_ELECTRODES))))
-        sqr_size = self.n // m.sqrt(NUM_ELECTRODES)
-        global config
-        for row in range(self.n):
-            for col in range(self.n):
-                spikes[int(row//sqr_size)][int(col//sqr_size)] += 1 if config[row][col] == self.reset_n else 0
-        return np.count_nonzero(spikes > 100)
+        global config, nextconfig, step,spikes
+        s = 0
+        for el in self.electrodes:
+            if config[el[0]][el[1]] == self.reset_n:
+                s += 1
+        return s
+
+
+    def __get_electrodes(self):
+        global config, nextconfig, step,spikes
+        electrodes = []
+        for row in range(len(config) // 9, len(config)-len(config) // 9, len(config) // 9):
+            for col in range(len(config) // 9, len(config)-len(config) // 9, len(config) // 9):
+                electrodes.append((row, col))
+        if len(electrodes) != 64:
+            raise Exception("Wrong number of electrodes")
+        return electrodes
+
 
