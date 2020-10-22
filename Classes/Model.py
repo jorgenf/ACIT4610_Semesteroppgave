@@ -42,6 +42,8 @@ class Model:
         self.ran_fire_prob = ran_fire_prob
         #  Initialize Dataset
         self.spikes = np.zeros(self.duration)
+        self.electrodes = self._get_electrodes(dimension)
+
 
     def update(self):
         pass
@@ -53,4 +55,7 @@ class Model:
         return self.spikes
 
     def __get_spikes(self):
+        pass
+
+    def _get_electrodes(self):
         pass
