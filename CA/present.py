@@ -30,10 +30,13 @@ def read_recording(filename, recording_start=0, recording_len=30*60):
     for key, item in enumerate(data_by_electrode):
         f_c = len(data_by_electrode[key]) / recording_len
         spike_rates[key] = f_c # spike rate
-    spike_rate_per_array = np.array([*spike_rates.values()])
+    spike_rate_per_array = np.array([*spike_rates.values()]) # used to calculate bursting
 
     f.close
-    return (spikes, spikes_per_array)
+    return (
+        spikes, # 1D numpy array. Timestamps independent of electrode
+        spikes_per_array # 2D numpy array. Timestamps sortet by electrode. First index is electrode, second index is timestamp
+        )
 
 def make_raster_plot(neural_data, simulation_data, simulation_length):
     import matplotlib.pyplot as plt
@@ -48,8 +51,6 @@ def make_raster_plot(neural_data, simulation_data, simulation_length):
     sim_spikes, sim_spikes_per_array = read_recording(
         simulation_data_filepath,
         recording_len=simulation_length)
-    
-    print(type(sim_spikes))
 
     # plot neural spikes
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2)
@@ -79,36 +80,7 @@ def make_raster_plot(neural_data, simulation_data, simulation_length):
 
     plt.show()
 
-def make_xcorr_plot(neural_data_filepath, simulation_data_filepath, simulation_length):
-    import matplotlib.pyplot as plt
-    import numpy as np
-
-    neuron_spikes, neuron_spikes_per_array, neuron_sps = read_recording(
-        neural_data_filepath, 
-        recording_start=60*1, # starting point in seconds
-        recording_len=simulation_length # simlation length in seconds, set to match simulation
-        )
-
-    sim_spikes, sim_spikes_per_array, sim_sps = read_recording(
-        simulation_data_filepath,
-        recording_len=simulation_length)
-
-    x = neuron_sps.value_counts().astype(np.float)
-    y = sim_sps.value_counts().astype(np.float)
-
-    fig, [ax1, ax2] = plt.subplots(2, 1, sharex=True, sharey=True)
-    ax1.xcorr(x, y, usevlines=True, maxlags=50, normed=True, lw=2)
-    ax1.grid(True)
-
-    ax2.acorr(x, usevlines=True, normed=True, maxlags=50, lw=2)
-    ax2.grid(True)
-
-    print(plt.acorr(x, usevlines=True, normed=True, maxlags=50, lw=2))
-
-    plt.show()
-    
 if __name__ == "__main__":
-    
     neural_data_filepath = r"Data\Dense - 2-1-20.spk.txt"
     simulation_data_filepath = r"CA_excitable\simulation_data.txt"
 

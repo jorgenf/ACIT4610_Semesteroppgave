@@ -94,4 +94,4 @@ def development(grid_size, initial_probability, max_state, dt, simulation_length
     return np.array(simulation_output)
 
 if __name__ == "__main__":
-    development(*[10, 0.001, 10, 0.1], 5)
+    x = development(*[10, 0.001, 10, 0.1], 5)
