@@ -42,7 +42,7 @@ def reproduce(array_one):
     while len(next_generation) < POPULATION_SIZE:
         genes = []
         for gene1, gene2 in zip(array_one[i].genotype, array_one[i+1].genotype):
-            genes.append(choice(gene1,gene2))
+            genes.append(random() if random() < MUTATION_P else choice(gene1,gene2))
         next_generation.append(Population.Individual(g_type=genes))
         i = (i + 2) % (len(array_one) - 1)
     return next_generation
@@ -67,9 +67,8 @@ if __name__ == '__main__':
 
 #Creates population object with POPULATION_SIZE. Runs loop for NUM_GENERATIONS.
 #Creates the set of genes that apply to this specific population
-    genome = [Population.Gene(3, 11, 10), Population.Gene(1, 11), Population.Gene(1, 20, 100000), Population.Gene(1, 21)]
-    pop = Population.Population(POPULATION_SIZE, genome)
-    reference_spikes = Data.get_spikes(REFERENCE_PHENOTYPE)
+    pop = Population.Population(POPULATION_SIZE, 5)
+    reference_spikes = Data.get_spikes_file(REFERENCE_PHENOTYPE)
     print("Running simulation...")
     for i in range(NUM_GENERATIONS):
         print("\nGeneration:", i)

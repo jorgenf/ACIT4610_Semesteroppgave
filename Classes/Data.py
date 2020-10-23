@@ -9,7 +9,7 @@ def get_spikes_file(file_name):
     :param string_one: 
     :return: NumpyArray
     """""
-    file = open("Data/"+file_name,"r")
+    file = open("../Resources/"+file_name,"r")
     times = []
     nodes = []
     spikes = []

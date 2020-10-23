@@ -1,5 +1,5 @@
 import numpy as np
-from random import randint
+from random import random
 
 
 class Population:
@@ -15,11 +15,8 @@ class Population:
     def __create_individuals(self):
         pop = []
         for individual in range(self.population_size):
-            g = []
-            for gene in self.genome:
-                g.append(randint(gene.min,gene.max)/gene.fraction)
-            ind = Individual(g)
-            pop.append(ind)
+            g = [random() for i in range(self.genome)]
+            pop.append(Individual(g))
         return pop
 
 
@@ -34,15 +31,3 @@ class Individual:
         self.genotype = g_type
         self.phenotype = None
         self.fitness = None
-
-
-#FJERN DENNE!
-class Gene:
-    '''
-    A gene has a range from min to max. This is used when a gene is mutated to limit the possible
-    values. It is also used when creating a population of individuals.
-    '''
-    def __init__(self, min, max, fraction = 1):
-        self.min = min
-        self.max = max
-        self.fraction = fraction

@@ -1,9 +1,10 @@
-from . import Model
 import matplotlib
 matplotlib.use("TkAgg")
 from pylab import *
 import math as m
 import numpy as np
+from Classes import Population
+from random import random
 
 DENSE = 50000
 SMALL = 12500
@@ -12,13 +13,14 @@ SMALL_SPARSE = 3125
 ULTRA_SPARSE = 3125
 
 
+
 class CellularAutomataModel():
-    def __init__(self, DNA,  dimension = int(m.ceil(m.sqrt(SMALL))), duration = 600, resolution = 10):
+    def __init__(self, individual,  dimension = int(m.ceil(m.sqrt(SMALL))), duration = 600, resolution = 10):
         self.dimension = dimension
-        self.p = DNA[0]
-        self.neighbor_width = DNA.neighbour_width
-        self.spont_p = DNA.spont_p
-        self.reset_n = DNA.reset_n
+        self.p = individual.genotype[0]
+        self.neighbor_width = int(individual.genotype[1])
+        self.spont_p = individual.genotype[2]
+        self.reset_n = individual.genotype[3]
         self.steps = duration*resolution
         self.duration = duration
         self.resolution = resolution
@@ -70,7 +72,7 @@ class CellularAutomataModel():
         return s
 
     def __get_electrodes(self, dimension):
-        electrodes = np.zeros((8, 8, 2))
+        el_list = []
         r = 0
         f = 1 if dimension % 9 == 0 else 0
         for row in range(dimension // 9, dimension + f - (dimension // 9), dimension // 9):
@@ -80,9 +82,8 @@ class CellularAutomataModel():
                     c += 1
                     continue
                 else:
-                    electrodes[r, c, 0] = row
-                    electrodes[r, c, 1] = col
+                    el_list.append((row,col))
                     c += 1
             r += 1
-        el_list = [list(i) for sub in electrodes for i in sub if (i[0] != 0 and i[1] != 0)]
         return el_list
+
