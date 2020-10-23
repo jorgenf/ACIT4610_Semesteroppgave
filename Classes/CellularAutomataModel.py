@@ -12,8 +12,34 @@ SMALL_SPARSE = 3125
 ULTRA_SPARSE = 3125
 
 
+NUM_ELECTRODES = 64
+DIMENSION = int(m.ceil(m.sqrt(SMALL)))
+ELECTRODE_DIMENSION = int(m.sqrt(NUM_ELECTRODES))
+ELECTRODE_SPACING = DIMENSION // (ELECTRODE_DIMENSION + 1)
+
+
+def get_electrodes(dimension):
+    electrodes = np.zeros((ELECTRODE_DIMENSION, ELECTRODE_DIMENSION, 2))
+    r = 0
+    f = 1 if dimension % 9 == 0 else 0
+    for row in range(dimension // 9, dimension + f - (dimension // 9), dimension // 9):
+        c = 0
+        for col in range(dimension // 9, dimension + f - (dimension // 9), dimension // 9):
+            if (r == 0 or r == 7) and (c == 0 or c == 7):
+                c += 1
+                continue
+            else:
+                electrodes[r, c, 0] = row
+                electrodes[r, c, 1] = col
+                c += 1
+        r += 1
+    el_list = [list(i) for sub in electrodes for i in sub if (i[0] != 0 and i[1] != 0)]
+    return el_list
+
+
 class CellularAutomataModel():
     def __init__(self, DNA, initial_p = 0.01, dimension = int(m.ceil(m.sqrt(SMALL))), duration = 600, resolution = 10):
+        self.step = 0
         self.dimension = dimension
         self.p = DNA.p
         self.neighbor_width = DNA.neighbour_width
@@ -23,16 +49,17 @@ class CellularAutomataModel():
         self.steps = duration*resolution
         self.duration = duration
         self.resolution = resolution
-        self.electrodes = self.__get_electrodes(dimension)
+        self.electrodes = get_electrodes(dimension)
+        #  Initialize Dataset
+        self.spikes = []
 
     def run_simulation(self):
         global step
-        step = 0
         self.__initialize()
-        while step < self.steps:
+        while self.step < self.steps:
             self.__update()
-            step += 1
-        return spikes
+            self.step += 1
+        return self.spikes
 
     def __initialize(self):
         global config, nextconfig, step,spikes
@@ -42,7 +69,6 @@ class CellularAutomataModel():
                 config[row][col] = self.reset_n if random() < self.initial_p else 0
         nextconfig = config
         step = 0
-        spikes = np.zeros(self.duration)
 
     def __update(self):
         global config, nextconfig,step,spikes
@@ -60,30 +86,17 @@ class CellularAutomataModel():
                 elif config[x,y] > 0:
                     nextconfig[x,y] = config[x,y] - 1
         config = nextconfig
-        spikes[int(step//self.resolution)] += self.__get_spikes()
+        self.spikes.append(self.__get_spikes())
 
     def __get_spikes(self):
         global config, nextconfig, step,spikes
         s = 0
-        for el in self.electrodes:
-            if config[el[0]][el[1]] == self.reset_n:
-                s += 1
+        for x, y in self.electrodes:
+            if config[x][y] == self.reset_n:
+                s.append((
+                    # spike time
+                    self.step / self.resolution,
+                    # spike on electrode id
+                    1 * (x // (ELECTRODE_SPACING + 1)) + 8 * (y // (ELECTRODE_SPACING + 1))
+                ))
         return s
-
-    def __get_electrodes(self, dimension):
-        electrodes = np.zeros((8, 8, 2))
-        r = 0
-        f = 1 if dimension % 9 == 0 else 0
-        for row in range(dimension // 9, dimension + f - (dimension // 9), dimension // 9):
-            c = 0
-            for col in range(dimension // 9, dimension + f - (dimension // 9), dimension // 9):
-                if (r == 0 or r == 7) and (c == 0 or c == 7):
-                    c += 1
-                    continue
-                else:
-                    electrodes[r, c, 0] = row
-                    electrodes[r, c, 1] = col
-                    c += 1
-            r += 1
-        el_list = [list(i) for sub in electrodes for i in sub if (i[0] != 0 and i[1] != 0)]
-        return el_list
