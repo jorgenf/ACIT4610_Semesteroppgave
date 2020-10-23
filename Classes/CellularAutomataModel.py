@@ -13,13 +13,12 @@ ULTRA_SPARSE = 3125
 
 
 class CellularAutomataModel():
-    def __init__(self, DNA, initial_p = 0.01, dimension = int(m.ceil(m.sqrt(SMALL))), duration = 600, resolution = 10):
+    def __init__(self, DNA,  dimension = int(m.ceil(m.sqrt(SMALL))), duration = 600, resolution = 10):
         self.dimension = dimension
-        self.p = DNA.p
+        self.p = DNA[0]
         self.neighbor_width = DNA.neighbour_width
         self.spont_p = DNA.spont_p
         self.reset_n = DNA.reset_n
-        self.initial_p = initial_p
         self.steps = duration*resolution
         self.duration = duration
         self.resolution = resolution
@@ -39,7 +38,7 @@ class CellularAutomataModel():
         config = zeros([self.dimension, self.dimension])
         for row in range(len(config)):
             for col in range(len(config[0])):
-                config[row][col] = self.reset_n if random() < self.initial_p else 0
+                config[row][col] = self.reset_n if random() < self.spont_p else 0
         nextconfig = config
         step = 0
         spikes = np.zeros(self.duration)

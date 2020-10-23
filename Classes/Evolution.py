@@ -22,11 +22,14 @@ RETAINED_ADULTS_P = 0.1
 #Type of fitness function used. NOT IMPLEMENTED!
 FITNESS_FUNCTION = "Normalized cross correlation"
 
+REFERENCE_PHENOTYPE = "Small - 7-1-35.spk.txt"
+
 #Sorts the array of individuals by decreasing fitness. Returns the PARENTS_P-percentage best
 def select_parents(array_one):
     array_one.sort(key=lambda x: x.fitness, reverse=True)
     best_individuals = array_one[:round(len(array_one) * PARENTS_P)]
     return best_individuals
+
 
 #Selects the RETAINED_ADULTS_P-percentage best and adds to return-list. Shuffles array, then matches two-and-two
 # individuals until return-list is full. If RETAINED_ADULTS_P is present then certain matches might occur more often
@@ -49,7 +52,7 @@ def reproduce(array_one):
 def run_thread(individual):
     print(current_process().name, end="  ")
     phenotype = CellularAutomataModel.CellularAutomataModel(individual, duration= SIMULATION_DURATION, resolution = TIME_STEP_RESOLUTION).run_simulation()
-    fitness = Fitness.get_fitness(phenotype, Data.get_spikes("Small - 7-1-35.spk.txt"))
+    fitness = Fitness.get_fitness(Data.get_spikes_pheno(phenotype), reference_spikes)
     individual.phenotype = phenotype
     individual.fitness = fitness
     return individual
@@ -66,6 +69,7 @@ if __name__ == '__main__':
 #Creates the set of genes that apply to this specific population
     genome = [Population.Gene(3, 11, 10), Population.Gene(1, 11), Population.Gene(1, 20, 100000), Population.Gene(1, 21)]
     pop = Population.Population(POPULATION_SIZE, genome)
+    reference_spikes = Data.get_spikes(REFERENCE_PHENOTYPE)
     print("Running simulation...")
     for i in range(NUM_GENERATIONS):
         print("\nGeneration:", i)

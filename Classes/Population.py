@@ -35,6 +35,8 @@ class Individual:
         self.phenotype = None
         self.fitness = None
 
+
+#FJERN DENNE!
 class Gene:
     '''
     A gene has a range from min to max. This is used when a gene is mutated to limit the possible
