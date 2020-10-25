@@ -1,4 +1,5 @@
-from Classes import CellularAutomataModel, Population, Data, Fitness
+# from Classes import CellularAutomataModel, Population, Data, Fitness
+import CellularAutomataModel, Population, Data, Fitness
 from random import randint, random, choice, shuffle
 from multiprocessing import Pool, current_process
 import os
@@ -6,11 +7,11 @@ import os
 #Model type, NOT IMPLEMENTED!
 MODEL_TYPE = "CA"
 #Number of individuals in the population
-POPULATION_SIZE = 100
+POPULATION_SIZE = 10
 #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
-NUM_GENERATIONS = 10
+NUM_GENERATIONS = 2
 #Simulation duration in seconds
-SIMULATION_DURATION = 300
+SIMULATION_DURATION = 10
 #Number of simulation iterations per second
 TIME_STEP_RESOLUTION = 10
 #Chance for mutation for each gene selection
