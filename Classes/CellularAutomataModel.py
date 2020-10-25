@@ -3,8 +3,7 @@ matplotlib.use("TkAgg")
 from pylab import *
 import math as m
 import numpy as np
-# from Classes import Population
-import Population
+from Classes import Population
 from random import random
 
 DENSE = 50000
