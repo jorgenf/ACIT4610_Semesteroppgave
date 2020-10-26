@@ -4,7 +4,7 @@ from pylab import *
 import math as m
 import numpy as np
 from random import random
-from ACIT4610_Semesteroppgave.Classes import Population
+import Population
 
 DENSE = 50000
 SMALL = 12500
@@ -17,18 +17,21 @@ ULTRA_SPARSE = 3125
 class CellularAutomataModel():
     def __init__(self, individual,  dimension = int(m.ceil(m.sqrt(SMALL))), duration = 600):
 
-        #(3-11)/10
-        self.sp_threshold = ((individual.genotype[0] * 8) + 3) / 10
+        #Individual parametres
+        #0-1
+        self.sp_threshold_p = individual.genotype[0]
         #1-11
         self.neighbor_width = round(individual.genotype[1]*11)
         #(1-20)/100000
-        self.spont_p = individual.genotype[2] * (20/100000)
+        self.spontanous_excitation_p = individual.genotype[2] * (20 / 100000)
         #1-21
-        self.refractory_p = round(individual.genotype[3] * 21)
+        self.refractory_period = round(individual.genotype[3] * 21)
         #0-0.5
-        self.i_neuron = (individual.genotype[4]/2)
+        self.inhibitory_neuron_p = (individual.genotype[4] / 2)
         #1-20
-        self.resolution = round(individual.genotype[5]*20)
+        self.resolution = round(individual.genotype[5]*10)
+
+        #General parametres
         self.dimension = dimension
         self.steps = duration*self.resolution
         self.duration = duration
@@ -49,8 +52,8 @@ class CellularAutomataModel():
         config = zeros([self.dimension, self.dimension, 2])
         for row in range(len(config)):
             for col in range(len(config[0])):
-                config[row, col, 0] = self.refractory_p if random() < self.spont_p else 0
-                config[row, col, 1] = -1 if random() < self.i_neuron else 1
+                config[row, col, 0] = self.refractory_period if random() < self.spontanous_excitation_p else 0
+                config[row, col, 1] = -1 if random() < self.inhibitory_neuron_p else 1
         nextconfig = config
         step = 0
         spikes = []
@@ -59,15 +62,15 @@ class CellularAutomataModel():
         global config, nextconfig,step,spikes
         for x in range(self.dimension):
             for y in range(self.dimension):
-                if random() < self.spont_p and config[x, y, 0] == 0:
-                    nextconfig[x, y, 0] = self.refractory_p
+                if random() < self.spontanous_excitation_p and config[x, y, 0] == 0:
+                    nextconfig[x, y, 0] = self.refractory_period
                 elif config[x, y, 0] == 0:
                     count = 0
                     for dx in range(-self.neighbor_width , self.neighbor_width + 1):
                         for dy in range(-self.neighbor_width , self.neighbor_width + 1):
                             if 0 <= x + dx < self.dimension and 0 <= y + dy < self.dimension:
-                                count += 1 if config[dx,dy,0] < self.refractory_p else 0
-                    nextconfig[x, y, 0] = self.refractory_p if count >= self.sp_threshold*(((2*self.neighbor_width+1)**2)-1) else config[x, y, 0]
+                                count += config[x + dx, y + dy, 1] if config[x + dx, y + dy, 0] == self.refractory_period else 0
+                    nextconfig[x, y, 0] = self.refractory_period if count >= self.sp_threshold_p * (((2 * self.neighbor_width + 1) ** 2) - 1) else 0
                 elif config[x, y, 0] > 0:
                     nextconfig[x, y, 0] = config[x, y, 0] - 1
         config = nextconfig
@@ -79,7 +82,7 @@ class CellularAutomataModel():
         global config, nextconfig, step,spikes
         s = []
         for el in self.electrodes:
-            if config[el[0],el[1],0] == self.refractory_p:
+            if config[el[0],el[1],0] == self.refractory_period:
                 s.append([0+(step/self.resolution), self.electrodes.index(el)])
         return s
 
