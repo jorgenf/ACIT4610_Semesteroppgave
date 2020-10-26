@@ -18,7 +18,7 @@ ULTRA_SPARSE = 3125
 NUM_ELECTRODES = 64
 THRESHOLD = 100
 
-DURATION = 12
+DURATION = 120
 DIMENSION = int(m.ceil(m.sqrt(SMALL)))
 ELECTRODE_DIMENSION = int(m.sqrt(NUM_ELECTRODES))
 ELECTRODE_SPACING = DIMENSION // (ELECTRODE_DIMENSION + 1)
@@ -84,9 +84,9 @@ class NetworkModel:
         #   Firing Threshold in the membrane (Default: 1) (Range: ~1-2)
         self.firing_threshold = individual.genotype[0] + 1
         #   Extra possible neighbour in the network (Default: 0) (Range: 0-2)
-        self.extra_neighbor = round(individual.genotype[1] * 2)
+        self.neighborhood_width = round(individual.genotype[1] * 2)
         #   Chance to randomly fire (Default: 0.005 (0.5%)) (Range: ~0-0.01)
-        self.ran_fire_prob = individual.genotype[2] * 0.01
+        self.random_fire_prob = individual.genotype[2] * 0.01
         #   Refractory period: time to recharge after firing (Default: 1) (Range: 1-2)
         #   Unused in this model (simplified implementation for now)
         self.refractory_period = round(individual.genotype[3] + 1)
@@ -112,6 +112,7 @@ class NetworkModel:
         self.spikes = []
         #  Initialize Network
         self.config = nx.grid_2d_graph(self.dimension, self.dimension)
+        #   Position field can be used to invert coordinates for visualization
         #   self.config.pos = {(x, y): (x, y) for x, y in self.config.nodes()}
         for i in self.config.nodes:
             self.config.nodes[i]['mem_pot'] = self.rest_pot
@@ -121,12 +122,13 @@ class NetworkModel:
             else:
                 self.config.nodes[i]['type'] = 1
             #  Firing or not firing
-            if random() < self.ran_fire_prob:
+            if random() < self.random_fire_prob:
                 self.config.nodes[i]['state'] = 1
             else:
                 self.config.nodes[i]['state'] = 0
         #  Copy Network
         self.next_config = self.config.copy()
+        #   Copy position field (currently not needed)
         #   self.next_config.pos = self.config.pos
 
     def alter_state(self, neuron, inp):
@@ -152,7 +154,7 @@ class NetworkModel:
         membrane_potential = membrane_potential + integrate
         #  If the membrane potential isn't high enough to fire,
         #  there's still a chance to randomly fire
-        if random() < self.ran_fire_prob:
+        if random() < self.random_fire_prob:
             return 1, 1
         #  Return non-firing state and the current membrane potential.
         else:
@@ -160,7 +162,7 @@ class NetworkModel:
 
     def update(self):
         """
-        Apply the ruleset to the current network and update the next iteration.
+        Apply the ruleset to the current CA and update the next iteration.
         """
         for i in self.config.nodes:
             count = 0
@@ -170,7 +172,7 @@ class NetworkModel:
                 self.config.nodes[i], count
             )
         self.config, self.next_config = self.next_config, self.config
-        current_spikes = self.__get_spikes()
+        current_spikes = self.get_spikes()
         if current_spikes:
             self.spikes += current_spikes
 
@@ -185,7 +187,7 @@ class NetworkModel:
         #   Return phenotype
         return np.array(self.spikes, dtype=[("t", "float64"), ("electrode", "int64")])
     
-    def __get_spikes(self):
+    def get_spikes(self):
         """
         Get spikes in the current iteration.
         Return: List with spikes on electrodes in the network.
