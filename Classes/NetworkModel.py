@@ -162,7 +162,7 @@ class NetworkModel:
 
     def update(self):
         """
-        Apply the ruleset to the current CA and update the next iteration.
+        Apply the ruleset to the current Network and update the next iteration.
         """
         for i in self.config.nodes:
             count = 0
