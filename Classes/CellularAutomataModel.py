@@ -4,7 +4,8 @@ from pylab import *
 import math as m
 import numpy as np
 from random import random
-from Classes import Population
+
+import Population
 
 DENSE = 50000
 SMALL = 12500
@@ -12,10 +13,12 @@ SPARSE = 12500
 SMALL_SPARSE = 3125
 ULTRA_SPARSE = 3125
 
+DURATION = 100
+
 
 
 class CellularAutomataModel():
-    def __init__(self, individual,  dimension = int(m.ceil(m.sqrt(SMALL))), duration = 600):
+    def __init__(self, individual,  dimension = int(m.ceil(m.sqrt(SMALL))), duration = DURATION):
 
         #0-0.5
         self.sp_threshold = individual.genotype[0]/2
@@ -99,3 +102,22 @@ class CellularAutomataModel():
             r += 1
         return el_list
 
+
+#   Run the class test and print the result when the script is run standalone.
+if __name__ == "__main__":
+    from Data import raster_plot, read_recording
+
+    # use model to generate a phenotype
+    pop = Population.Population(1, 6)
+    model = CellularAutomataModel(pop.individuals[0])
+    output = model.run_simulation()
+
+    # generate reference phenotype from experimental data
+    reference_file = {
+        "small": "../Resources/Small - 7-2-20.spk.txt",
+        "dense": "../Resources/Dense - 2-1-20.spk.txt"
+    }
+    reference = read_recording(reference_file["small"], recording_len=DURATION)
+
+    # compare model output with experimental data
+    raster_plot(output, reference, DURATION)
