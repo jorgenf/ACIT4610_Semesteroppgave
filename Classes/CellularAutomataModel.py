@@ -4,8 +4,9 @@ from pylab import *
 import math as m
 import numpy as np
 from random import random
+# from Classes import Population
+import Population # forklaring https://stackoverflow.com/questions/43728431/relative-imports-modulenotfounderror-no-module-named-x
 
-import Population
 
 DENSE = 50000
 SMALL = 12500
@@ -13,12 +14,9 @@ SPARSE = 12500
 SMALL_SPARSE = 3125
 ULTRA_SPARSE = 3125
 
-DURATION = 100
-
-
 
 class CellularAutomataModel():
-    def __init__(self, individual,  dimension = int(m.ceil(m.sqrt(SMALL))), duration = DURATION):
+    def __init__(self, individual,  dimension = int(m.ceil(m.sqrt(SMALL))), duration = 600):
 
         #0-0.5
         self.sp_threshold = individual.genotype[0]/2
@@ -109,7 +107,7 @@ if __name__ == "__main__":
 
     # use model to generate a phenotype
     pop = Population.Population(1, 6)
-    model = CellularAutomataModel(pop.individuals[0])
+    model = CellularAutomataModel(pop.individuals[0], duration=10)
     output = model.run_simulation()
 
     # generate reference phenotype from experimental data
@@ -121,3 +119,4 @@ if __name__ == "__main__":
 
     # compare model output with experimental data
     raster_plot(output, reference, DURATION)
+    
