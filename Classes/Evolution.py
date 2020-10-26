@@ -22,7 +22,7 @@ RETAINED_ADULTS_P = 0.1
 #Type of fitness function used. NOT IMPLEMENTED!
 FITNESS_FUNCTION = "Normalized cross correlation"
 REFERENCE_PHENOTYPE = "Small - 7-1-35.spk.txt"
-REFERENCE_SPIKES = Data.get_spikes_file(REFERENCE_PHENOTYPE)
+REFERENCE_SPIKES = Data.get_spikes_file(REFERENCE_PHENOTYPE, recording_len=SIMULATION_DURATION)
 
 #Sorts the array of individuals by decreasing fitness. Returns the PARENTS_P-percentage best
 def select_parents(array_one):
@@ -52,7 +52,6 @@ def reproduce(array_one):
 def run_thread(individual):
     print(current_process().name, end="  ")
     phenotype = CellularAutomataModel.CellularAutomataModel(individual, dimension = 30, duration= SIMULATION_DURATION).run_simulation()
-    print(phenotype)
     fitness = Fitness.get_fitness(Data.get_spikes_pheno(phenotype), REFERENCE_SPIKES)
     individual.phenotype = phenotype
     individual.fitness = fitness
