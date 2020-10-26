@@ -27,13 +27,25 @@ def get_spikes_file(file_name):
     return(firing_rate)
 
 
-def get_spikes_pheno(phenotype):
-    """
+def get_spikes_pheno(phenotype):    
+    import numpy as np
 
-    :param string_one: 
-    :return: NumpyArray
-    """
-    pass
+    time_coef = 1000 # bin width [ms]
+
+    spikes = []
+    start_time = int(phenotype[0]["t"])
+    for timestamp in phenotype["t"]:
+        spikes.append(int(
+            float(timestamp) * (1000/time_coef)
+            ))
+    
+    firing_rate = []
+    for n in spikes:
+        if n >= len(firing_rate) + start_time:
+            firing_rate.append(1)
+        else:
+            firing_rate[n-start_time] += 1
+    return np.array(firing_rate, dtype=np.float)
 
 
 def raster_plot(phenotype_A, phenotype_B, bin_size):
