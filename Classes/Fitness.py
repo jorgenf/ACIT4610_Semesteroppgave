@@ -2,7 +2,7 @@
 Methods for fitness calculations.
 """
 
-def get_fitness(phenotype_A, phenotype_B, plot_graph=False):
+def get_fitness(spike_rate_A, spike_rate_B, plot_graph=False):
     """
     https://www.mathworks.com/help/matlab/ref/xcorr.html
 
@@ -16,8 +16,8 @@ def get_fitness(phenotype_A, phenotype_B, plot_graph=False):
     from Data import get_spikes_pheno
 
     # convert phenotype to 1D array of spike rates per timeunit. timeunit is set in get_spikes function    
-    spike_rate_A = get_spikes_pheno(phenotype_A)
-    spike_rate_B = get_spikes_pheno(phenotype_B) * 3
+    #spike_rate_A = get_spikes_pheno(phenotype_A)
+    #spike_rate_B = get_spikes_pheno(phenotype_B) * 3
 
     # calls xcorr function in matplotlib. it returns a array
     corr = plt.xcorr(spike_rate_A, spike_rate_B, usevlines=True, normed=True, lw=2)

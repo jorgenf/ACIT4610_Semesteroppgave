@@ -80,7 +80,7 @@ class CellularAutomataModel():
         s = []
         for el in self.electrodes:
             if config[el[0],el[1],0] == self.refractory_p:
-                s.append([0+(step/self.resolution), self.electrodes.index(el)])
+                s.append((0+(step/self.resolution), self.electrodes.index(el)))
         return s
 
     def __get_electrodes(self, dimension):
@@ -100,6 +100,6 @@ class CellularAutomataModel():
         return el_list
 
 
-#i = Population.Individual([random(),random(),random(),random(),random(),0.4])
-#res = CellularAutomataModel(i,100,10).run_simulation()
-#print(res)
+i = Population.Individual([random(),random(),random(),random(),random(),0.1])
+res = CellularAutomataModel(i,50,10).run_simulation()
+print(res)

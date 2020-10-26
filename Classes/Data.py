@@ -31,7 +31,6 @@ def get_spikes_pheno(phenotype):
     import numpy as np
 
     time_coef = 1000 # bin width [ms]
-
     spikes = []
     start_time = int(phenotype[0]["t"])
     for timestamp in phenotype["t"]:
