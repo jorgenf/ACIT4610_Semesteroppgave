@@ -137,5 +137,8 @@ class NetworkModel:
         s = []
         for x, y in self.electrodes:
             if self.config.nodes[(x, y)]['state'] == 1:
-                s.append([0+(self.step/self.resolution), self.electrodes.index((x, y))])
+                s.append((0+(self.step/self.resolution), self.electrodes.index((x, y))))
         return s if s else 0
+
+
+print(test_class())
