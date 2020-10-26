@@ -131,7 +131,8 @@ class NetworkModel:
         while self.step < self.steps:
             self.update()
             self.step += 1
-        return self.spikes
+        #   Return phenotype
+        return np.array(self.spikes, dtype=[("t", "float64"), ("electrode", "int64")])
     
     def __get_spikes(self):
         s = []
@@ -139,6 +140,3 @@ class NetworkModel:
             if self.config.nodes[(x, y)]['state'] == 1:
                 s.append((0+(self.step/self.resolution), self.electrodes.index((x, y))))
         return s if s else 0
-
-
-print(test_class())
