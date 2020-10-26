@@ -6,7 +6,7 @@ import os
 #Model type, NOT IMPLEMENTED!
 MODEL_TYPE = "CA"
 #Number of individuals in the population
-POPULATION_SIZE = 8
+POPULATION_SIZE = 3
 #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
 NUM_GENERATIONS = 2
 #Simulation duration in seconds
@@ -52,7 +52,7 @@ def reproduce(array_one):
 def run_thread(individual):
     print(current_process().name, end="  ")
     phenotype = CellularAutomataModel.CellularAutomataModel(individual, dimension = 30, duration= SIMULATION_DURATION).run_simulation()
-    fitness = Fitness.get_fitness(Data.get_spikes_pheno(phenotype), REFERENCE_SPIKES)
+    fitness = Fitness.get_fitness(Data.get_spikes_pheno(phenotype, SIMULATION_DURATION), REFERENCE_SPIKES)
     individual.phenotype = phenotype
     individual.fitness = fitness
     return individual

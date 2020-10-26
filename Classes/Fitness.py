@@ -1,8 +1,12 @@
 """
 Methods for fitness calculations.
 """
+import numpy as np
+import matplotlib.pyplot as plt
 
-def get_fitness(spike_rate_A, spike_rate_B, plot_graph=False):
+from Data import get_spikes_pheno
+
+def get_fitness(spike_rate_X, spike_rate_control, plot_graph=False):
     """
     https://www.mathworks.com/help/matlab/ref/xcorr.html
 
@@ -10,18 +14,17 @@ def get_fitness(spike_rate_A, spike_rate_B, plot_graph=False):
     
     Can also plot the xcorr graph if flag is set
     """
-    import numpy as np
-    import matplotlib.pyplot as plt
-
-    from Data import get_spikes_pheno
 
     # convert phenotype to 1D array of spike rates per timeunit. timeunit is set in get_spikes function    
-    #spike_rate_A = get_spikes_pheno(phenotype_A)
-    #spike_rate_B = get_spikes_pheno(phenotype_B) * 3
+    #spike_rate_X = get_spikes_pheno(phenotype_A)
+    #spike_rate_control = get_spikes_pheno(phenotype_B)
 
     # calls xcorr function in matplotlib. it returns a array
-    corr = plt.xcorr(spike_rate_A, spike_rate_B, usevlines=True, normed=True, lw=2)
-    fitness_score = np.amax(corr[1])
+    if spike_rate_X.any(): # check if array is only zeros
+        corr = plt.xcorr(spike_rate_X, spike_rate_control, usevlines=True, normed=True, lw=2, maxlags=1) # maxlags should not be set, only for debugging
+        fitness_score = np.amax(corr[1])
+    else:
+        fitness_score = 0.0
 
     # # lag of best fit (debugging)
     # lag = corr[0][np.where(corr[1]==fitness_score)]
@@ -31,4 +34,4 @@ def get_fitness(spike_rate_A, spike_rate_B, plot_graph=False):
     if plot_graph:
         plt.show()
 
-    return (fitness_score)
+    return fitness_score
