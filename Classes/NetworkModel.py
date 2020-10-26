@@ -29,8 +29,13 @@ INTEGRATION_RATIO = 0.25
 RANDOM_FIRE_PROBABILITY = 0.005
 
 
+def test_class():
+    neural_network = NetworkModel()
+    return neural_network.run_simulation()
+
+
 def get_electrodes(dimension):
-    electrodes = np.zeros((ELECTRODE_DIMENSION, ELECTRODE_DIMENSION, 2))
+    el_list = []
     r = 0
     f = 1 if dimension % 9 == 0 else 0
     for row in range(dimension // 9, dimension + f - (dimension // 9), dimension // 9):
@@ -40,11 +45,9 @@ def get_electrodes(dimension):
                 c += 1
                 continue
             else:
-                electrodes[r, c, 0] = row
-                electrodes[r, c, 1] = col
+                el_list.append((row, col))
                 c += 1
         r += 1
-    el_list = [list(i) for sub in electrodes for i in sub if (i[0] != 0 and i[1] != 0)]
     return el_list
 
 
@@ -120,29 +123,19 @@ class NetworkModel:
                 self.config.nodes[i], count
             )
         self.config, self.next_config = self.next_config, self.config
-        self.spikes.append(self.__get_spikes())
+        current_spikes = self.__get_spikes()
+        if current_spikes:
+            self.spikes += current_spikes
 
     def run_simulation(self):
         while self.step < self.steps:
             self.update()
             self.step += 1
         return self.spikes
-
-    '''def __get_spikes(self):
-        spikes = np.zeros((int(m.sqrt(NUM_ELECTRODES)), int(m.sqrt(NUM_ELECTRODES))))
-        sqr_size = self.dimension // m.sqrt(NUM_ELECTRODES)
-        for x, y in self.config.nodes():
-            spikes[int(x // sqr_size)][int(y // sqr_size)] += 1 if self.config.nodes[(x, y)]['state'] == 1 else 0
-        return np.count_nonzero(spikes > 100)'''
     
     def __get_spikes(self):
         s = []
         for x, y in self.electrodes:
             if self.config.nodes[(x, y)]['state'] == 1:
-                s.append((
-                    # spike time
-                    self.step / self.resolution,
-                    # spike on electrode id
-                    1 * (x // (ELECTRODE_SPACING + 1)) + 8 * (y // (ELECTRODE_SPACING + 1))
-                ))
+                s.append([0+(self.step/self.resolution), self.electrodes.index((x, y))])
         return s if s else 0

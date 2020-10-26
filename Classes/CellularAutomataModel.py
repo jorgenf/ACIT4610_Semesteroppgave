@@ -103,6 +103,6 @@ class CellularAutomataModel():
         return el_list
 
 
-#i = Population.Individual([random(),random(),random(),random(),random(),0.4])
-#res = CellularAutomataModel(i,100,10).run_simulation()
-#print(res)
+i = Population.Individual([random(),random(),random(),random(),random(),0.1])
+res = CellularAutomataModel(i,50,10).run_simulation()
+print(res)
