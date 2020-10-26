@@ -197,6 +197,39 @@ class NetworkModel:
         return s if s else 0
 
 
+def read_recording(filename, recording_start=0, recording_len=30*60):
+    from operator import itemgetter
+    import numpy as np
+    import pandas as pd
+
+    # cleaning data, making array
+    f = open(filename, "r")
+    data_points = [line.split(" ") for line in f]
+    data_points = np.array(
+        [(row[0].rstrip(), row[1].rstrip()) for row in data_points], 
+        dtype=[("t", "float64"), ("electrode", "int64")])
+
+    # edit to requested recording length
+    start_index, stop_index = np.searchsorted(data_points["t"], [recording_start, recording_start+recording_len])
+    data_points = data_points[start_index:stop_index]
+
+    f.close
+    return data_points
+
 #   Run the class test and print the result when the script is run standalone.
 if __name__ == "__main__":
-    print(test_class())
+    from Data import get_spikes_pheno, raster_plot
+
+    # use model to generate a phenotype
+    model = NetworkModel()
+    output = model.run_simulation()
+
+    # generate reference phenotype from experimental data
+    reference_file = {
+        "small": "../Resources/Small - 7-2-20.spk.txt",
+        "dense": "../Resources/Dense - 2-1-20.spk.txt"
+    }
+    reference = read_recording(reference_file["small"], recording_len=DURATION)
+
+    # compare model output with experimental data
+    raster_plot(output, reference, DURATION)
