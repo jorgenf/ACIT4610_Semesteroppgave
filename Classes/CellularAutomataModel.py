@@ -35,13 +35,14 @@ class CellularAutomataModel():
         self.electrodes = self.__get_electrodes(dimension)
 
     def run_simulation(self):
-        global step
+        global step, spikes
         step = 0
         self.__initialize()
         while step < self.steps:
             self.__update()
             step += 1
-        return spikes
+        phenotype = np.array(spikes, dtype=[("t", "float64"), ("electrode", "int64")])
+        return phenotype
 
     def __initialize(self):
         global config, nextconfig, step,spikes
