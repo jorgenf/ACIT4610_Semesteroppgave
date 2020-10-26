@@ -106,8 +106,9 @@ if __name__ == "__main__":
     from Data import raster_plot, read_recording
 
     # use model to generate a phenotype
+    simulation_length = 10 # [s]
     pop = Population.Population(1, 6)
-    model = CellularAutomataModel(pop.individuals[0], duration=10)
+    model = CellularAutomataModel(pop.individuals[0], duration=simulation_length)
     output = model.run_simulation()
 
     # generate reference phenotype from experimental data
@@ -115,8 +116,7 @@ if __name__ == "__main__":
         "small": "../Resources/Small - 7-2-20.spk.txt",
         "dense": "../Resources/Dense - 2-1-20.spk.txt"
     }
-    reference = read_recording(reference_file["small"], recording_len=DURATION)
+    reference = read_recording(reference_file["small"], recording_len=simulation_length)
 
     # compare model output with experimental data
-    raster_plot(output, reference, DURATION)
-    
+    raster_plot(output, reference, simulation_length)
