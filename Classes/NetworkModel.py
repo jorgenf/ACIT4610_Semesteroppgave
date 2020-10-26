@@ -196,29 +196,9 @@ class NetworkModel:
                 s.append((0+(self.step/self.resolution), self.electrodes.index((x, y))))
         return s if s else 0
 
-
-def read_recording(filename, recording_start=0, recording_len=30*60):
-    from operator import itemgetter
-    import numpy as np
-    import pandas as pd
-
-    # cleaning data, making array
-    f = open(filename, "r")
-    data_points = [line.split(" ") for line in f]
-    data_points = np.array(
-        [(row[0].rstrip(), row[1].rstrip()) for row in data_points], 
-        dtype=[("t", "float64"), ("electrode", "int64")])
-
-    # edit to requested recording length
-    start_index, stop_index = np.searchsorted(data_points["t"], [recording_start, recording_start+recording_len])
-    data_points = data_points[start_index:stop_index]
-
-    f.close
-    return data_points
-
 #   Run the class test and print the result when the script is run standalone.
 if __name__ == "__main__":
-    from Data import get_spikes_pheno, raster_plot
+    from Data import get_spikes_pheno, raster_plot, read_recording
 
     # use model to generate a phenotype
     model = NetworkModel()
