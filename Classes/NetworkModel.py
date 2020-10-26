@@ -198,7 +198,7 @@ class NetworkModel:
 
 #   Run the class test and print the result when the script is run standalone.
 if __name__ == "__main__":
-    from Data import get_spikes_pheno, raster_plot, read_recording
+    from Data import raster_plot, read_recording
 
     # use model to generate a phenotype
     model = NetworkModel()
