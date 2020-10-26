@@ -1,4 +1,4 @@
-from Classes import CellularAutomataModel, Population, Data, Fitness
+import CellularAutomataModel, Population, Data, Fitness
 from random import randint, random, choice, shuffle
 from multiprocessing import Pool, current_process
 import os
@@ -6,13 +6,13 @@ import os
 #Model type, NOT IMPLEMENTED!
 MODEL_TYPE = "CA"
 #Number of individuals in the population
-POPULATION_SIZE = 100
+POPULATION_SIZE = 10
 #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
-NUM_GENERATIONS = 10
+NUM_GENERATIONS = 2
 #Simulation duration in seconds
-SIMULATION_DURATION = 300
+SIMULATION_DURATION = 10
 #Number of simulation iterations per second
-TIME_STEP_RESOLUTION = 10
+TIME_STEP_RESOLUTION = 1
 #Chance for mutation for each gene selection
 MUTATION_P = 0.1
 #Percentage of current population that will create offspring
@@ -21,8 +21,8 @@ PARENTS_P = 0.5
 RETAINED_ADULTS_P = 0.1
 #Type of fitness function used. NOT IMPLEMENTED!
 FITNESS_FUNCTION = "Normalized cross correlation"
-
 REFERENCE_PHENOTYPE = "Small - 7-1-35.spk.txt"
+REFERENCE_SPIKES = Data.get_spikes_file(REFERENCE_PHENOTYPE)
 
 #Sorts the array of individuals by decreasing fitness. Returns the PARENTS_P-percentage best
 def select_parents(array_one):
@@ -51,8 +51,8 @@ def reproduce(array_one):
 #Runs simulation and adds phenotype list to individual. Gets fitness score and adds to individual.
 def run_thread(individual):
     print(current_process().name, end="  ")
-    phenotype = CellularAutomataModel.CellularAutomataModel(individual, duration= SIMULATION_DURATION, resolution = TIME_STEP_RESOLUTION).run_simulation()
-    fitness = Fitness.get_fitness(Data.get_spikes_pheno(phenotype), reference_spikes)
+    phenotype = CellularAutomataModel.CellularAutomataModel(individual, duration= SIMULATION_DURATION).run_simulation()
+    fitness = Fitness.get_fitness(Data.get_spikes_pheno(phenotype), REFERENCE_SPIKES)
     individual.phenotype = phenotype
     individual.fitness = fitness
     return individual
@@ -67,8 +67,8 @@ if __name__ == '__main__':
 
 #Creates population object with POPULATION_SIZE. Runs loop for NUM_GENERATIONS.
 #Creates the set of genes that apply to this specific population
-    pop = Population.Population(POPULATION_SIZE, 5)
-    reference_spikes = Data.get_spikes_file(REFERENCE_PHENOTYPE)
+    pop = Population.Population(POPULATION_SIZE, 6)
+
     print("Running simulation...")
     for i in range(NUM_GENERATIONS):
         print("\nGeneration:", i)
