@@ -2,34 +2,26 @@
 Methods for data processing.
 """
 
+import numpy as np
 
-def get_spikes_file(file_name):
-    """
-    
-    :param string_one: 
-    :return: NumpyArray
-    """""
-    file = open("../Resources/"+file_name,"r")
-    times = []
-    nodes = []
-    spikes = []
-    for line in file:
-        time, node = line.split(" ")
-        times.append(time)
-        nodes.append(node)
-        spikes.append(int(float(time)*10))
-    firing_rate = []
-    for n in spikes:
-        if n >= len(firing_rate):
-            firing_rate.append(1)
-        else:
-            firing_rate[n] += 1
-    return(firing_rate)
+def get_spikes_file(filename, recording_start=0, recording_len=30*60):
+    # cleaning data, making array
+    f = open("../Resources/" + filename, "r")
+    data_points = [line.split(" ") for line in f]
+    data_points = np.array(
+        [(row[0].rstrip(), row[1].rstrip()) for row in data_points], 
+        dtype=[("t", "float64"), ("electrode", "int64")])
+
+    # edit to requested recording length
+    start_index, stop_index = np.searchsorted(data_points["t"], [recording_start, recording_start+recording_len])
+    data_points = data_points[start_index:stop_index]
+
+    time_coef = 1000 # bin width [ms]
+
+    return get_spikes_pheno(data_points)
 
 
 def get_spikes_pheno(phenotype):    
-    import numpy as np
-
     time_coef = 1000 # bin width [ms]
 
     spikes = []
