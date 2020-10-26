@@ -1,4 +1,5 @@
 import Model
+import Population
 from pylab import *
 import matplotlib
 from matplotlib import pyplot as plt
@@ -18,23 +19,44 @@ NUM_ELECTRODES = 64
 THRESHOLD = 100
 
 DURATION = 12
-RESOLUTION = 10
 DIMENSION = int(m.ceil(m.sqrt(SMALL)))
 ELECTRODE_DIMENSION = int(m.sqrt(NUM_ELECTRODES))
 ELECTRODE_SPACING = DIMENSION // (ELECTRODE_DIMENSION + 1)
 RESTING_POTENTIAL = 0.5
+
+FIRING_THRESHOLD = 1
+EXTRA_NEIGHBOR = 0
+RANDOM_FIRE_PROBABILITY = 0.005
+REFRACTORY_PERIOD = 1
 TYPE_DISTRIBUTION = 0.25
+RESOLUTION = 10
 LEAK_RATIO = 0.1
 INTEGRATION_RATIO = 0.25
-RANDOM_FIRE_PROBABILITY = 0.005
+INDIVIDUAL = Population.Individual([
+    FIRING_THRESHOLD - 1,
+    EXTRA_NEIGHBOR / 2,
+    RANDOM_FIRE_PROBABILITY / 0.01,
+    REFRACTORY_PERIOD / 2,
+    TYPE_DISTRIBUTION / 0.5,
+    RESOLUTION / 20,
+    LEAK_RATIO / 0.2,
+    INTEGRATION_RATIO / 0.5,
+])
 
 
 def test_class():
+    """
+    Run the model/simulation with defaults and return the output.
+    """
     neural_network = NetworkModel()
     return neural_network.run_simulation()
 
 
 def get_electrodes(dimension):
+    """
+    Return a list of electrode positions based on the size of the network.
+    The index of an electrode can be used as its ID.
+    """
     el_list = []
     r = 0
     f = 1 if dimension % 9 == 0 else 0
@@ -52,26 +74,45 @@ def get_electrodes(dimension):
 
 
 class NetworkModel:
-
-    def __init__(self, duration=DURATION, resolution=RESOLUTION, dimension=DIMENSION, rest_pot=RESTING_POTENTIAL,
-                 type_dist=TYPE_DISTRIBUTION, leak_ratio=LEAK_RATIO, integ_ratio=INTEGRATION_RATIO,
-                 ran_fire_prob=RANDOM_FIRE_PROBABILITY):
+    """
+    Creates a 2D grid network using NetworkX.
+    The nodes in the network emulate the behaviour of neurons.
+    The model iterates over itself and updates the nodes based on a set of rules.
+    Takes an individual's genotype as input, and returns its phenotype.
+    """
+    def __init__(self, individual=INDIVIDUAL, dimension=DIMENSION, duration=DURATION):
+        #   Firing Threshold in the membrane (Default: 1) (Range: ~1-2)
+        self.firing_threshold = individual.genotype[0] + 1
+        #   Extra possible neighbour in the network (Default: 0) (Range: 0-2)
+        self.extra_neighbor = round(individual.genotype[1] * 2)
+        #   Chance to randomly fire (Default: 0.005 (0.5%)) (Range: ~0-0.01)
+        self.ran_fire_prob = individual.genotype[2] * 0.01
+        #   Refractory period: time to recharge after firing (Default: 1) (Range: 1-2)
+        #   Unused in this model (simplified implementation for now)
+        self.refractory_period = round(individual.genotype[3] + 1)
+        #   The distribution of inhibiting and exciting neurons (Default: 0.25) (Range: ~0-0.5)
+        self.type_dist = individual.genotype[4] * 0.5
+        #   How many iterations make up 1 second (Default: 10) (Range: 1-20)
+        self.resolution = round(individual.genotype[5] * 20)
+        #   By which ratio does the membrane potential passively move towards the
+        #   resting potential every iteration. (Default: 0.1) (Range: ~0-0.2)
+        self.leak_ratio = individual.genotype[6] * 0.2
+        #   By which ratio does the input from the neighborhood integrate with the neuron
+        #   (Default: 0.5) (Range: ~0-0.5)
+        self.integ_ratio = individual.genotype[7] * 0.5
+        #   Resting potential in the membrane (Default: 0.5)
+        #   Currently not controlled by the algorithm
+        self.rest_pot = RESTING_POTENTIAL
         self.step = 0
         self.duration = duration
-        self.resolution = resolution
-        self.steps = self.duration * self.resolution
         self.dimension = dimension
+        self.steps = self.duration * self.resolution
         self.electrodes = get_electrodes(dimension)
-        self.rest_pot = rest_pot
-        self.type_dist = type_dist
-        self.leak_ratio = leak_ratio
-        self.integ_ratio = integ_ratio
-        self.ran_fire_prob = ran_fire_prob
         #  Initialize Dataset
         self.spikes = []
         #  Initialize Network
         self.config = nx.grid_2d_graph(self.dimension, self.dimension)
-        self.config.pos = {(x, y): (x, y) for x, y in self.config.nodes()}
+        #   self.config.pos = {(x, y): (x, y) for x, y in self.config.nodes()}
         for i in self.config.nodes:
             self.config.nodes[i]['mem_pot'] = self.rest_pot
             # Inhibiting or exciting
@@ -86,15 +127,18 @@ class NetworkModel:
                 self.config.nodes[i]['state'] = 0
         #  Copy Network
         self.next_config = self.config.copy()
-        self.next_config.pos = self.config.pos
+        #   self.next_config.pos = self.config.pos
 
     def alter_state(self, neuron, inp):
+        """
+        Return new state and membrane potential for a node/neuron.
+        """
         #  Refractory period (simplified)
         if neuron['state'] == 1:
             return 0, self.rest_pot
         #  If the neuron reached the firing threshold last iteration,
         #  return firing state and membrane potential of 1
-        elif neuron['mem_pot'] >= 1:
+        elif neuron['mem_pot'] >= self.firing_threshold:
             return 1, 1
         #  Calculate membrane potential after leaking and integrating
         membrane_potential = neuron['mem_pot']
@@ -115,6 +159,9 @@ class NetworkModel:
             return 0, membrane_potential
 
     def update(self):
+        """
+        Apply the ruleset to the current network and update the next iteration.
+        """
         for i in self.config.nodes:
             count = 0
             for j in self.config.neighbors(i):
@@ -128,6 +175,10 @@ class NetworkModel:
             self.spikes += current_spikes
 
     def run_simulation(self):
+        """
+        Simulation loop.
+        Return: Numpy array with spikes on electrode ID's.
+        """
         while self.step < self.steps:
             self.update()
             self.step += 1
@@ -135,8 +186,17 @@ class NetworkModel:
         return np.array(self.spikes, dtype=[("t", "float64"), ("electrode", "int64")])
     
     def __get_spikes(self):
+        """
+        Get spikes in the current iteration.
+        Return: List with spikes on electrodes in the network.
+        """
         s = []
         for x, y in self.electrodes:
             if self.config.nodes[(x, y)]['state'] == 1:
                 s.append((0+(self.step/self.resolution), self.electrodes.index((x, y))))
         return s if s else 0
+
+
+#   Run the class test and print the result when the script is run standalone.
+if __name__ == "__main__":
+    print(test_class())
