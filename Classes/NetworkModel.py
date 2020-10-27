@@ -6,26 +6,28 @@ from matplotlib import pyplot as plt
 import networkx as nx
 import math as m
 import numpy as np
+import random as rn
 
 matplotlib.use("TkAgg")
 
-#  Defaults
+#   Defaults
+DURATION = 120
+#   Size
 DENSE = 50000
 SMALL = 12500
 SPARSE = 12500
 SMALL_SPARSE = 3125
 ULTRA_SPARSE = 3125
-NUM_ELECTRODES = 64
-THRESHOLD = 100
-
-DURATION = 120
 DIMENSION = int(m.ceil(m.sqrt(SMALL)))
+#   Electrodes
+NUM_ELECTRODES = 64
 ELECTRODE_DIMENSION = int(m.sqrt(NUM_ELECTRODES))
 ELECTRODE_SPACING = DIMENSION // (ELECTRODE_DIMENSION + 1)
+
 RESTING_POTENTIAL = 0.5
 
 FIRING_THRESHOLD = 1
-EXTRA_NEIGHBOR = 0
+NEIGHBORHOOD_WIDTH = 1
 RANDOM_FIRE_PROBABILITY = 0.005
 REFRACTORY_PERIOD = 1
 TYPE_DISTRIBUTION = 0.25
@@ -34,7 +36,7 @@ LEAK_RATIO = 0.1
 INTEGRATION_RATIO = 0.25
 INDIVIDUAL = Population.Individual([
     FIRING_THRESHOLD - 1,
-    EXTRA_NEIGHBOR / 2,
+    NEIGHBORHOOD_WIDTH / 2,
     RANDOM_FIRE_PROBABILITY / 0.01,
     REFRACTORY_PERIOD / 2,
     TYPE_DISTRIBUTION / 0.5,
@@ -46,10 +48,23 @@ INDIVIDUAL = Population.Individual([
 
 def test_class():
     """
-    Run the model/simulation with defaults and return the output.
+    Run the model/simulation with defaults and plot the results.
     """
-    neural_network = NetworkModel()
-    return neural_network.run_simulation()
+    from Data import raster_plot, read_recording
+
+    # use model to generate a phenotype
+    model = NetworkModel()
+    output = model.run_simulation()
+
+    # generate reference phenotype from experimental data
+    reference_file = {
+        "small": "../Resources/Small - 7-2-20.spk.txt",
+        "dense": "../Resources/Dense - 2-1-20.spk.txt"
+    }
+    reference = read_recording(reference_file["small"], recording_len=DURATION)
+
+    # compare model output with experimental data
+    raster_plot(output, reference, DURATION)
 
 
 def get_electrodes(dimension):
@@ -83,7 +98,7 @@ class NetworkModel:
     def __init__(self, individual=INDIVIDUAL, dimension=DIMENSION, duration=DURATION):
         #   Firing Threshold in the membrane (Default: 1) (Range: ~1-2)
         self.firing_threshold = individual.genotype[0] + 1
-        #   Extra possible neighbour in the network (Default: 0) (Range: 0-2)
+        #   Extra possible neighbour in the network (Default: 1) (Range: 0-2)
         self.neighborhood_width = round(individual.genotype[1] * 2)
         #   Chance to randomly fire (Default: 0.005 (0.5%)) (Range: ~0-0.01)
         self.random_fire_prob = individual.genotype[2] * 0.01
@@ -112,6 +127,8 @@ class NetworkModel:
         self.spikes = []
         #  Initialize Network
         self.config = nx.grid_2d_graph(self.dimension, self.dimension)
+        #   Add random extra edges according to neighborhood width
+        self.config.add_edges_from(self.random_edges(self.neighborhood_width))
         #   Position field can be used to invert coordinates for visualization
         #   self.config.pos = {(x, y): (x, y) for x, y in self.config.nodes()}
         for i in self.config.nodes:
@@ -159,7 +176,28 @@ class NetworkModel:
         #  Return non-firing state and the current membrane potential.
         else:
             return 0, membrane_potential
-
+       
+    def random_edges(self, recur):
+        """
+        Create a new random edge for each node in the network.
+        :param recur: Amount of times to run loop.
+        """
+        #  Initialize Edge container
+        new_edges = []
+        while recur > 0:
+            #  Iterate through the nodes
+            for i in self.config.nodes:
+                #  Loop-and-a-half
+                while True:
+                    #  Choose another node to connect a new edge to (random position)
+                    node_choice = ((round(random() * (self.dimension - 1))), (round(random() * (self.dimension - 1))))
+                    #  Break loop-and-a-half if node choice is not among current neighbors
+                    if node_choice not in self.config.neighbors(i):
+                        break
+                new_edges.append((i, node_choice))
+            recur -= 1
+        return new_edges
+        
     def update(self):
         """
         Apply the ruleset to the current Network and update the next iteration.
@@ -198,20 +236,7 @@ class NetworkModel:
                 s.append((0+(self.step/self.resolution), self.electrodes.index((x, y))))
         return s if s else 0
 
+
 #   Run the class test and print the result when the script is run standalone.
 if __name__ == "__main__":
-    from Data import raster_plot, read_recording
-
-    # use model to generate a phenotype
-    model = NetworkModel()
-    output = model.run_simulation()
-
-    # generate reference phenotype from experimental data
-    reference_file = {
-        "small": "../Resources/Small - 7-2-20.spk.txt",
-        "dense": "../Resources/Dense - 2-1-20.spk.txt"
-    }
-    reference = read_recording(reference_file["small"], recording_len=DURATION)
-
-    # compare model output with experimental data
-    raster_plot(output, reference, DURATION)
+    test_class()
