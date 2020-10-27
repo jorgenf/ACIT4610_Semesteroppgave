@@ -198,7 +198,20 @@ class NetworkModel:
                 s.append((0+(self.step/self.resolution), self.electrodes.index((x, y))))
         return s if s else 0
 
-
 #   Run the class test and print the result when the script is run standalone.
 if __name__ == "__main__":
-    print(test_class())
+    from Data import raster_plot, read_recording
+
+    # use model to generate a phenotype
+    model = NetworkModel()
+    output = model.run_simulation()
+
+    # generate reference phenotype from experimental data
+    reference_file = {
+        "small": "../Resources/Small - 7-2-20.spk.txt",
+        "dense": "../Resources/Dense - 2-1-20.spk.txt"
+    }
+    reference = read_recording(reference_file["small"], recording_len=DURATION)
+
+    # compare model output with experimental data
+    raster_plot(output, reference, DURATION)

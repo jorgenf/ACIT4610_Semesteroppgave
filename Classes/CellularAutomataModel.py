@@ -4,7 +4,9 @@ from pylab import *
 import math as m
 import numpy as np
 from random import random
-from Classes import Population
+# from Classes import Population
+import Population # forklaring https://stackoverflow.com/questions/43728431/relative-imports-modulenotfounderror-no-module-named-x
+
 
 DENSE = 50000
 SMALL = 12500
@@ -153,4 +155,20 @@ class CellularAutomataModel:
 
 #   Run the class test and print the result when the script is run standalone.
 if __name__ == "__main__":
-    print(test_class())
+    from Data import raster_plot, read_recording
+
+    # use model to generate a phenotype
+    simulation_length = 10 # [s]
+    pop = Population.Population(1, 6)
+    model = CellularAutomataModel(pop.individuals[0], duration=simulation_length)
+    output = model.run_simulation()
+
+    # generate reference phenotype from experimental data
+    reference_file = {
+        "small": "../Resources/Small - 7-2-20.spk.txt",
+        "dense": "../Resources/Dense - 2-1-20.spk.txt"
+    }
+    reference = read_recording(reference_file["small"], recording_len=simulation_length)
+
+    # compare model output with experimental data
+    raster_plot(output, reference, simulation_length)

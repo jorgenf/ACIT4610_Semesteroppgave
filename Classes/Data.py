@@ -3,6 +3,8 @@ Methods for data processing.
 """
 
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
 def get_spikes_file(filename, recording_start=0, recording_len=30*60):
     # cleaning data, making array
@@ -16,27 +18,34 @@ def get_spikes_file(filename, recording_start=0, recording_len=30*60):
     start_index, stop_index = np.searchsorted(data_points["t"], [recording_start, recording_start+recording_len])
     data_points = data_points[start_index:stop_index]
 
-    time_coef = 1000 # bin width [ms]
+    # time_coef = 1000 # bin width [ms]
 
-    return get_spikes_pheno(data_points)
+    return get_spikes_pheno(data_points, recording_len)
 
 
-def get_spikes_pheno(phenotype):    
-    time_coef = 1000 # bin width [ms]
-    spikes = []
-    start_time = int(phenotype[0]["t"])
-    for timestamp in phenotype["t"]:
-        spikes.append(int(
-            float(timestamp) * (1000/time_coef)
-            ))
+def get_spikes_pheno(phenotype, recording_len):
+    # time_coef = 1000 # bin width [ms]
+    # spikes = []
+    # start_time = int(phenotype[0]["t"])
+    # for timestamp in phenotype["t"]:
+    #     spikes.append(int(
+    #         float(timestamp) * (1000/time_coef)
+    #         ))
     
-    firing_rate = []
-    for n in spikes:
-        if n >= len(firing_rate) + start_time:
-            firing_rate.append(1)
-        else:
-            firing_rate[n-start_time] += 1
-    return np.array(firing_rate, dtype=np.float)
+    # firing_rate = []
+    # for n in spikes:
+    #     if n >= len(firing_rate) + start_time:
+    #         firing_rate.append(1)
+    #     else:
+    #         firing_rate[n-start_time] += 1
+    # return np.array(firing_rate, dtype=np.float)
+
+    array_wide_spikes_per_second = pd.cut(
+        phenotype["t"], 
+        bins=pd.interval_range(start=0, end=recording_len), 
+        precision=0
+    )
+    return np.array(array_wide_spikes_per_second.value_counts().tolist(), dtype="float64")
 
 
 def raster_plot(phenotype_A, phenotype_B, bin_size):
@@ -54,8 +63,6 @@ def raster_plot(phenotype_A, phenotype_B, bin_size):
     To create histogram it is necessary to specify bin-size. For spikes per second "bin_size" = simulation length [seconds] 
 
     """
-    import matplotlib.pyplot as plt
-    import numpy as np
 
     # check if input is correct format    
     phenotype_A = np.array(
@@ -95,7 +102,6 @@ def raster_plot(phenotype_A, phenotype_B, bin_size):
     ax2.set_title("Simulation raster plot")
 
     # make histograms
-    # print(phenotype_A["t"])
     ax3.hist(phenotype_A["t"], bins=bin_size)
     ax3.set_xlabel("Seconds")
     ax3.set_ylabel("Spikes per second")
@@ -104,3 +110,25 @@ def raster_plot(phenotype_A, phenotype_B, bin_size):
     ax4.set_xlabel("Seconds")
 
     plt.show()
+
+
+def read_recording(filename, recording_start=0, recording_len=30*60):
+    """
+    Takes as input recording of experimental data as text file 
+    Returns a phenotype
+    
+    """
+
+    # cleaning data, making array
+    f = open(filename, "r")
+    data_points = [line.split(" ") for line in f]
+    data_points = np.array(
+        [(row[0].rstrip(), row[1].rstrip()) for row in data_points], 
+        dtype=[("t", "float64"), ("electrode", "int64")])
+
+    # edit to requested recording length
+    start_index, stop_index = np.searchsorted(data_points["t"], [recording_start, recording_start+recording_len])
+    data_points = data_points[start_index:stop_index]
+
+    f.close
+    return data_points
