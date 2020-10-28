@@ -127,8 +127,10 @@ class NetworkModel:
         self.spikes = []
         #  Initialize Network
         self.config = nx.grid_2d_graph(self.dimension, self.dimension)
+        for i in self.config.edges:
+            self.config.edges[i]['weight'] = 1
         #   Add random extra edges according to neighborhood width
-        self.config.add_edges_from(self.random_edges(self.neighborhood_width))
+        self.config.add_weighted_edges_from(self.random_edges(self.neighborhood_width))
         #   Position field can be used to invert coordinates for visualization
         #   self.config.pos = {(x, y): (x, y) for x, y in self.config.nodes()}
         for i in self.config.nodes:
@@ -194,7 +196,10 @@ class NetworkModel:
                     #  Break loop-and-a-half if node choice is not among current neighbors
                     if node_choice not in self.config.neighbors(i):
                         break
-                new_edges.append((i, node_choice))
+                dx, dy = abs(i[0] - node_choice[0]), abs(i[1] - node_choice[1])
+                weight = (((self.dimension - 1) * math.sqrt(2)) - math.sqrt((dx ^ 2) + (dy ^ 2))) / (
+                      (self.dimension - 1) * math.sqrt(2))
+                new_edges.append((i, node_choice, round(weight, 2)))
             recur -= 1
         return new_edges
         
@@ -205,7 +210,10 @@ class NetworkModel:
         for i in self.config.nodes:
             count = 0
             for j in self.config.neighbors(i):
-                count += self.config.nodes[j]['state'] * self.config.nodes[j]['type']
+                #   Sum the neighboring neurons' states (0 or 1), type (-1 or 1) and the weight of the edge (~0-1)
+                count += self.config.nodes[j]['state'] * \
+                         self.config.nodes[j]['type'] * \
+                         self.config.edges[i, j]['weight']
             self.next_config.nodes[i]['state'], self.next_config.nodes[i]['mem_pot'] = self.alter_state(
                 self.config.nodes[i], count
             )
@@ -235,6 +243,12 @@ class NetworkModel:
             if self.config.nodes[(x, y)]['state'] == 1:
                 s.append((0+(self.step/self.resolution), self.electrodes.index((x, y))))
         return s if s else 0
+    
+    def print_weights(self):
+        for n, nbrsdict in self.config.adjacency():
+            for nbr, eattr in nbrsdict.items():
+                if "weight" in eattr:
+                    print(eattr)
 
 
 #   Run the class test and print the result when the script is run standalone.

@@ -3,7 +3,7 @@ import pylab
 from pylab import *
 from matplotlib import pyplot as plt
 import networkx as nx
-import random as rn
+import math
 
 k = 4
 dimension = 10
@@ -59,7 +59,9 @@ def random_edges(recur):
             #  Break loop-and-a-half if node choice is not among current neighbors
             if node_choice not in g.neighbors(i):
                break
-         new_edges.append((i, node_choice))
+         dx, dy = abs(i[0] - node_choice[0]), abs(i[1] - node_choice[1])
+         weight = (((dimension - 1) * math.sqrt(2)) - math.sqrt(dx ^ 2 + dy ^ 2)) / ((dimension - 1) * math.sqrt(2))
+         new_edges.append((i, node_choice, round(weight, 2)))
       recur -= 1
    return new_edges
   
@@ -68,7 +70,9 @@ def initialize():
    global g, next_g
    g = nx.grid_2d_graph(dimension, dimension)
    g.pos = {(x, y): (x, y) for x, y in g.nodes()}
-   g.add_edges_from(random_edges(2))
+   for i in g.edges:
+      g.edges[i]['weight'] = 1
+   g.add_weighted_edges_from(random_edges(2))
    for i in g.nodes:
       g.nodes[i]['mem_pot'] = resting_potential
       # Inhibiting or exciting
@@ -99,10 +103,10 @@ def update():
    for i in g.nodes:
       count = 0
       for j in g.neighbors(i):
-         count += g.nodes[j]['state'] * g.nodes[j]['type']
+         #   Sum the neighboring neurons' states (0 or 1), type (-1 or 1) and the weight of the edge (~0-1)
+         count += g.nodes[j]['state'] * g.nodes[j]['type'] * g.edges[i, j]['weight']
       next_g.nodes[i]['state'], next_g.nodes[i]['mem_pot'] = alter_state(g.nodes[i], count)
-      
-
    g, next_g = next_g, g
+
 
 pycxsimulator.GUI().start(func=[initialize, observe, update])
