@@ -48,7 +48,7 @@ def get_spikes_pheno(phenotype, recording_len):
     return np.array(array_wide_spikes_per_second.value_counts().tolist(), dtype="float64")
 
 
-def raster_plot(phenotype_A, phenotype_B, bin_size):
+def raster_plot(phenotype_X, phenotype_reference, bin_size):
     """
     Takes two phenotypes as input and plot them side-by-side as raster plot and histogram
 
@@ -65,20 +65,20 @@ def raster_plot(phenotype_A, phenotype_B, bin_size):
     """
 
     # check if input is correct format    
-    phenotype_A = np.array(
-        [(row[0], row[1]) for row in phenotype_A], 
+    phenotype_X = np.array(
+        [(row[0], row[1]) for row in phenotype_X], 
         dtype=[("t", "float64"), ("electrode", "int64")])
-    phenotype_B = np.array(
-        [(row[0], row[1]) for row in phenotype_B], 
+    phenotype_reference = np.array(
+        [(row[0], row[1]) for row in phenotype_reference], 
         dtype=[("t", "float64"), ("electrode", "int64")])
 
     # sort spikes by electrode
     A_spikes_per_array = [ [] for _ in range(64)]
-    for row in phenotype_A:
+    for row in phenotype_X:
         A_spikes_per_array[row[1]].append(row[0])
 
     B_spikes_per_array = [ [] for _ in range(64)]
-    for row in phenotype_B:
+    for row in phenotype_reference:
         B_spikes_per_array[row[1]].append(row[0])
 
     # initiate plot
@@ -91,7 +91,7 @@ def raster_plot(phenotype_A, phenotype_B, bin_size):
         )
     ax1.set_xlabel("Seconds")
     ax1.set_ylabel("Electrode ID")
-    ax1.set_title("Neural raster plot")
+    ax1.set_title("Best model")
     
     ax2.eventplot(
         B_spikes_per_array,
@@ -99,14 +99,14 @@ def raster_plot(phenotype_A, phenotype_B, bin_size):
         color = "black"
         )
     ax2.set_xlabel("Seconds")
-    ax2.set_title("Simulation raster plot")
+    ax2.set_title("Neural culture")
 
     # make histograms
-    ax3.hist(phenotype_A["t"], bins=bin_size)
+    ax3.hist(phenotype_X["t"], bins=bin_size)
     ax3.set_xlabel("Seconds")
     ax3.set_ylabel("Spikes per second")
 
-    ax4.hist(phenotype_B["t"], bins=bin_size, color="black")
+    ax4.hist(phenotype_reference["t"], bins=bin_size, color="black")
     ax4.set_xlabel("Seconds")
 
     plt.show()
