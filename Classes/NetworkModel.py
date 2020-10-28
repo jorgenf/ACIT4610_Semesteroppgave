@@ -6,7 +6,6 @@ from matplotlib import pyplot as plt
 import networkx as nx
 import math as m
 import numpy as np
-import random as rn
 
 matplotlib.use("TkAgg")
 
