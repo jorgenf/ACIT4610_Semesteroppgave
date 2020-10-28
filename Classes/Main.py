@@ -4,7 +4,7 @@ import os
 import time
 
 #Model type, NOT IMPLEMENTED!
-MODEL_TYPE = "CA"; GENES = 6
+MODEL_TYPE = "CA"; GENES = 7
 #MODEL_TYPE = "Network" ; GENES = 8
 #Number of individuals in the population
 POPULATION_SIZE = 10
