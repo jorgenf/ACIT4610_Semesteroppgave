@@ -4,7 +4,7 @@ import os
 import time
 
 #Model type, NOT IMPLEMENTED!
-MODEL_TYPE = "CA"; GENES = 6
+MODEL_TYPE = "CA"; GENES = 7
 #MODEL_TYPE = "Network" ; GENES = 8
 #Number of individuals in the population
 POPULATION_SIZE = 10
@@ -50,4 +50,14 @@ if __name__ == '__main__':
     pop.individuals = run_threads(pop.individuals)
     pop.individuals.sort(key=lambda x: x.fitness, reverse=True)
     best_individual = pop.individuals[0]
-    Data.raster_plot(best_individual.phenotype, Data.read_recording(REFERENCE_PHENOTYPE), SIMULATION_DURATION)
+    
+    # plot best phenotype
+    Data.raster_plot(
+        best_individual.phenotype, 
+        Data.read_recording(
+            REFERENCE_PHENOTYPE, 
+            recording_len=SIMULATION_DURATION,
+            recording_start=0 # where to start reading experimental data [s]
+            ), 
+        SIMULATION_DURATION
+    )
