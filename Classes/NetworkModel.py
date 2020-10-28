@@ -13,7 +13,7 @@ matplotlib.use("TkAgg")
 DURATION = 120
 #   Size
 DENSE = 50000
-SMALL = 12500
+SMALL = 6250
 SPARSE = 12500
 SMALL_SPARSE = 3125
 ULTRA_SPARSE = 3125
@@ -185,19 +185,21 @@ class NetworkModel:
         """
         #  Initialize Edge container
         new_edges = []
+        max_coordinate = self.dimension - 1
+        max_distance = max_coordinate * m.sqrt(2)
         while recur > 0:
             #  Iterate through the nodes
             for i in self.config.nodes:
                 #  Loop-and-a-half
                 while True:
                     #  Choose another node to connect a new edge to (random position)
-                    node_choice = ((round(random() * (self.dimension - 1))), (round(random() * (self.dimension - 1))))
+                    node_choice = ((round(random() * max_coordinate)), (round(random() * max_coordinate)))
                     #  Break loop-and-a-half if node choice is not among current neighbors
                     if node_choice not in self.config.neighbors(i):
                         break
+                #   Distance between the nodes/neurons in the axes
                 dx, dy = abs(i[0] - node_choice[0]), abs(i[1] - node_choice[1])
-                weight = (((self.dimension - 1) * math.sqrt(2)) - math.sqrt((dx ^ 2) + (dy ^ 2))) / (
-                      (self.dimension - 1) * math.sqrt(2))
+                weight = (max_distance - m.sqrt((dx ^ 2) + (dy ^ 2))) / max_distance
                 new_edges.append((i, node_choice, round(weight, 2)))
             recur -= 1
         return new_edges
