@@ -138,6 +138,7 @@ class CellularAutomataModel:
         while self.step < self.steps:
             self.update()
             self.step += 1
+            print(self.step)
         #   Return phenotype
         return np.array(self.spikes, dtype=[("t", "float64"), ("electrode", "int64")])
 
@@ -149,7 +150,10 @@ class CellularAutomataModel:
         s = []
         for el in self.electrodes:
             if self.config[el[0], el[1], 0] == self.refractory_period:
-                s.append((0+(step/self.resolution), self.electrodes.index(el)))
+                print(0+(self.step/self.resolution))
+                print(self.electrodes.index(el))
+                print((0+(self.step/self.resolution), self.electrodes.index(el)))
+                s.append((0+(self.step/self.resolution), self.electrodes.index(el)))
         return s if s else 0
     
 
