@@ -120,7 +120,7 @@ def read_recording(filename, recording_start=0, recording_len=30*60):
     """
 
     # cleaning data, making array
-    f = open(filename, "r")
+    f = open("../Resources/" + filename, "r")
     data_points = [line.split(" ") for line in f]
     data_points = np.array(
         [(row[0].rstrip(), row[1].rstrip()) for row in data_points], 
