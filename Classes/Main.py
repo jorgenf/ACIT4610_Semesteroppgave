@@ -8,13 +8,13 @@ import matplotlib.pyplot as plt
 MODEL_TYPE = "CA"; GENES = 6
 #MODEL_TYPE = "Network" ; GENES = 8
 #Number of individuals in the population
-POPULATION_SIZE = 10
+POPULATION_SIZE = 30
 #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
-NUM_GENERATIONS = 3
+NUM_GENERATIONS = 5
 #Simulation duration in seconds
-SIMULATION_DURATION = 10
+SIMULATION_DURATION = 100
 #Number of simulation iterations per second
-TIME_STEP_RESOLUTION = 1
+TIME_STEP_RESOLUTION = 30
 #Chance for mutation for each gene selection
 MUTATION_P = 0.1
 #Percentage of current population that will create offspring
@@ -56,7 +56,8 @@ if __name__ == '__main__':
 
     print(fitness_trend)
 
-
+    plt.plot(fitness_trend)
+    plt.savefig("Output/fitness_trend.png")
     # plot best phenotype
     p =Data.raster_plot(
         best_individual.phenotype, 
@@ -67,4 +68,4 @@ if __name__ == '__main__':
             ), 
         SIMULATION_DURATION
     )
-    p.show()
+    p.savefig("Output/Best_individual.png")

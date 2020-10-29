@@ -53,8 +53,8 @@ class Evolution:
             phenotype = NetworkModel.NetworkModel(individual = individual, dimension = 30, duration = self.simulation_duration).run_simulation()
         fitness = Fitness.get_fitness_2(Data.get_spikes_pheno(phenotype, self.simulation_duration), self.reference_spikes)
         individual.phenotype = phenotype
-        plt = Data.raster_plot(individual.phenotype, Data.read_recording(REFERENCE_PHENOTYPE, recording_len=self.simulation_duration, recording_start=0),self.simulation_duration)
-        plt.savefig("Output/"+ str(fitness) + ".png")
+        #plt = Data.raster_plot(individual.phenotype, Data.read_recording(REFERENCE_PHENOTYPE, recording_len=self.simulation_duration, recording_start=0),self.simulation_duration)
+        #plt.savefig("Output/"+ str(fitness) + ".png")
         individual.fitness = fitness
         return individual
 
