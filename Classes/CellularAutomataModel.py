@@ -17,14 +17,20 @@ SMALL_SPARSE = 3125
 ULTRA_SPARSE = 3125
 DURATION = 600
 DIMENSION = 40
+RESOLUTION = 50
 INDIVIDUAL = Population.Individual([
+    #   neighbourhood width
     0.5,
+    #   Chance to randomly fire
+    0.3,
+    #   Refractory period
+    0.4,
+    #   Percentage of inhibiting neurons
+    0.1,
+    #   Integrating constant
     0.5,
-    0.5,
-    0.5,
-    0.5,
-    0.5,
-    0.5
+    #   Leak constant
+    0.1
 
 ])
 
@@ -37,7 +43,7 @@ def test_class():
     from Data import raster_plot, read_recording
 
     # use model to generate a phenotype
-    simulation_length = 10  # [s]
+    simulation_length = 100  # [s]
     pop = Population.Population(1, 6)
     model = CellularAutomataModel(INDIVIDUAL, duration=simulation_length)
     s = time.time_ns()
@@ -47,7 +53,7 @@ def test_class():
 
     # generate reference phenotype from experimental data
     reference_file = {
-        "small": "../Resources/Small - 7-2-20.spk.txt",
+        "small": "../Resources/Small - 7-1-35.spk.txt",
         "dense": "../Resources/Dense - 2-1-20.spk.txt"
     }
     reference = read_recording(reference_file["small"], recording_len=simulation_length)
@@ -85,24 +91,22 @@ class CellularAutomataModel:
     Takes an individual's genotype as input, and returns its phenotype.
     """
 
-    def __init__(self, individual=INDIVIDUAL, dimension=DIMENSION, duration=DURATION):
-        #   Firing Threshold in the membrane    0-0.5
-        self.firing_threshold = individual.genotype[0] / 2
+    def __init__(self, individual=INDIVIDUAL, dimension=DIMENSION, duration=DURATION, resolution = RESOLUTION):
         #   The width of the neighborhood   1-11
-        self.neighborhood_width = round(individual.genotype[1] * 11)
+        self.neighborhood_width = round(individual.genotype[0] * 11)
         #   Chance to randomly fire (1-20)/100000
-        self.random_fire_prob = individual.genotype[2] * (20 / 100000)
-        #   Refractory period: time to recharge after firing    1-21
-        self.refractory_period = round(individual.genotype[3] * 21)
+        self.random_fire_prob = individual.genotype[1] * (20 / 100000)
+        #   Refractory period: time to recharge after firing    0-10
+        self.refractory_period = round(individual.genotype[2] * 10)
         #   The distribution of inhibiting and exciting neurons 0.01-0.1
-        self.type_dist = individual.genotype[4] / 10
-        #   0-99
-        self.integrate_constant = int(individual.genotype[5]*100+1)
-        #   1-100
-        self.leak_constant = int(individual.genotype[6]*100)
+        self.type_dist = individual.genotype[3] / 10
+        #   Integrating constant 40-100
+        self.integrate_constant = round(individual.genotype[4]*60+40)
+        #   Leak constant 0-30
+        self.leak_constant = round(individual.genotype[5]*30)
 
         #   How many iterations make up 1 second    1-20
-        self.resolution = 10
+        self.resolution = resolution
         self.max_membrane_potential = 100
         self.step = 0
         self.duration = duration

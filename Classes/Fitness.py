@@ -3,6 +3,7 @@ Methods for fitness calculations.
 """
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import signal
 
 from Data import get_spikes_pheno
 
@@ -35,3 +36,22 @@ def get_fitness(spike_rate_X, spike_rate_control, plot_graph=False):
         plt.show()
 
     return fitness_score
+
+
+
+def get_fitness_2(spike_rate_X, spike_rate_control):
+    control_bursts = len(signal.argrelextrema(spike_rate_control, np.greater, order=3)[0])
+    x_bursts = len(signal.argrelextrema(spike_rate_X, np.greater, order=3)[0])
+
+    burst_corr = (control_bursts - abs(control_bursts - x_bursts)) / control_bursts
+
+    a = sorted(spike_rate_control)
+    b = sorted(spike_rate_X)
+    dist = []
+    for i, j in zip(a, b):
+        dist.append(abs(i - j))
+    avg_dist = (100 - sum(dist) / len(dist)) / 100
+    fitness = (burst_corr + avg_dist) / 2
+    return fitness
+
+

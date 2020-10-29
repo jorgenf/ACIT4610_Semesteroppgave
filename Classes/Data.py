@@ -108,8 +108,8 @@ def raster_plot(phenotype_X, phenotype_reference, bin_size):
 
     ax4.hist(phenotype_reference["t"], bins=bin_size, color="black")
     ax4.set_xlabel("Seconds")
-
-    plt.show()
+    return plt
+    #plt.show()
 
 
 def read_recording(filename, recording_start=0, recording_len=30*60):

@@ -1,15 +1,16 @@
 import CellularAutomataModel, Population, Data, Fitness, Evolution
 from multiprocessing import Pool, current_process
 import os
-import time
+import numpy as np
+import matplotlib.pyplot as plt
 
 #Model type, NOT IMPLEMENTED!
-MODEL_TYPE = "CA"; GENES = 7
+MODEL_TYPE = "CA"; GENES = 6
 #MODEL_TYPE = "Network" ; GENES = 8
 #Number of individuals in the population
 POPULATION_SIZE = 10
 #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
-NUM_GENERATIONS = 2
+NUM_GENERATIONS = 3
 #Simulation duration in seconds
 SIMULATION_DURATION = 10
 #Number of simulation iterations per second
@@ -37,12 +38,14 @@ if __name__ == '__main__':
 #Creates population object with POPULATION_SIZE. Runs loop for NUM_GENERATIONS.
 #Creates the set of genes that apply to this specific population
     pop = Population.Population(POPULATION_SIZE, GENES)
-    evo = Evolution.Evolution(MODEL_TYPE, POPULATION_SIZE, SIMULATION_DURATION, REFERENCE_PHENOTYPE, PARENTS_P, RETAINED_ADULTS_P, MUTATION_P)
+    evo = Evolution.Evolution(MODEL_TYPE, POPULATION_SIZE, SIMULATION_DURATION, TIME_STEP_RESOLUTION, REFERENCE_PHENOTYPE, PARENTS_P, RETAINED_ADULTS_P, MUTATION_P)
     print("Running simulation...")
+    fitness_trend = []
     for i in range(NUM_GENERATIONS):
         print("\nGeneration:", i)
         print("Workers: ", end="")
         pop_with_phenotypes = run_threads(pop.individuals)
+        fitness_trend.append([i.fitness for i in pop_with_phenotypes])
         parents = evo.select_parents(pop_with_phenotypes)
         new_gen = evo.reproduce(parents)
         pop.individuals = new_gen
@@ -50,9 +53,12 @@ if __name__ == '__main__':
     pop.individuals = run_threads(pop.individuals)
     pop.individuals.sort(key=lambda x: x.fitness, reverse=True)
     best_individual = pop.individuals[0]
-    
+
+    print(fitness_trend)
+
+
     # plot best phenotype
-    Data.raster_plot(
+    p =Data.raster_plot(
         best_individual.phenotype, 
         Data.read_recording(
             REFERENCE_PHENOTYPE, 
@@ -61,3 +67,4 @@ if __name__ == '__main__':
             ), 
         SIMULATION_DURATION
     )
+    p.show()
