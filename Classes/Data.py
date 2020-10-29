@@ -82,7 +82,7 @@ def raster_plot(phenotype_X, phenotype_reference, bin_size):
         B_spikes_per_array[row[1]].append(row[0])
 
     # initiate plot
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2)
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, sharex="all", sharey="row")
 
     # make raster plots
     ax1.eventplot(
@@ -132,3 +132,4 @@ def read_recording(filename, recording_start=0, recording_len=30*60):
 
     f.close
     return data_points
+    
