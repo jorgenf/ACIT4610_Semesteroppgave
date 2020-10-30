@@ -8,17 +8,20 @@ import NetworkModel
 
 
 class Evolution:
-    def __init__(self, model_type, population_size, dimension, simulation_duration, resolution, reference_phenotype, parents_p, retained_adults_p, mutation_p):
-        self.model_type = model_type
-        self.population_size = population_size
-        self.dimension = dimension
-        self.simulation_duration = simulation_duration
-        self.resolution = resolution
-        self.reference_phenotype = reference_phenotype
-        self.reference_spikes = Data.get_spikes_file(reference_phenotype, recording_len=simulation_duration)
-        self.parents_p = parents_p
-        self.retained_adults_p = retained_adults_p
-        self.mutation_p = mutation_p
+    def __init__(self, parameters):
+        self.model_type = parameters["MODEL_TYPE"][0]
+        self.dimension = parameters["DIMENSION"]
+        self.population_size = parameters["POPULATION_SIZE"]
+        self.simulation_duration = parameters["SIMULATION_DURATION"]
+        self.resolution = parameters["TIME_STEP_RESOLUTION"]
+        self.reference_phenotype = parameters["REFERENCE_PHENOTYPE"]
+        self.reference_spikes = Data.get_spikes_file(
+            parameters["REFERENCE_PHENOTYPE"], 
+            recording_len=self.simulation_duration
+            )
+        self.parents_p = parameters["PARENTS_P"]
+        self.retained_adults_p = parameters["RETAINED_ADULTS_P"]
+        self.mutation_p = parameters["MUTATION_P"]
 
     #Sorts the array of individuals by decreasing fitness. Returns the PARENTS_P-percentage best
     def select_parents(self, individuals):
@@ -46,10 +49,17 @@ class Evolution:
 
     #Runs simulation and adds phenotype list to individual. Gets fitness score and adds to individual.
     def generate_phenotype(self, individual):
-        REFERENCE_PHENOTYPE = "Small - 7-1-35.spk.txt"
+        # REFERENCE_PHENOTYPE = "Small - 7-1-35.spk.txt"
         print(current_process().name, end=" ")
         if self.model_type == "CA":
-            phenotype = CellularAutomataModel.CellularAutomataModel(individual = individual, dimension = self.dimension, duration= self.simulation_duration, resolution = self.resolution).run_simulation()
+            # develop phenotype from genotype
+            phenotype = CellularAutomataModel.CellularAutomataModel(
+                individual = individual, 
+                dimension = self.dimension, 
+                duration= self.simulation_duration, 
+                resolution = self.resolution
+                ).run_simulation()
+
         elif self.model_type == "Network":
             phenotype = NetworkModel.NetworkModel(individual = individual, dimension = 30, duration = self.simulation_duration).run_simulation()
         burst_corr, avg_dist, fitness = Fitness.get_fitness_2(Data.get_spikes_pheno(phenotype, self.simulation_duration), self.reference_spikes)
