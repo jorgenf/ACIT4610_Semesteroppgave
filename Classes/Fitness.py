@@ -44,16 +44,19 @@ def get_fitness_2(spike_rate_X, spike_rate_control):
     x_bursts = len(signal.argrelextrema(spike_rate_X, np.greater, order=3)[0])
 
     burst_corr = (control_bursts - abs(control_bursts - x_bursts)) / control_bursts
+    if burst_corr < 0:
+        burst_corr = 0
 
     a = sorted(spike_rate_control)
     b = sorted(spike_rate_X)
     dist = []
+    #print("MAX",max(spike_rate_control))
     for i, j in zip(a, b):
         dist.append(abs(i - j))
-    avg_dist = (100 - sum(dist) / len(dist)) / 100
+    avg_dist = (max(spike_rate_control)/2 - sum(dist) / len(dist)) / max(spike_rate_control)/2
+    if avg_dist < 0:
+        avg_dist = 0
     fitness = (burst_corr + avg_dist) / 2
-    if fitness < 0:
-        fitness = 0
-    return fitness
+    return burst_corr, avg_dist, fitness
 
 
