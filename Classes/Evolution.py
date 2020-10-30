@@ -8,9 +8,10 @@ import NetworkModel
 
 
 class Evolution:
-    def __init__(self, model_type, population_size, simulation_duration, resolution, reference_phenotype, parents_p, retained_adults_p, mutation_p):
+    def __init__(self, model_type, population_size, dimension, simulation_duration, resolution, reference_phenotype, parents_p, retained_adults_p, mutation_p):
         self.model_type = model_type
         self.population_size = population_size
+        self.dimension = dimension
         self.simulation_duration = simulation_duration
         self.resolution = resolution
         self.reference_phenotype = reference_phenotype
@@ -46,15 +47,13 @@ class Evolution:
     #Runs simulation and adds phenotype list to individual. Gets fitness score and adds to individual.
     def generate_phenotype(self, individual):
         REFERENCE_PHENOTYPE = "Small - 7-1-35.spk.txt"
+        print(current_process().name, end=" ")
         if self.model_type == "CA":
-            phenotype = CellularAutomataModel.CellularAutomataModel(individual = individual, dimension = 30, duration= self.simulation_duration, resolution = self.resolution).run_simulation()
+            phenotype = CellularAutomataModel.CellularAutomataModel(individual = individual, dimension = self.dimension, duration= self.simulation_duration, resolution = self.resolution).run_simulation()
         elif self.model_type == "Network":
             phenotype = NetworkModel.NetworkModel(individual = individual, dimension = 30, duration = self.simulation_duration).run_simulation()
         burst_corr, avg_dist, fitness = Fitness.get_fitness_2(Data.get_spikes_pheno(phenotype, self.simulation_duration), self.reference_spikes)
-        print("\n",current_process().name, "\nBurst correlation:", burst_corr, "Average distance:", avg_dist, "Fitness:", fitness,"\nGenome:", individual.genotype)
         individual.phenotype = phenotype
-        #plt = Data.raster_plot(individual.phenotype, Data.read_recording(REFERENCE_PHENOTYPE, recording_len=self.simulation_duration, recording_start=0),self.simulation_duration)
-        #plt.savefig("Output/"+ str(fitness) + ".png")
         individual.fitness = fitness
         return individual
 
