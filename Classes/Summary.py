@@ -4,10 +4,9 @@ import matplotlib.pyplot as plt
 import Data
 
 class Summary:
-    def __init__(self, population, evolution_parameters, fitness_trend):
+    def __init__(self, population, evolution_parameters):
         self.population = population
         self.evolution_parameters = evolution_parameters
-        self.fitness_trend = fitness_trend
 
         self.population.individuals.sort(key=lambda x: x.fitness, reverse=True)
         self.best_individual = self.population.individuals[0]
@@ -86,24 +85,26 @@ class Summary:
 
         # self.raster_plot_fig = fig
 
-    def parameter_trend(self):
+    def parameter_trend_plot(self, parameter_data):
         # Plot parameter trend
         par, ax_par = plt.subplots()
-        for param, label in zip(list(map(list, zip(*parameter_trend))), self.evolution_parameters["MODEL_TYPE"][2]):
+        for param, label in zip(list(map(list, zip(*parameter_data))), self.evolution_parameters["MODEL_TYPE"][2]):
             ax_par.plot(param, label=label)
-        #ax_par.plot(parameter_trend, label="Parameter")
+        #ax_par.plot(parameter_data, label="Parameter")
         ax_par.legend(loc="upper left")
         ax_par.set_title("Parameter trend")
         ax_par.set_xlabel("Generation")
         ax_par.set_ylabel("Normalized genome value")
         par.savefig("Output/Parameter_trend.png")
     
-    def fitness_trend(self):
+    def fitness_trend_plot(self, fitness_data):
         avg_fit, ax_avg_fit = plt.subplots()
-        ax_avg_fit.plot(average_fitness_trend, label="Average fitness")
-        ax_avg_fit.plot(fitness_trend, linestyle="",marker=".", color="red")
+        ax_avg_fit.plot(fitness_data[1], label="Average fitness")
+        ax_avg_fit.plot(fitness_data[0], linestyle="",marker=".", color="red")
         ax_avg_fit.legend(loc="upper left")
         ax_avg_fit.set_title("Fitness trend")
         ax_avg_fit.set_xlabel("Generation")
         ax_avg_fit.set_ylabel("Fitness score")
-        avg_fit.savefig("Output/Fitness_trend_" + str(MODEL_TYPE) + "_" + str(POPULATION_SIZE) + "_" + str(NUM_GENERATIONS) + "_" + str(SIMULATION_DURATION) + "_" + str(TIME_STEP_RESOLUTION) + "_" + str(MUTATION_P) + "_" + str(PARENTS_P) + "_" + str(RETAINED_ADULTS_P) + ".png")
+        # avg_fit.savefig("Output/Fitness_trend_" + str(MODEL_TYPE) + "_" + str(POPULATION_SIZE) + "_" + str(NUM_GENERATIONS) + "_" + str(SIMULATION_DURATION) + "_" + str(TIME_STEP_RESOLUTION) + "_" + str(MUTATION_P) + "_" + str(PARENTS_P) + "_" + str(RETAINED_ADULTS_P) + ".png")
+        avg_fit.savefig("Output/Fitness_trend")
+        

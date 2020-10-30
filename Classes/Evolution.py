@@ -10,6 +10,7 @@ import NetworkModel
 class Evolution:
     def __init__(self, parameters):
         self.model_type = parameters["MODEL_TYPE"][0]
+        self.dimension = parameters["DIMENSION"]
         self.population_size = parameters["POPULATION_SIZE"]
         self.simulation_duration = parameters["SIMULATION_DURATION"]
         self.resolution = parameters["TIME_STEP_RESOLUTION"]
