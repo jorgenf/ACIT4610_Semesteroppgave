@@ -17,7 +17,7 @@ class Summary:
         """
         Takes two phenotypes as input and plot them side-by-side as raster plot and histogram
 
-        Assumes "phenotype_X" is a list of lists or 2D numpy array similar to:
+        Assumes phenotype is a list of lists or 2D numpy array similar to:
         [[.00396, 56],
         [0.05284, 16],
         [0.05800, 15],
@@ -28,13 +28,6 @@ class Summary:
         To create histogram it is necessary to specify bin-size. For spikes per second "bin_size" = simulation length [seconds]
         """
 
-
-        # self.phenotype_X = Data.read_recording(
-        #     self.best_individual.phenotype,
-        #     recording_len = self.evolution_parameters["SIMULATION_DURATION"],
-        #     recording_start= 0 # where to start reading experimental data [s]
-        #     )
-        
         self.phenotype_reference = Data.read_recording(
             self.evolution_parameters["REFERENCE_PHENOTYPE"], 
             recording_len = self.evolution_parameters["SIMULATION_DURATION"],
@@ -42,17 +35,6 @@ class Summary:
             )
 
         self.bin_size = self.evolution_parameters["SIMULATION_DURATION"]
-        
-        # raster_plot = Data.raster_plot(
-        #     best_individual.phenotype, 
-        #     Data.read_recording(
-        #         REFERENCE_PHENOTYPE, 
-        #         recording_len=SIMULATION_DURATION,
-        #         recording_start=0 # where to start reading experimental data [s]
-        #         ), 
-        #     SIMULATION_DURATION
-        # )
-
         
         # check if input is correct format    
         self.best_individual.phenotype = np.array(
