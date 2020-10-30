@@ -21,7 +21,7 @@ class Evolution:
 
     #Sorts the array of individuals by decreasing fitness. Returns the PARENTS_P-percentage best
     def select_parents(self, individuals):
-        individuals.sort(key=lambda x: x.fitness, reverse=False)
+        individuals.sort(key=lambda x: x.fitness, reverse=True)
         best_individuals = individuals[:round(len(individuals) * self.parents_p)]
         return best_individuals
 
@@ -29,7 +29,7 @@ class Evolution:
     #Selects the RETAINED_ADULTS_P-percentage best and adds to return-list. Shuffles array, then matches two-and-two
     # individuals until return-list is full. If RETAINED_ADULTS_P is present then certain matches might occur more often
     def reproduce(self, individuals):
-        individuals.sort(key=lambda x: x.fitness, reverse=False)
+        individuals.sort(key=lambda x: x.fitness, reverse=True)
         retained_adults = individuals[:round(len(individuals) * self.retained_adults_p)]
         shuffle(individuals)
         next_generation = retained_adults if retained_adults else []

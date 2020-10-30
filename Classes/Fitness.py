@@ -52,6 +52,8 @@ def get_fitness_2(spike_rate_X, spike_rate_control):
         dist.append(abs(i - j))
     avg_dist = (100 - sum(dist) / len(dist)) / 100
     fitness = (burst_corr + avg_dist) / 2
+    if fitness < 0:
+        fitness = 0
     return fitness
 
 
