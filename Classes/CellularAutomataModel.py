@@ -139,8 +139,10 @@ class CellularAutomataModel:
                     self.next_config[x, y, 1] = self.refractory_period
                     self.next_config[x, y, 0] = self.max_membrane_potential
                 elif self.config[x, y, 1] == 0:
-                    for dx in range(-self.neighborhood_width, self.neighborhood_width + 1):
-                        for dy in range(-self.neighborhood_width, self.neighborhood_width + 1):
+                    for dx in range(x-self.neighborhood_width if x-self.neighborhood_width >= 0 else 0, x + self.neighborhood_width + 1 if x + self.neighborhood_width + 1 <= self.dimension else self.dimension):
+                    #for dx in range(-self.neighborhood_width, self.neighborhood_width + 1):
+                        for dy in range(y-self.neighborhood_width if y-self.neighborhood_width >= 0 else 0, y + self.neighborhood_width + 1 if y + self.neighborhood_width + 1 <= self.dimension else self.dimension):
+                        #for dy in range(-self.neighborhood_width, self.neighborhood_width + 1):
                             if 0 <= x + dx < self.dimension and 0 <= y + dy < self.dimension:
                                 self.next_config[x, y, 0] += self.config[x + dx, y + dy, 2] * self.integrate_constant if self.config[x + dx, y + dy, 0] >= self.max_membrane_potential else 0
                     if self.config[x,y, 0] >= self.max_membrane_potential:

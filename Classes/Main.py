@@ -5,8 +5,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 evolution_parameters = {
-    # MODEL_TYPE = "CA"; GENES = 6
-    "MODEL_TYPE": ("Network", 8),
+    "MODEL_TYPE": (
+        "CA",  # name of model
+        6, # size of genome (number of parameters in genotype)
+        ( # labels
+            "Neighborhood width", 
+            "Random fire probability", 
+            "Refrractory period", 
+            "Inhibitory neurons", 
+            "Integration constant", 
+            "Leak constant"
+            )),
+    # "MODEL_TYPE": ("Network", 8),
     #Number of individuals in the population
     "POPULATION_SIZE" : 2,
     #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
@@ -45,11 +55,14 @@ if __name__ == '__main__':
     print("Running simulation...")
     fitness_trend = []
     average_fitness_trend = []
+    parameter_trend = []
     for i in range(evolution_parameters["NUM_GENERATIONS"]):
         print("\nGeneration:", i)
+        print("Workers: ", end="")
         pop_with_phenotypes = run_threads(pop.individuals)
         fitness_trend.append([i.fitness for i in pop_with_phenotypes])
         average_fitness_trend.append(sum([i.fitness for i in pop_with_phenotypes])/evolution_parameters["POPULATION_SIZE"])
+        parameter_trend.append(np.sum([i.genotype for i in pop_with_phenotypes],0)/POPULATION_SIZE)
         if i < evolution_parameters["NUM_GENERATIONS"] - 1:
             parents = evo.select_parents(pop_with_phenotypes)
             new_gen = evo.reproduce(parents)
@@ -76,6 +89,7 @@ if __name__ == '__main__':
     # print(pop.individuals)
     summary = Summary.Summary(pop, evolution_parameters, fitness_trend)
     summary.raster_plot()
+    summary.fitness_trend
 
     #   Plot best phenotype
     # raster_plot = Data.raster_plot(
@@ -88,3 +102,16 @@ if __name__ == '__main__':
     #     SIMULATION_DURATION
     # )
     # raster_plot.savefig("Output/Best_individual.png")
+
+
+    #   Plot best phenotype
+    # raster_plot = Data.raster_plot(
+    #     best_individual.phenotype, 
+    #     Data.read_recording(
+    #         REFERENCE_PHENOTYPE, 
+    #         recording_len=SIMULATION_DURATION,
+    #         recording_start=0 # where to start reading experimental data [s]
+    #         ), 
+    #     SIMULATION_DURATION
+    # )
+    # raster_plot.savefig("Output/Best_individual" + str(best_individual.genotype) + str(best_individual.fitness) + ".png")

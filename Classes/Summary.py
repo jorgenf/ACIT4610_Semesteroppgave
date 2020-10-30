@@ -85,4 +85,25 @@ class Summary:
         plt.show()
 
         # self.raster_plot_fig = fig
-        
+
+    def parameter_trend(self):
+        # Plot parameter trend
+        par, ax_par = plt.subplots()
+        for param, label in zip(list(map(list, zip(*parameter_trend))), self.evolution_parameters["MODEL_TYPE"][2]):
+            ax_par.plot(param, label=label)
+        #ax_par.plot(parameter_trend, label="Parameter")
+        ax_par.legend(loc="upper left")
+        ax_par.set_title("Parameter trend")
+        ax_par.set_xlabel("Generation")
+        ax_par.set_ylabel("Normalized genome value")
+        par.savefig("Output/Parameter_trend.png")
+    
+    def fitness_trend(self):
+        avg_fit, ax_avg_fit = plt.subplots()
+        ax_avg_fit.plot(average_fitness_trend, label="Average fitness")
+        ax_avg_fit.plot(fitness_trend, linestyle="",marker=".", color="red")
+        ax_avg_fit.legend(loc="upper left")
+        ax_avg_fit.set_title("Fitness trend")
+        ax_avg_fit.set_xlabel("Generation")
+        ax_avg_fit.set_ylabel("Fitness score")
+        avg_fit.savefig("Output/Fitness_trend_" + str(MODEL_TYPE) + "_" + str(POPULATION_SIZE) + "_" + str(NUM_GENERATIONS) + "_" + str(SIMULATION_DURATION) + "_" + str(TIME_STEP_RESOLUTION) + "_" + str(MUTATION_P) + "_" + str(PARENTS_P) + "_" + str(RETAINED_ADULTS_P) + ".png")
