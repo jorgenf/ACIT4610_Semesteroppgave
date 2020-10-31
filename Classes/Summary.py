@@ -1,17 +1,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import os
 import Data
 
 class Summary:
     def __init__(self, population, evolution_parameters):
         self.population = population
         self.evolution_parameters = evolution_parameters
-
         self.population.individuals.sort(key=lambda x: x.fitness, reverse=True)
         self.best_individual = self.population.individuals[0]
-        print(self.best_individual)
-    
+        self.reference_spikes = Data.get_spikes_file(self.evolution_parameters["REFERENCE_PHENOTYPE"])
+        self.simulation_spikes = Data.get_spikes_pheno(self.best_individual.phenotype, self.evolution_parameters["SIMULATION_DURATION"])
+        self.dir_path = "Output/"+ self.evolution_parameters["MODEL_TYPE"][0] + "_dim" + str(self.evolution_parameters["DIMENSION"]) + "_pop" + str(
+            self.evolution_parameters["POPULATION_SIZE"]) + "_gen" + str(
+            self.evolution_parameters["NUM_GENERATIONS"]) + "_dur" + str(
+            self.evolution_parameters["SIMULATION_DURATION"]) + "_res" + str(
+            self.evolution_parameters["TIME_STEP_RESOLUTION"]) + "_mut" + str(
+            self.evolution_parameters["MUTATION_P"]) + "_par" + str(
+            self.evolution_parameters["PARENTS_P"]) + "_ret" + str(self.evolution_parameters["RETAINED_ADULTS_P"])
+        if not os.path.exists(self.dir_path):
+            os.makedirs(self.dir_path)
+
     def raster_plot(self):
         """
         Takes two phenotypes as input and plot them side-by-side as raster plot and histogram
@@ -79,9 +88,8 @@ class Summary:
 
         ax4.hist(self.phenotype_reference["t"], bins=self.bin_size, color="black")
         ax4.set_xlabel("Seconds")
-        
-        # return plt
-        plt.show()
+
+        fig.savefig(self.dir_path + "/Best_individual.png")
 
         # self.raster_plot_fig = fig
 
@@ -95,7 +103,7 @@ class Summary:
         ax_par.set_title("Parameter trend")
         ax_par.set_xlabel("Generation")
         ax_par.set_ylabel("Normalized genome value")
-        par.savefig("Output/Parameter_trend.png")
+        par.savefig(self.dir_path + "/Parameter_trend.png")
     
     def fitness_trend_plot(self, fitness_data):
         avg_fit, ax_avg_fit = plt.subplots()
@@ -106,5 +114,36 @@ class Summary:
         ax_avg_fit.set_xlabel("Generation")
         ax_avg_fit.set_ylabel("Fitness score")
         # avg_fit.savefig("Output/Fitness_trend_" + str(MODEL_TYPE) + "_" + str(POPULATION_SIZE) + "_" + str(NUM_GENERATIONS) + "_" + str(SIMULATION_DURATION) + "_" + str(TIME_STEP_RESOLUTION) + "_" + str(MUTATION_P) + "_" + str(PARENTS_P) + "_" + str(RETAINED_ADULTS_P) + ".png")
-        avg_fit.savefig("Output/Fitness_trend")
-        
+        avg_fit.savefig(self.dir_path + "/Fitness_trend.png")
+
+    def average_distance_plot(self):
+        simulation_s = sorted(self.simulation_spikes)
+        reference_s = sorted(self.reference_spikes[:len(self.simulation_spikes)])
+        simulation = self.simulation_spikes
+        reference = self.reference_spikes[:len(simulation)]
+        print(simulation_s)
+        print(reference_s)
+        fig, ax = plt.subplots(2, sharex="all")
+        ax[0].set_xlabel("Sorted time [s]")
+        ax[0].set_ylabel("Spikes per second")
+        ax[0].plot(simulation_s, 'b', label="Simulation")
+        ax[0].plot(reference_s, 'black', label="Reference")
+        ax[0].plot([abs(sim - ref) for ref, sim in zip(simulation_s, reference_s)], label="Difference")
+        ax[0].legend()
+        ax[0].fill_between(range(len(simulation_s)), simulation_s, reference_s, color='red', alpha=0.2,
+                           where=[_y2 < _y1 for _y2, _y1 in zip(simulation_s, reference_s)])
+        ax[0].fill_between(range(len(simulation_s)), simulation_s, reference_s, color='green', alpha=0.2,
+                           where=[_y2 > _y1 for _y2, _y1 in zip(simulation_s, reference_s)])
+        for i in range(0, len(simulation_s), int(len(simulation_s) / 10)):
+            ax[0].text(i, min(simulation_s[i], reference_s[i]) - 20, simulation_s[i] - reference_s[i])
+
+        ax[1].set_xlabel("Time [s]")
+        ax[1].set_ylabel("Spikes per second")
+        ax[1].plot(simulation, 'b', label="Simulation")
+        ax[1].plot(reference, 'black', label="Reference")
+        ax[1].legend()
+        ax[1].fill_between(range(len(simulation)), simulation, reference, color='red', alpha=0.2,
+                           where=[_y2 < _y1 for _y2, _y1 in zip(simulation, reference)])
+        ax[1].fill_between(range(len(simulation)), simulation, reference, color='green', alpha=0.2,
+                           where=[_y2 > _y1 for _y2, _y1 in zip(simulation, reference)])
+        fig.savefig(self.dir_path + "/Average_distance.png")

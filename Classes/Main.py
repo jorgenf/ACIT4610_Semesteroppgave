@@ -41,7 +41,7 @@ evolution_parameters = {
     # Size of array
     "DIMENSION": 10,
     #Number of individuals in the population
-    "POPULATION_SIZE" : 2,
+    "POPULATION_SIZE" : 30,
     #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
     "NUM_GENERATIONS": 1,
     #Simulation duration in seconds
@@ -107,3 +107,4 @@ if __name__ == '__main__':
     summary.raster_plot()
     summary.fitness_trend_plot((fitness_trend, average_fitness_trend))
     summary.parameter_trend_plot(parameter_trend)
+    summary.average_distance_plot()

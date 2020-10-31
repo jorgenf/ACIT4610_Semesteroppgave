@@ -15,8 +15,8 @@ SMALL = 12500
 SPARSE = 12500
 SMALL_SPARSE = 3125
 ULTRA_SPARSE = 3125
-DURATION = 600
-DIMENSION = 40
+DURATION = 100
+DIMENSION = 10
 RESOLUTION = 50
 INDIVIDUAL = Population.Individual([
     #   neighbourhood width
@@ -40,7 +40,8 @@ def test_class():
         Run the model/simulation with defaults and plot the results.
         """
 
-    from Data import raster_plot, read_recording
+    from Data import read_recording
+    import Summary
 
     # use model to generate a phenotype
     simulation_length = 100  # [s]
@@ -59,7 +60,7 @@ def test_class():
     reference = read_recording(reference_file["small"], recording_len=simulation_length)
 
     # compare model output with experimental data
-    raster_plot(output, reference, simulation_length)
+    #raster_plot(output, reference, simulation_length)
 
 
 def get_electrodes(dimension):
@@ -139,12 +140,13 @@ class CellularAutomataModel:
                     self.next_config[x, y, 1] = self.refractory_period
                     self.next_config[x, y, 0] = self.max_membrane_potential
                 elif self.config[x, y, 1] == 0:
-                    #for dx in range(x-self.neighborhood_width if x-self.neighborhood_width >= 0 else 0, x + self.neighborhood_width + 1 if x + self.neighborhood_width + 1 <= self.dimension else self.dimension):
-                    for dx in range(-self.neighborhood_width, self.neighborhood_width + 1):
-                        #for dy in range(y-self.neighborhood_width if y-self.neighborhood_width >= 0 else 0, y + self.neighborhood_width + 1 if y + self.neighborhood_width + 1 <= self.dimension else self.dimension):
-                        for dy in range(-self.neighborhood_width, self.neighborhood_width + 1):
-                            if 0 <= x + dx < self.dimension and 0 <= y + dy < self.dimension:
-                                self.next_config[x, y, 0] += self.config[x + dx, y + dy, 2] * self.integrate_constant if self.config[x + dx, y + dy, 0] >= self.max_membrane_potential else 0
+                    for dx in range(x - self.neighborhood_width if x - self.neighborhood_width >= 0 else 0, x + self.neighborhood_width + 1 if x + self.neighborhood_width + 1 <= self.dimension else self.dimension):
+                    #for dx in range(-self.neighborhood_width, self.neighborhood_width + 1):
+                        for dy in range(y - self.neighborhood_width if y - self.neighborhood_width >= 0 else 0, y + self.neighborhood_width + 1 if y + self.neighborhood_width + 1 <= self.dimension else self.dimension):
+                        #for dy in range(-self.neighborhood_width, self.neighborhood_width + 1):
+                            self.next_config[x, y, 0] += self.config[dx, dy, 2] * self.integrate_constant if self.config[dx, dy, 0] >= self.max_membrane_potential else 0
+                            #if 0 <= x + dx < self.dimension and 0 <= y + dy < self.dimension:
+                                #self.next_config[x, y, 0] += self.config[x + dx, y + dy, 2] * self.integrate_constant if self.config[x + dx, y + dy, 0] >= self.max_membrane_potential else 0
                     if self.config[x,y, 0] >= self.max_membrane_potential:
                         self.next_config[x, y, 0] = self.max_membrane_potential
                         self.next_config[x, y, 1] = self.refractory_period
