@@ -21,14 +21,13 @@ TYPE = {
     # Set properties for network model
     "Network": (
         "Network",  # name of model
-        8, # size of genome (number of parameters in genotype)
+        7, # size of genome (number of parameters in genotype)
         ( # labels
-            "Firing threshold", 
-            "Neighborhood width", 
-            "Random fire probability", 
-            "Refractory period", 
-            "Type distribution", 
-            "Resolution",
+            "Firing threshold",
+            "Neighborhood width",
+            "Random fire probability",
+            "Refractory period",
+            "Type distribution",
             "Leak ratio",
             "Integration ratio"
             ))

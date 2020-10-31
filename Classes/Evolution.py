@@ -56,12 +56,17 @@ class Evolution:
             phenotype = CellularAutomataModel.CellularAutomataModel(
                 individual = individual, 
                 dimension = self.dimension, 
-                duration= self.simulation_duration, 
+                duration= self.simulation_duration,
                 resolution = self.resolution
                 ).run_simulation()
 
         elif self.model_type == "Network":
-            phenotype = NetworkModel.NetworkModel(individual = individual, dimension = 30, duration = self.simulation_duration).run_simulation()
+            phenotype = NetworkModel.NetworkModel(
+                individual=individual,
+                dimension=self.dimension,
+                duration=self.simulation_duration,
+                resolution=self.resolution
+                ).run_simulation()
         burst_corr, avg_dist, fitness = Fitness.get_fitness_2(Data.get_spikes_pheno(phenotype, self.simulation_duration), self.reference_spikes)
         individual.phenotype = phenotype
         individual.fitness = fitness
