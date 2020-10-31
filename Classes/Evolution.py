@@ -65,5 +65,7 @@ class Evolution:
         burst_corr, avg_dist, fitness = Fitness.get_fitness_2(Data.get_spikes_pheno(phenotype, self.simulation_duration), self.reference_spikes)
         individual.phenotype = phenotype
         individual.fitness = fitness
+        individual.burst_corr = burst_corr
+        individual.avg_dist = avg_dist
         return individual
 

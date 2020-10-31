@@ -4,11 +4,50 @@ import pandas
 import matplotlib.pyplot as plt
 from scipy import signal
 import math
+import Fitness
+import Data
+
+'''
+fit = (0,0,0)
+best_order = 0
+order = 1
+for i in range(100000):
+    while order < 10:
+        y1 = np.array([random.randint(0,300) for i in range(100)], dtype=float)
+        y2 = np.array([random.randint(100,300) for i in range(100)], dtype=float)
+        new_fit = Fitness.get_fitness_2(y1,y2, order)
+        if new_fit[0] > fit[0]:
+            fit = new_fit
+            best_order = order
+            sim = y1
+            ref = y2
+        order += 1
+print(fit)
+print(best_order)
+print("sim bursts: " + str(len(signal.argrelextrema(sim, np.greater, order=best_order)[0])))
+print("ref bursts: " + str(len(signal.argrelextrema(ref, np.greater, order=best_order)[0])))
+print(signal.argrelextrema(ref, np.greater, order=best_order))
+'''
+
+ref = Data.get_spikes_file(
+            "Small - 7-1-35.spk.txt",
+            recording_len=180
+            )
+
+print("ref bursts: " + str(len(signal.argrelextrema(ref, np.greater, order=6)[0])))
+bursts = signal.argrelextrema(ref, np.greater, order=6)[0]
+max = max([ref[i] for i in signal.argrelextrema(ref, np.greater, order=6)[0]])
+print(bursts)
+print(max)
+adj_bursts = len([ref[i] for i in bursts if ref[i] >= max/2])
+
+print(adj_bursts)
 
 
 
-y1 = np.array([random.randint(0,300) for i in range(100)], dtype=float)
-y2 = np.array([random.randint(0,300) for i in range(100)], dtype=float)
+#y1 = np.array([random.randint(0, 100) for i in range(1000)], dtype=float)
+#y2 = np.array([random.randint(0, 100) for i in range(1000)], dtype=float)
+#print(Fitness.get_fitness_2(y1,y2))
 
 
 def average_distance_plot(simulation, reference):
@@ -35,10 +74,10 @@ def average_distance_plot(simulation, reference):
     ax[1].legend()
     ax[1].fill_between(range(len(simulation)), simulation, reference, color='red', alpha=0.2, where=[_y2 < _y1 for _y2, _y1 in zip(simulation, reference)])
     ax[1].fill_between(range(len(simulation)), simulation, reference, color='green', alpha=0.2, where=[_y2 > _y1 for _y2, _y1 in zip(simulation, reference)])
-    fig.show()
+    plt.show()
 
 
-average_distance_plot(y1,y2)
+average_distance_plot(ref, ref)
 
 '''
 a_bursts = len(signal.argrelextrema(x, np.greater, order=3)[0])

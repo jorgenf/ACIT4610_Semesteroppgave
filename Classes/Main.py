@@ -36,18 +36,18 @@ TYPE = {
 
 # Set general parameters
 evolution_parameters = {
-    #"MODEL_TYPE": TYPE["CA"],
-     "MODEL_TYPE": TYPE["Network"],
+    "MODEL_TYPE": TYPE["CA"],
+    # "MODEL_TYPE": TYPE["Network"],
     # Size of array
-    "DIMENSION": 10,
+    "DIMENSION": 30,
     #Number of individuals in the population
     "POPULATION_SIZE" : 30,
     #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
-    "NUM_GENERATIONS": 1,
+    "NUM_GENERATIONS": 5,
     #Simulation duration in seconds
-    "SIMULATION_DURATION": 10,
+    "SIMULATION_DURATION": 100,
     #Number of simulation iterations per second
-    "TIME_STEP_RESOLUTION": 1,
+    "TIME_STEP_RESOLUTION": 30,
     #Chance for mutation for each gene selection
     "MUTATION_P": 0.1,
     #Percentage of current population that will create offspring
@@ -101,7 +101,12 @@ if __name__ == '__main__':
         else:
             pop.individuals = pop_with_phenotypes
 
-
+    pop.individuals.sort(key=lambda x: x.fitness, reverse=True)
+    best = pop.individuals[0]
+    print()
+    print("\nFitness:", best.fitness)
+    print("Avg dist:", best.avg_dist)
+    print("Burst corr", best.burst_corr)
     # Save summary
     summary = Summary.Summary(pop, evolution_parameters)
     summary.raster_plot()
