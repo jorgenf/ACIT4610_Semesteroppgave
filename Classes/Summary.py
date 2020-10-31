@@ -11,14 +11,15 @@ class Summary:
         self.best_individual = self.population.individuals[0]
         self.reference_spikes = Data.get_spikes_file(self.evolution_parameters["REFERENCE_PHENOTYPE"])
         self.simulation_spikes = Data.get_spikes_pheno(self.best_individual.phenotype, self.evolution_parameters["SIMULATION_DURATION"])
-        self.dir_path = "Output/"+ self.evolution_parameters["MODEL_TYPE"][0] + "_dim" + str(self.evolution_parameters["DIMENSION"]) + "_pop" + str(
-            self.evolution_parameters["POPULATION_SIZE"]) + "_gen" + str(
-            self.evolution_parameters["NUM_GENERATIONS"]) + "_dur" + str(
-            self.evolution_parameters["SIMULATION_DURATION"]) + "_res" + str(
-            self.evolution_parameters["TIME_STEP_RESOLUTION"]) + "_mut" + str(
-            self.evolution_parameters["MUTATION_P"]) + "_par" + str(
-            self.evolution_parameters["PARENTS_P"]) + "_ret" + str(self.evolution_parameters["RETAINED_ADULTS_P"])
-        if not os.path.exists(self.dir_path):
+        self.dir_path = "Output/"+ self.evolution_parameters["MODEL_TYPE"][0] + "_dim" + str(self.evolution_parameters["DIMENSION"]) + "_pop" + str(self.evolution_parameters["POPULATION_SIZE"]) + "_gen" + str(self.evolution_parameters["NUM_GENERATIONS"]) + "_dur" + str(self.evolution_parameters["SIMULATION_DURATION"]) + "_res" + str(self.evolution_parameters["TIME_STEP_RESOLUTION"]) + "_mut" + str(self.evolution_parameters["MUTATION_P"]) + "_par" + str(self.evolution_parameters["PARENTS_P"]) + "_ret" + str(self.evolution_parameters["RETAINED_ADULTS_P"]) + "_version"
+        if os.path.exists(self.dir_path + str(0)):
+            n = 1
+            while os.path.exists(self.dir_path + str(n)):
+                n += 1
+            self.dir_path += str(n)
+            os.makedirs(self.dir_path)
+        else:
+            self.dir_path += str(0)
             os.makedirs(self.dir_path)
 
     def raster_plot(self):
@@ -121,8 +122,6 @@ class Summary:
         reference_s = sorted(self.reference_spikes[:len(self.simulation_spikes)])
         simulation = self.simulation_spikes
         reference = self.reference_spikes[:len(simulation)]
-        print(simulation_s)
-        print(reference_s)
         fig, ax = plt.subplots(2, sharex="all")
         ax[0].set_xlabel("Sorted time [s]")
         ax[0].set_ylabel("Spikes per second")
@@ -135,7 +134,7 @@ class Summary:
         ax[0].fill_between(range(len(simulation_s)), simulation_s, reference_s, color='green', alpha=0.2,
                            where=[_y2 > _y1 for _y2, _y1 in zip(simulation_s, reference_s)])
         for i in range(0, len(simulation_s), int(len(simulation_s) / 10)):
-            ax[0].text(i, min(simulation_s[i], reference_s[i]) - 20, simulation_s[i] - reference_s[i])
+            ax[0].text(i, min(simulation_s[i], reference_s[i]) - 30, simulation_s[i] - reference_s[i])
 
         ax[1].set_xlabel("Time [s]")
         ax[1].set_ylabel("Spikes per second")

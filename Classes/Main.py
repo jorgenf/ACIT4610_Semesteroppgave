@@ -36,8 +36,8 @@ TYPE = {
 
 # Set general parameters
 evolution_parameters = {
-    "MODEL_TYPE": TYPE["CA"],
-    # "MODEL_TYPE": TYPE["Network"],
+    #"MODEL_TYPE": TYPE["CA"],
+     "MODEL_TYPE": TYPE["Network"],
     # Size of array
     "DIMENSION": 10,
     #Number of individuals in the population
