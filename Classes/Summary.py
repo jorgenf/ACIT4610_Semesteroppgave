@@ -1,3 +1,4 @@
+import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -146,3 +147,11 @@ class Summary:
         ax[1].fill_between(range(len(simulation)), simulation, reference, color='green', alpha=0.2,
                            where=[_y2 > _y1 for _y2, _y1 in zip(simulation, reference)])
         fig.savefig(self.dir_path + "/Average_distance.png")
+
+
+    def write_csv(self, fitness_data):
+        with open(self.dir_path + "/fitness.csv", "w", newline="") as csvfile:
+            writer = csv.writer(csvfile, delimiter='\t')
+            writer.writerow(["generation", "avg_fitness"])
+            for i, score in enumerate(fitness_data):
+                writer.writerow([str(i), str(score)])
