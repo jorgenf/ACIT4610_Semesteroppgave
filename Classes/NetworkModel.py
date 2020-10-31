@@ -17,7 +17,8 @@ SMALL = 6250
 SPARSE = 12500
 SMALL_SPARSE = 3125
 ULTRA_SPARSE = 3125
-DIMENSION = int(m.ceil(m.sqrt(SMALL)))
+DIMENSION = 20
+#   DIMENSION = int(m.ceil(m.sqrt(SMALL)))
 #   Electrodes
 NUM_ELECTRODES = 64
 ELECTRODE_DIMENSION = int(m.sqrt(NUM_ELECTRODES))
@@ -30,7 +31,7 @@ NEIGHBORHOOD_WIDTH = 1
 RANDOM_FIRE_PROBABILITY = 0.005
 REFRACTORY_PERIOD = 1
 TYPE_DISTRIBUTION = 0.25
-RESOLUTION = 10
+RESOLUTION = 50
 LEAK_RATIO = 0.1
 INTEGRATION_RATIO = 0.25
 INDIVIDUAL = Population.Individual([
@@ -39,7 +40,6 @@ INDIVIDUAL = Population.Individual([
     RANDOM_FIRE_PROBABILITY / 0.01,
     REFRACTORY_PERIOD / 2,
     TYPE_DISTRIBUTION / 0.5,
-    RESOLUTION / 20,
     LEAK_RATIO / 0.2,
     INTEGRATION_RATIO / 0.5,
 ])
@@ -94,7 +94,7 @@ class NetworkModel:
     The model iterates over itself and updates the nodes based on a set of rules.
     Takes an individual's genotype as input, and returns its phenotype.
     """
-    def __init__(self, individual=INDIVIDUAL, dimension=DIMENSION, duration=DURATION):
+    def __init__(self, individual=INDIVIDUAL, dimension=DIMENSION, duration=DURATION, resolution = RESOLUTION):
         #   Firing Threshold in the membrane (Default: 1) (Range: ~1-2)
         self.firing_threshold = individual.genotype[0] + 1
         #   Extra possible neighbour in the network (Default: 1) (Range: 0-2)
@@ -106,20 +106,20 @@ class NetworkModel:
         self.refractory_period = round(individual.genotype[3] + 1)
         #   The distribution of inhibiting and exciting neurons (Default: 0.25) (Range: ~0-0.5)
         self.type_dist = individual.genotype[4] * 0.5
-        #   How many iterations make up 1 second (Default: 10) (Range: 1-20)
-        self.resolution = round(individual.genotype[5] * 20)
         #   By which ratio does the membrane potential passively move towards the
         #   resting potential every iteration. (Default: 0.1) (Range: ~0-0.2)
-        self.leak_ratio = individual.genotype[6] * 0.2
+        self.leak_ratio = individual.genotype[5] * 0.2
         #   By which ratio does the input from the neighborhood integrate with the neuron
         #   (Default: 0.5) (Range: ~0-0.5)
-        self.integ_ratio = individual.genotype[7] * 0.5
+        self.integ_ratio = individual.genotype[6] * 0.5
         #   Resting potential in the membrane (Default: 0.5)
         #   Currently not controlled by the algorithm
         self.rest_pot = RESTING_POTENTIAL
         self.step = 0
         self.duration = duration
         self.dimension = dimension
+        #   How many iterations make up 1 second (Default: 50)
+        self.resolution = resolution
         self.steps = self.duration * self.resolution
         self.electrodes = get_electrodes(dimension)
         #  Initialize Dataset
