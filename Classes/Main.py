@@ -3,6 +3,7 @@ from multiprocessing import Pool, current_process
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 TYPE = {
     # Set properties for CA model
@@ -44,9 +45,9 @@ evolution_parameters = {
     #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
     "NUM_GENERATIONS": 1,
     #Simulation duration in seconds
-    "SIMULATION_DURATION": 100,
+    "SIMULATION_DURATION": 120,
     #Number of simulation iterations per second
-    "TIME_STEP_RESOLUTION": 20,
+    "TIME_STEP_RESOLUTION": 30,
     #Chance for mutation for each gene selection
     "MUTATION_P": 0.05,
     #Percentage of current population that will create offspring
@@ -61,6 +62,7 @@ evolution_parameters = {
 if __name__ == '__main__':
 #Creates threads of run_thread method. Pool-size = threads - 1. Each thread result is mapped to a variable that is
 #returned when all processes are finished
+    start_time = time.time()
     def run_threads(individuals):
         p = Pool(os.cpu_count()-1)
         new_individuals = p.map(evo.generate_phenotype, individuals)
@@ -102,14 +104,14 @@ if __name__ == '__main__':
 
     pop.individuals.sort(key=lambda x: x.fitness, reverse=True)
     best = pop.individuals[0]
-    print()
-    print("\nFitness:", best.fitness)
-    print("Avg dist:", best.avg_dist)
-    print("Burst corr", best.burst_corr)
+    end_time = time.time()
+    total_time = end_time - start_time
     # Save summary
     summary = Summary.Summary(pop, evolution_parameters)
     summary.raster_plot()
     summary.fitness_trend_plot((fitness_trend, average_fitness_trend))
     summary.parameter_trend_plot(parameter_trend)
     summary.average_distance_plot()
-    summary.output_text()
+    summary.output_text(total_time)
+
+    print("Total time: " + str(total_time))

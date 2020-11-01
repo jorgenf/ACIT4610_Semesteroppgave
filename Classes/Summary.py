@@ -149,9 +149,9 @@ class Summary:
         fig.savefig(self.dir_path + "/Average_distance.png")
 
 
-    def output_text(self):
+    def output_text(self, simulation_time):
         text_file = open(self.dir_path + "/Info.txt", "wt")
-        n = text_file.write("Fitness score: " + str(self.best_individual.fitness) + " Burst correlation: " + str(self.best_individual.burst_corr) + " Average distance: " + str(self.best_individual.avg_dist))
+        n = text_file.write("Fitness score: " + str(self.best_individual.fitness) + " Burst correlation: " + str(self.best_individual.burst_corr) + " Average distance: " + str(self.best_individual.avg_dist) + " Simulation time [min]: " + str(simulation_time/60))
         text_file.close()
 
 
