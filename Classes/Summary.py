@@ -1,3 +1,4 @@
+import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -147,7 +148,16 @@ class Summary:
                            where=[_y2 > _y1 for _y2, _y1 in zip(simulation, reference)])
         fig.savefig(self.dir_path + "/Average_distance.png")
 
+
     def output_text(self):
         text_file = open(self.dir_path + "/Info.txt", "wt")
         n = text_file.write("Fitness score: " + str(self.best_individual.fitness) + " Burst correlation: " + str(self.best_individual.burst_corr) + " Average distance: " + str(self.best_individual.avg_dist))
         text_file.close()
+
+
+    def write_csv(self, fitness_data):
+        with open(self.dir_path + "/fitness.csv", "w", newline="") as csvfile:
+            writer = csv.writer(csvfile, delimiter='\t')
+            writer.writerow(["generation", "avg_fitness"])
+            for i, score in enumerate(fitness_data):
+                writer.writerow([str(i), str(score)])
