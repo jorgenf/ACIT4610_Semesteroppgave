@@ -146,3 +146,8 @@ class Summary:
         ax[1].fill_between(range(len(simulation)), simulation, reference, color='green', alpha=0.2,
                            where=[_y2 > _y1 for _y2, _y1 in zip(simulation, reference)])
         fig.savefig(self.dir_path + "/Average_distance.png")
+
+    def output_text(self):
+        text_file = open(self.dir_path + "/Info.txt", "wt")
+        n = text_file.write("Fitness score: " + str(self.best_individual.fitness) + " Burst correlation: " + str(self.best_individual.burst_corr) + " Average distance: " + str(self.best_individual.avg_dist))
+        text_file.close()

@@ -42,15 +42,15 @@ evolution_parameters = {
     #Number of individuals in the population
     "POPULATION_SIZE" : 30,
     #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
-    "NUM_GENERATIONS": 5,
+    "NUM_GENERATIONS": 1,
     #Simulation duration in seconds
     "SIMULATION_DURATION": 100,
     #Number of simulation iterations per second
-    "TIME_STEP_RESOLUTION": 30,
+    "TIME_STEP_RESOLUTION": 20,
     #Chance for mutation for each gene selection
-    "MUTATION_P": 0.1,
+    "MUTATION_P": 0.05,
     #Percentage of current population that will create offspring
-    "PARENTS_P": 0.5,
+    "PARENTS_P": 0.3,
     #Percentage of current population that will be included in next generation
     "RETAINED_ADULTS_P": 0.1,
     #Type of fitness function used. NOT IMPLEMENTED!
@@ -112,3 +112,4 @@ if __name__ == '__main__':
     summary.fitness_trend_plot((fitness_trend, average_fitness_trend))
     summary.parameter_trend_plot(parameter_trend)
     summary.average_distance_plot()
+    summary.output_text()

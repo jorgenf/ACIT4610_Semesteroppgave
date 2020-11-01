@@ -2,7 +2,7 @@ import numpy as np
 import random
 import pandas
 import matplotlib.pyplot as plt
-from scipy import signal
+from scipy import spatial
 import math
 import Fitness
 import Data
@@ -29,6 +29,8 @@ print("ref bursts: " + str(len(signal.argrelextrema(ref, np.greater, order=best_
 print(signal.argrelextrema(ref, np.greater, order=best_order))
 '''
 
+
+'''
 ref = Data.get_spikes_file(
             "Small - 7-1-35.spk.txt",
             recording_len=180
@@ -42,13 +44,14 @@ print(max)
 adj_bursts = len([ref[i] for i in bursts if ref[i] >= max/2])
 
 print(adj_bursts)
+'''
 
 
-
-#y1 = np.array([random.randint(0, 100) for i in range(1000)], dtype=float)
-#y2 = np.array([random.randint(0, 100) for i in range(1000)], dtype=float)
+y1 = np.array([random.randint(0, 100) for i in range(100)], dtype=float)
+y2 = np.array([random.randint(0, 100) for i in range(100)], dtype=float)
 #print(Fitness.get_fitness_2(y1,y2))
-
+s = spatial.distance.cdist(y1,y2)
+print(s)
 
 def average_distance_plot(simulation, reference):
     simulation_s = sorted(simulation)
