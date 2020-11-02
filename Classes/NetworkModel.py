@@ -160,7 +160,7 @@ class NetworkModel:
         integrate = 0
         if inp > 1:
             integrate = inp * (self.integ_ratio / (inp - 1))
-        elif inp == 1:
+        elif inp > 0:
             integrate = inp * self.integ_ratio
         membrane_potential = membrane_potential + integrate
         #  Refractory period (simplified)
