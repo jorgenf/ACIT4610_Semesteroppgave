@@ -36,24 +36,24 @@ TYPE = {
 
 # Set general parameters
 evolution_parameters = {
-    #   "MODEL_TYPE": TYPE["CA"],
-    "MODEL_TYPE": TYPE["Network"],
+    #"MODEL_TYPE": TYPE["CA"],
+     "MODEL_TYPE": TYPE["Network"],
     # Size of array
     "DIMENSION": 10,
     #Number of individuals in the population
-    "POPULATION_SIZE" : 5,
+    "POPULATION_SIZE" : 4,
     #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
     "NUM_GENERATIONS": 10,
     #Simulation duration in seconds
-    "SIMULATION_DURATION": 60,
+    "SIMULATION_DURATION": 100,
     #Number of simulation iterations per second
-    "TIME_STEP_RESOLUTION": 20,
+    "TIME_STEP_RESOLUTION": 100,
     #Chance for mutation for each gene selection
     "MUTATION_P": 0.1,
     #Percentage of current population that will create offspring
-    "PARENTS_P": 0.5,
+    "PARENTS_P": 0.0,
     #Percentage of current population that will be included in next generation
-    "RETAINED_ADULTS_P": 0.1,
+    "RETAINED_ADULTS_P": 1,
     #Type of fitness function used. NOT IMPLEMENTED!
     "FITNESS_FUNCTION": "Normalized cross correlation",
     "REFERENCE_PHENOTYPE": "Small - 7-1-35.spk.txt"
@@ -96,7 +96,7 @@ if __name__ == '__main__':
         # Reproduce
         if i < evolution_parameters["NUM_GENERATIONS"] - 1:
             parents = evo.select_parents(pop_with_phenotypes)
-            new_gen = evo.reproduce(parents)
+            new_gen = evo.reproduce(parents, pop_with_phenotypes)
             pop.individuals = new_gen
             print()
         else:
@@ -113,5 +113,3 @@ if __name__ == '__main__':
     summary.parameter_trend_plot(parameter_trend)
     summary.average_distance_plot()
     summary.output_text(total_time)
-
-    print("Total time: " + str(total_time))
