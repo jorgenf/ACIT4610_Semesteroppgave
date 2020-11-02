@@ -97,13 +97,13 @@ class NetworkModel:
     def __init__(self, individual=INDIVIDUAL, dimension=DIMENSION, duration=DURATION, resolution = RESOLUTION):
         #   Firing Threshold in the membrane (Default: 1) (Range: ~1-2)
         self.firing_threshold = individual.genotype[0] + 1
-        #   Extra possible neighbour in the network (Default: 1) (Range: 0-2)
-        self.neighborhood_width = round(individual.genotype[1] * 2)
+        #   Extra possible neighbour in the network (Default: 1) (Range: 2-10)
+        self.neighborhood_width = round(individual.genotype[1] * 8) + 2
         #   Chance to randomly fire (Default: 0.005 (0.5%)) (Range: ~0-0.01)
         self.random_fire_prob = individual.genotype[2] * 0.01
-        #   Refractory period: time to recharge after firing (Default: 1) (Range: 1-2)
-        #   Unused in this model (simplified implementation for now)
-        self.refractory_period = round(individual.genotype[3] + 1)
+        #   Refractory period: time to recharge after firing (Default: 1) (Range: ~0.3-1.3)
+        #   Subtracts this constant from the membrane potential when a neuron fires.
+        self.refractory_period = individual.genotype[3] + 0.3
         #   The distribution of inhibiting and exciting neurons (Default: 0.25) (Range: ~0-0.5)
         self.type_dist = individual.genotype[4] * 0.5
         #   By which ratio does the membrane potential passively move towards the
@@ -153,13 +153,6 @@ class NetworkModel:
         """
         Return new state and membrane potential for a node/neuron.
         """
-        #  Refractory period (simplified)
-        if neuron['state'] == 1:
-            return 0, self.rest_pot
-        #  If the neuron reached the firing threshold last iteration,
-        #  return firing state and membrane potential of 1
-        elif neuron['mem_pot'] >= self.firing_threshold:
-            return 1, 1
         #  Calculate membrane potential after leaking and integrating
         membrane_potential = neuron['mem_pot']
         leak_potential = ((membrane_potential - self.rest_pot) * self.leak_ratio)
@@ -170,6 +163,13 @@ class NetworkModel:
         elif inp == 1:
             integrate = inp * self.integ_ratio
         membrane_potential = membrane_potential + integrate
+        #  Refractory period (simplified)
+        if neuron['state'] == 1:
+            return 0, membrane_potential - self.refractory_period
+        #  If the neuron reached the firing threshold last iteration,
+        #  return firing state and membrane potential of 1
+        elif neuron['mem_pot'] >= self.firing_threshold:
+            return 1, membrane_potential
         #  If the membrane potential isn't high enough to fire,
         #  there's still a chance to randomly fire
         if random() < self.random_fire_prob:
