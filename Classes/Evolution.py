@@ -32,18 +32,18 @@ class Evolution:
 
     #Selects the RETAINED_ADULTS_P-percentage best and adds to return-list. Shuffles array, then matches two-and-two
     # individuals until return-list is full. If RETAINED_ADULTS_P is present then certain matches might occur more often
-    def reproduce(self, individuals):
+    def reproduce(self, parents, individuals):
         individuals.sort(key=lambda x: x.fitness, reverse=True)
         retained_adults = individuals[:round(len(individuals) * self.retained_adults_p)]
-        shuffle(individuals)
+        shuffle(parents)
         next_generation = retained_adults if retained_adults else []
         i = 0
         while len(next_generation) < self.population_size:
             genes = []
-            for gene1, gene2 in zip(individuals[i].genotype, individuals[i+1].genotype):
+            for gene1, gene2 in zip(parents[i].genotype, parents[i + 1].genotype):
                 genes.append(random() if random() < self.mutation_p else choice((gene1,gene2)))
             next_generation.append(Population.Individual(g_type=genes))
-            i = (i + 2) % (len(individuals) - 1)
+            i = (i + 2) % (len(parents) - 1)
         return next_generation
 
 
