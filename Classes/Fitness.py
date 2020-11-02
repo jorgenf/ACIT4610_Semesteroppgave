@@ -7,7 +7,7 @@ from scipy import signal
 
 from Data import get_spikes_pheno
 
-def get_fitness(spike_rate_X, spike_rate_control, plot_graph=False):
+def get_fitness_corr(spike_rate_X, spike_rate_control, plot_graph=False):
     """
     https://www.mathworks.com/help/matlab/ref/xcorr.html
 
@@ -39,7 +39,7 @@ def get_fitness(spike_rate_X, spike_rate_control, plot_graph=False):
 
 
 
-def get_fitness_2(spike_rate_x, spike_rate_control, order = 6, threshold = 0.6):
+def get_fitness_spike_dist(spike_rate_x, spike_rate_control, order = 6, threshold = 0.6):
 
     max_val = max([spike_rate_control[i] for i in signal.argrelextrema(spike_rate_control, np.greater, order=order)[0]])
     control_bursts = signal.argrelextrema(spike_rate_control, np.greater, order=order)[0]
@@ -51,6 +51,7 @@ def get_fitness_2(spike_rate_x, spike_rate_control, order = 6, threshold = 0.6):
     if burst_corr < 0:
         burst_corr = 0
 
+
     a = sorted(spike_rate_control)
     b = sorted(spike_rate_x)
     dist = []
@@ -60,6 +61,18 @@ def get_fitness_2(spike_rate_x, spike_rate_control, order = 6, threshold = 0.6):
     if avg_dist < 0:
         avg_dist = 0
     fitness = (burst_corr + avg_dist) / 2
+
+
     return burst_corr, avg_dist, fitness
 
-
+def get_fitness_dist(spike_rate_x, spike_rate_control):
+    a = sorted(spike_rate_control)
+    b = sorted(spike_rate_x)
+    dist = []
+    for i, j in zip(a, b):
+        dist.append(abs(i - j))
+    avg_dist = (np.mean(spike_rate_control) - (np.mean(dist))) / np.mean(spike_rate_control)
+    if avg_dist < 0:
+        avg_dist = 0
+    fitness = avg_dist
+    return 0, avg_dist, fitness

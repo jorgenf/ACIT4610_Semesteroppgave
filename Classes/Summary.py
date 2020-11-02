@@ -135,7 +135,7 @@ class Summary:
         ax[0].fill_between(range(len(simulation_s)), simulation_s, reference_s, color='green', alpha=0.2,
                            where=[_y2 > _y1 for _y2, _y1 in zip(simulation_s, reference_s)])
         for i in range(0, len(simulation_s), int(len(simulation_s) / 10)):
-            ax[0].text(i, min(simulation_s[i], reference_s[i]) - 30, simulation_s[i] - reference_s[i])
+            ax[0].text(i, min(simulation_s[i], reference_s[i]) + 30, simulation_s[i] - reference_s[i])
 
         ax[1].set_xlabel("Time [s]")
         ax[1].set_ylabel("Spikes per second")

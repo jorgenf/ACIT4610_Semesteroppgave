@@ -1,0 +1,1 @@
+Fitness score: 0.4718066157760814 Burst correlation: 0.0 Average distance: 0.9436132315521628
