@@ -61,8 +61,6 @@ def get_fitness_spike_dist(spike_rate_x, spike_rate_control, order = 6, threshol
     if avg_dist < 0:
         avg_dist = 0
     fitness = (burst_corr + avg_dist) / 2
-
-
     return burst_corr, avg_dist, fitness
 
 def get_fitness_dist(spike_rate_x, spike_rate_control):
@@ -75,4 +73,4 @@ def get_fitness_dist(spike_rate_x, spike_rate_control):
     if avg_dist < 0:
         avg_dist = 0
     fitness = avg_dist
-    return 0, avg_dist, fitness
+    return "NA", avg_dist, fitness

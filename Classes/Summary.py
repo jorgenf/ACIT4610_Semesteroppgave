@@ -109,13 +109,12 @@ class Summary:
     
     def fitness_trend_plot(self, fitness_data):
         avg_fit, ax_avg_fit = plt.subplots()
-        ax_avg_fit.plot(fitness_data[1], label="Average fitness")
         ax_avg_fit.plot(fitness_data[0], linestyle="",marker=".", color="red")
+        ax_avg_fit.plot(fitness_data[1], label="Average fitness", color="blue")
         ax_avg_fit.legend(loc="upper left")
         ax_avg_fit.set_title("Fitness trend")
         ax_avg_fit.set_xlabel("Generation")
         ax_avg_fit.set_ylabel("Fitness score")
-        # avg_fit.savefig("Output/Fitness_trend_" + str(MODEL_TYPE) + "_" + str(POPULATION_SIZE) + "_" + str(NUM_GENERATIONS) + "_" + str(SIMULATION_DURATION) + "_" + str(TIME_STEP_RESOLUTION) + "_" + str(MUTATION_P) + "_" + str(PARENTS_P) + "_" + str(RETAINED_ADULTS_P) + ".png")
         avg_fit.savefig(self.dir_path + "/Fitness_trend.png")
 
     def average_distance_plot(self):
