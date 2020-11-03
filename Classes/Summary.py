@@ -116,6 +116,7 @@ class Summary:
         ax_avg_fit.set_title("Fitness trend")
         ax_avg_fit.set_xlabel("Generation")
         ax_avg_fit.set_ylabel("Fitness score")
+        ax_avg_fit.set_ylim(ymin=0, ymax=1)
         avg_fit.savefig(self.dir_path + "/Fitness_trend.png")
 
     def average_distance_plot(self):
