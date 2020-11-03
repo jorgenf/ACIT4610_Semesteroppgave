@@ -10,7 +10,7 @@ class Summary:
         self.evolution_parameters = evolution_parameters
         self.population.individuals.sort(key=lambda x: x.fitness, reverse=True)
         self.best_individual = self.population.individuals[0]
-        self.top_five = self.population.individuals[0:5]
+        self.top_five = self.population.individuals[0:5] if len(self.population.individuals) >= 5 else False
         self.reference_spikes = Data.get_spikes_file(self.evolution_parameters["REFERENCE_PHENOTYPE"])
         self.simulation_spikes = Data.get_spikes_pheno(self.best_individual.phenotype, self.evolution_parameters["SIMULATION_DURATION"])
         self.dir_path = "Output/"+ self.evolution_parameters["MODEL_TYPE"][0] + "_dim" + str(self.evolution_parameters["DIMENSION"]) + "_pop" + str(self.evolution_parameters["POPULATION_SIZE"]) + "_gen" + str(self.evolution_parameters["NUM_GENERATIONS"]) + "_dur" + str(self.evolution_parameters["SIMULATION_DURATION"]) + "_res" + str(self.evolution_parameters["TIME_STEP_RESOLUTION"]) + "_mut" + str(self.evolution_parameters["MUTATION_P"]) + "_par" + str(self.evolution_parameters["PARENTS_P"]) + "_ret" + str(self.evolution_parameters["RETAINED_ADULTS_P"]) + "_version"
@@ -150,15 +150,12 @@ class Summary:
 
 
     def output_text(self, simulation_time):
+        if self.top_five:
+            top_five_string = "| INDIVIDUAL 2 | " + "Parameters: " + str(self.top_five[1].genotype) + " Fitness score: " + str(self.top_five[1].fitness) + "\n" + "| INDIVIDUAL 3 | " + "Parameters: " + str(self.top_five[2].genotype) + " Fitness score: " + str(self.top_five[2].fitness) + "\n" + "| INDIVIDUAL 4 | " + "Parameters: " + str(self.top_five[3].genotype) + " Fitness score: " + str(self.top_five[3].fitness) + "\n" + "| INDIVIDUAL 5 | " + "Parameters: " + str(self.top_five[4].genotype) + " Fitness score: " + str(self.top_five[4].fitness) + "\n" + "TOP 5 AVERAGE: " + str((sum([self.top_five[i].fitness for i in range(1,5)]) + self.best_individual.fitness) / 5)
+        else:
+            top_five_string = ""
         text_file = open(self.dir_path + "/Info.txt", "wt")
-        n = text_file.write("EVOLUTION PARAMETERS: " + str(self.evolution_parameters) + " Simulation time [min]: " + str(simulation_time/60) + "\n" +
-                            "| INDIVIDUAL 1 | " + "Parameters: " + str(self.best_individual.genotype) + " Fitness score: " + str(self.best_individual.fitness) + "\n" +
-                            "| INDIVIDUAL 2 | " + "Parameters: " + str(self.top_five[1].genotype) + " Fitness score: " + str(self.top_five[1].fitness) + "\n" +
-                            "| INDIVIDUAL 3 | " + "Parameters: " + str(self.top_five[2].genotype) + " Fitness score: " + str(self.top_five[2].fitness) + "\n" +
-                            "| INDIVIDUAL 4 | " + "Parameters: " + str(self.top_five[3].genotype) + " Fitness score: " + str(self.top_five[3].fitness) + "\n" +
-                            "| INDIVIDUAL 5 | " + "Parameters: " + str(self.top_five[4].genotype) + " Fitness score: " + str(self.top_five[4].fitness) + "\n" +
-                            "TOP 5 AVERAGE: " + str((sum([self.top_five[i].fitness for i in range(1,5)]) + self.best_individual.fitness)/5))
-
+        n = text_file.write("EVOLUTION PARAMETERS: " + str(self.evolution_parameters) + " Simulation time [min]: " + str(simulation_time/60) + "\n" + "| INDIVIDUAL 1 | " + "Parameters: " + str(self.best_individual.genotype) + " Fitness score: " + str(self.best_individual.fitness) + "\n" + top_five_string)
         text_file.close()
 
 
