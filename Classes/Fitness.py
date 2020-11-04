@@ -35,7 +35,7 @@ def get_fitness_corr(spike_rate_X, spike_rate_control, plot_graph=False):
     if plot_graph:
         plt.show()
 
-    return fitness_score
+    return "NA","NA",fitness_score
 
 
 

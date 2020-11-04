@@ -22,6 +22,7 @@ class Evolution:
         self.parents_p = parameters["PARENTS_P"]
         self.retained_adults_p = parameters["RETAINED_ADULTS_P"]
         self.mutation_p = parameters["MUTATION_P"]
+        self.best_individual_overall = False
 
     #Sorts the array of individuals by decreasing fitness. Returns the PARENTS_P-percentage best
     def select_parents(self, individuals):

@@ -1,1 +1,0 @@
-Fitness score: 0.6083587786259542 Burst correlation: 0.5 Average distance: 0.7167175572519084 Simulation time [min]: 44.21836361885071

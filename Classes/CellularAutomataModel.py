@@ -94,7 +94,7 @@ class CellularAutomataModel:
 
     def __init__(self, individual=INDIVIDUAL, dimension=DIMENSION, duration=DURATION, resolution = RESOLUTION):
         #   The width of the neighborhood   1-11
-        self.neighborhood_width = round(individual.genotype[0] * 11)
+        self.neighborhood_width = round(individual.genotype[0] * 3)
         #   Chance to randomly fire (1-20)/100000
         self.random_fire_prob = individual.genotype[1] * (20 / 100000)
         #   Refractory period: time to recharge after firing    0-10

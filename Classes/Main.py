@@ -45,20 +45,20 @@ TYPE = {
 
 # Set general parameters for the evolutionary algorithm
 evolution_parameters = {
-    # "MODEL_TYPE": TYPE["CA"],
-    "MODEL_TYPE": TYPE["Network"],
+     "MODEL_TYPE": TYPE["CA"],
+    # "MODEL_TYPE": TYPE["Network"],
     # Size of array
-    "DIMENSION": 10,
+    "DIMENSION": 30,
     #Number of individuals in the population
-    "POPULATION_SIZE" : 5,
+    "POPULATION_SIZE" : 40,
     #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
-    "NUM_GENERATIONS": 1,
+    "NUM_GENERATIONS": 5,
     #Simulation duration in seconds
-    "SIMULATION_DURATION": 10,
+    "SIMULATION_DURATION": 100,
     #Number of simulation iterations per second
-    "TIME_STEP_RESOLUTION": 10,
+    "TIME_STEP_RESOLUTION": 30,
     #Chance for mutation for each gene selection
-    "MUTATION_P": 0.1,
+    "MUTATION_P": 0.05,
     #Percentage of current population that will create offspring
     "PARENTS_P": 0.5,
     #Percentage of current population that will be included in next generation
@@ -109,7 +109,13 @@ if __name__ == "__main__":
         fitness_trend.append([i.fitness for i in pop_with_phenotypes])
         average_fitness_trend.append(sum([i.fitness for i in pop_with_phenotypes])/evolution_parameters["POPULATION_SIZE"])
         parameter_trend.append(np.sum([i.genotype for i in pop_with_phenotypes],0)/evolution_parameters["POPULATION_SIZE"])
-        
+        # Updates best individual if better than current best
+        sorted_pop = pop_with_phenotypes
+        sorted_pop.sort(key=lambda x: x.fitness, reverse=True)
+        if not evo.best_individual_overall:
+            evo.best_individual_overall = (i, sorted_pop[0])
+        elif evo.best_individual_overall[1].fitness < sorted_pop[0].fitness:
+            evo.best_individual_overall = (i, sorted_pop[0])
         # Reproduce
         if i < evolution_parameters["NUM_GENERATIONS"] - 1:
             parents = evo.select_parents(pop_with_phenotypes)
@@ -118,6 +124,7 @@ if __name__ == "__main__":
             print()
         else:
             pop.individuals = pop_with_phenotypes
+
 
     # Register the time it took to run the script
     end_time = time.time()
@@ -129,6 +136,6 @@ if __name__ == "__main__":
     summary.fitness_trend_plot((fitness_trend, average_fitness_trend))
     summary.parameter_trend_plot(parameter_trend)
     summary.average_distance_plot()
-    summary.output_text(total_time)
+    summary.output_text(total_time, evo.best_individual_overall)
 
 

@@ -150,13 +150,13 @@ class Summary:
         fig.savefig(self.dir_path + "/Average_distance.png")
 
 
-    def output_text(self, simulation_time):
+    def output_text(self, simulation_time, best_individual_overall):
         if self.top_five:
             top_five_string = "| INDIVIDUAL 2 | " + "Parameters: " + str(self.top_five[1].genotype) + " Fitness score: " + str(self.top_five[1].fitness) + "\n" + "| INDIVIDUAL 3 | " + "Parameters: " + str(self.top_five[2].genotype) + " Fitness score: " + str(self.top_five[2].fitness) + "\n" + "| INDIVIDUAL 4 | " + "Parameters: " + str(self.top_five[3].genotype) + " Fitness score: " + str(self.top_five[3].fitness) + "\n" + "| INDIVIDUAL 5 | " + "Parameters: " + str(self.top_five[4].genotype) + " Fitness score: " + str(self.top_five[4].fitness) + "\n" + "TOP 5 AVERAGE: " + str((sum([self.top_five[i].fitness for i in range(1,5)]) + self.best_individual.fitness) / 5)
         else:
             top_five_string = ""
         text_file = open(self.dir_path + "/Info.txt", "wt")
-        n = text_file.write("EVOLUTION PARAMETERS: " + str(self.evolution_parameters) + " Simulation time [min]: " + str(simulation_time/60) + "\n" + "| INDIVIDUAL 1 | " + "Parameters: " + str(self.best_individual.genotype) + " Fitness score: " + str(self.best_individual.fitness) + "\n" + top_five_string)
+        n = text_file.write("EVOLUTION PARAMETERS: " + str(self.evolution_parameters) + " Simulation time [min]: " + str(simulation_time/60) + "\n" + "*LAST GENERATION*" + "\n| INDIVIDUAL 1 | " + "Parameters: " + str(self.best_individual.genotype) + " Fitness score: " + str(self.best_individual.fitness) + "\n" + top_five_string + "\n\nBEST OVERALL\n" + "| TOP INDIVIDUAL | " + "Generation: " + str(best_individual_overall[0]) + " Parameters: "+ str(best_individual_overall[1].genotype) + " Fitness score: " + str(best_individual_overall[1].fitness))
         text_file.close()
 
 
