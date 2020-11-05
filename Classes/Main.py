@@ -48,15 +48,15 @@ evolution_parameters = {
      "MODEL_TYPE": TYPE["CA"],
     # "MODEL_TYPE": TYPE["Network"],
     # Size of array
-    "DIMENSION": 30,
+    "DIMENSION": 10,
     #Number of individuals in the population
-    "POPULATION_SIZE" : 40,
+    "POPULATION_SIZE" : 20,
     #Number of generations to run. Each generation will run a number og simulations equal to POPULATION_SIZE
-    "NUM_GENERATIONS": 5,
+    "NUM_GENERATIONS": 10,
     #Simulation duration in seconds
     "SIMULATION_DURATION": 100,
     #Number of simulation iterations per second
-    "TIME_STEP_RESOLUTION": 30,
+    "TIME_STEP_RESOLUTION": 1,
     #Chance for mutation for each gene selection
     "MUTATION_P": 0.05,
     #Percentage of current population that will create offspring
@@ -131,11 +131,11 @@ if __name__ == "__main__":
     total_time = end_time - start_time
 
     # Save summary
-    summary = Summary.Summary(pop, evolution_parameters)
+    summary = Summary.Summary(pop, evolution_parameters, evo)
     summary.raster_plot()
     summary.fitness_trend_plot((fitness_trend, average_fitness_trend))
     summary.parameter_trend_plot(parameter_trend)
     summary.average_distance_plot()
-    summary.output_text(total_time, evo.best_individual_overall)
+    summary.output_text(total_time)
 
 
