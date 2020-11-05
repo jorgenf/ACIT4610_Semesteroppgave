@@ -9,6 +9,7 @@ class Summary:
         self.population = population
         self.evolution_parameters = evolution_parameters
         self.population.individuals.sort(key=lambda x: x.fitness, reverse=True)
+        self.median_individual = self.population.individuals[int(round(len(self.population.individuals)/2))]
         self.best_individual = self.population.individuals[0]
         self.best_individual_overall = evo.best_individual_overall
         self.top_five = self.population.individuals[0:5] if len(self.population.individuals) >= 5 else False
@@ -157,7 +158,7 @@ class Summary:
         else:
             top_five_string = ""
         text_file = open(self.dir_path + "/Info.txt", "wt")
-        n = text_file.write("EVOLUTION PARAMETERS: " + str(self.evolution_parameters) + " Simulation time [min]: " + str(simulation_time/60) + "\n" + "*LAST GENERATION*" + "\n| INDIVIDUAL 1 | " + "Parameters: " + str(self.best_individual.genotype) + " Fitness score: " + str(self.best_individual.fitness) + "\n" + top_five_string + "\n\nBEST OVERALL\n" + "| TOP INDIVIDUAL | " + "Generation: " + str(self.best_individual_overall[0]) + " Parameters: "+ str(self.best_individual_overall[1].genotype) + " Fitness score: " + str(self.best_individual_overall[1].fitness))
+        n = text_file.write("EVOLUTION PARAMETERS: " + str(self.evolution_parameters) + " Simulation time [min]: " + str(simulation_time/60) + "\n" + "*LAST GENERATION*" + "\n| INDIVIDUAL 1 | " + "Parameters: " + str(self.best_individual.genotype) + " Fitness score: " + str(self.best_individual.fitness) + "\n" + top_five_string + "\n" + "| MEDIAN INDIVIDUAL |" + " Fitness score: " + str(self.median_individual.fitness) + "\n\nBEST OVERALL\n" + "| TOP INDIVIDUAL | " + "Generation: " + str(self.best_individual_overall[0]) + " Parameters: "+ str(self.best_individual_overall[1].genotype) + " Fitness score: " + str(self.best_individual_overall[1].fitness))
         text_file.close()
 
 
@@ -167,3 +168,4 @@ class Summary:
             writer.writerow(["generation", "avg_fitness"])
             for i, score in enumerate(fitness_data):
                 writer.writerow([str(i), str(score)])
+

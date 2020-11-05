@@ -138,4 +138,3 @@ if __name__ == "__main__":
     summary.average_distance_plot()
     summary.output_text(total_time)
 
-
