@@ -13,6 +13,10 @@ class Population:
         self.individuals = self.__create_individuals()
 
     def __create_individuals(self):
+        """
+        Create a population based of a given size, where the genome of its Individuals is randomly generated.
+        Return: List of Individual
+        """
         pop = []
         for individual in range(self.population_size):
             g = [random() for i in range(self.genome)]
