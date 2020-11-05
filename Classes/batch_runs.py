@@ -129,6 +129,7 @@ if __name__ == "__main__":
         average_fitness_trend = []
         parameter_trend = []
 
+
         # Start the evolution. Runs loop for NUM_GENERATIONS
         
         for i in range(params["NUM_GENERATIONS"]):
@@ -141,6 +142,14 @@ if __name__ == "__main__":
             average_fitness_trend.append(sum([i.fitness for i in pop_with_phenotypes])/params["POPULATION_SIZE"])
             parameter_trend.append(np.sum([i.genotype for i in pop_with_phenotypes],0)/params["POPULATION_SIZE"])
             
+            # Updates best individual if better than current best
+            sorted_pop = pop_with_phenotypes
+            sorted_pop.sort(key=lambda x: x.fitness, reverse=True)
+            if not evo.best_individual_overall:
+                evo.best_individual_overall = (i, sorted_pop[0])
+            elif evo.best_individual_overall[1].fitness < sorted_pop[0].fitness:
+                evo.best_individual_overall = (i, sorted_pop[0])
+
             # Reproduce
             if i < params["NUM_GENERATIONS"] - 1:
                 parents = evo.select_parents(pop_with_phenotypes)
@@ -160,4 +169,4 @@ if __name__ == "__main__":
         summary.fitness_trend_plot((fitness_trend, average_fitness_trend))
         summary.parameter_trend_plot(parameter_trend)
         summary.average_distance_plot()
-        summary.output_text(total_time)
+        summary.output_text(total_time, evo.best_individual_overall)
