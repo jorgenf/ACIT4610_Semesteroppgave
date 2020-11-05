@@ -1,5 +1,5 @@
 from multiprocessing import Pool, current_process
-from random import randint, random, choice, shuffle
+from random import random, choice, shuffle
 import Population
 import CellularAutomataModel
 import Data
@@ -8,6 +8,13 @@ import NetworkModel
 
 
 class Evolution:
+    """
+    Creates an evolution object with the defined parameters.
+    Parameters must be given as a dictionary, and must contain the following:
+    MODEL_TYPE, DIMENSION, POPULATION_SIZE, SIMULATION_DURATION, TIME_STEP_RESOLUTION, REFERENCE_PHENOTYPE,
+    PARENTS_P, RETAINED_ADULTS_P AND MUTATION_P.
+    See additional documentation for details on these parameters.
+    """
     def __init__(self, parameters):
         self.model_type = parameters["MODEL_TYPE"][0]
         self.dimension = parameters["DIMENSION"]
@@ -24,16 +31,21 @@ class Evolution:
         self.mutation_p = parameters["MUTATION_P"]
         self.best_individual_overall = False
 
-    #Sorts the array of individuals by decreasing fitness. Returns the PARENTS_P-percentage best
     def select_parents(self, individuals):
+        """
+        Sorts the array of individuals by decreasing fitness.
+        Returns a number of the best individuals according to PARENTS_P
+        """
         individuals.sort(key=lambda x: x.fitness, reverse=True)
         best_individuals = individuals[:round(len(individuals) * self.parents_p)]
         return best_individuals
 
-
-    #Selects the RETAINED_ADULTS_P-percentage best and adds to return-list. Shuffles array, then matches two-and-two
-    # individuals until return-list is full. If RETAINED_ADULTS_P is present then certain matches might occur more often
     def reproduce(self, parents, individuals):
+        """
+        Selects a number of the best individuals according to RETAINED_ADULTS_P and adds them to return-list.
+        Shuffles array, then matches two-and-two individuals until return-list is full.
+        If RETAINED_ADULTS_P is present then certain matches might occur more often.
+        """
         individuals.sort(key=lambda x: x.fitness, reverse=True)
         retained_adults = individuals[:round(len(individuals) * self.retained_adults_p)]
         shuffle(parents)
@@ -47,31 +59,35 @@ class Evolution:
             i = (i + 2) % (len(parents) - 1)
         return next_generation
 
-
-    #Runs simulation and adds phenotype list to individual. Gets fitness score and adds to individual.
     def generate_phenotype(self, individual):
-        # REFERENCE_PHENOTYPE = "Small - 7-1-35.spk.txt"
+        """
+        Runs the simulation and adds phenotype list to individual.
+        Gets the fitness score and appends it to the individual.
+        """
         print(current_process().name, end=" ")
         if self.model_type == "CA":
-            # develop phenotype from genotype
+            #   Run a simulation of the model to return a phenotype from the genotype.
             phenotype = CellularAutomataModel.CellularAutomataModel(
-                individual = individual, 
-                dimension = self.dimension, 
-                duration= self.simulation_duration,
-                resolution = self.resolution
+                individual=individual,
+                dimension=self.dimension,
+                duration=self.simulation_duration,
+                resolution=self.resolution
                 ).run_simulation()
 
         elif self.model_type == "Network":
+            #   Run a simulation of the model to return a phenotype from the genotype.
             phenotype = NetworkModel.NetworkModel(
                 individual=individual,
                 dimension=self.dimension,
                 duration=self.simulation_duration,
                 resolution=self.resolution
                 ).run_simulation()
-        burst_corr, avg_dist, fitness = Fitness.get_fitness_dist(Data.get_spikes_pheno(phenotype, self.simulation_duration), self.reference_spikes)
+        #   Calculate the fitness of the phenotype
+        burst_corr, avg_dist, fitness = Fitness.get_fitness_dist(
+            Data.get_spikes_pheno(phenotype, self.simulation_duration), self.reference_spikes)
+        #   Append results to the individual
         individual.phenotype = phenotype
         individual.fitness = fitness
         individual.burst_corr = burst_corr
         individual.avg_dist = avg_dist
         return individual
-

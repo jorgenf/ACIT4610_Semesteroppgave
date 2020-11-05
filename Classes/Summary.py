@@ -4,18 +4,33 @@ import matplotlib.pyplot as plt
 import os
 import Data
 
+
 class Summary:
+    """
+    Creates summaries of relevant results and trends after the last generation of Evolution.
+    """
     def __init__(self, population, evolution_parameters, evo):
         self.population = population
         self.evolution_parameters = evolution_parameters
+        self.bin_size = self.evolution_parameters["SIMULATION_DURATION"]
         self.population.individuals.sort(key=lambda x: x.fitness, reverse=True)
         self.median_individual = self.population.individuals[int(round(len(self.population.individuals)/2))]
         self.best_individual = self.population.individuals[0]
         self.best_individual_overall = evo.best_individual_overall
         self.top_five = self.population.individuals[0:5] if len(self.population.individuals) >= 5 else False
         self.reference_spikes = Data.get_spikes_file(self.evolution_parameters["REFERENCE_PHENOTYPE"])
-        self.simulation_spikes = Data.get_spikes_pheno(self.best_individual.phenotype, self.evolution_parameters["SIMULATION_DURATION"])
-        self.dir_path = "Output/"+ self.evolution_parameters["MODEL_TYPE"][0] + "_dim" + str(self.evolution_parameters["DIMENSION"]) + "_pop" + str(self.evolution_parameters["POPULATION_SIZE"]) + "_gen" + str(self.evolution_parameters["NUM_GENERATIONS"]) + "_dur" + str(self.evolution_parameters["SIMULATION_DURATION"]) + "_res" + str(self.evolution_parameters["TIME_STEP_RESOLUTION"]) + "_mut" + str(self.evolution_parameters["MUTATION_P"]) + "_par" + str(self.evolution_parameters["PARENTS_P"]) + "_ret" + str(self.evolution_parameters["RETAINED_ADULTS_P"]) + "_version"
+        self.simulation_spikes = Data.get_spikes_pheno(
+            self.best_individual.phenotype, self.evolution_parameters["SIMULATION_DURATION"])
+        self.dir_path = "../Output/" + self.evolution_parameters["MODEL_TYPE"][0] + \
+                        "_dim" + str(self.evolution_parameters["DIMENSION"]) + \
+                        "_pop" + str(self.evolution_parameters["POPULATION_SIZE"]) + \
+                        "_gen" + str(self.evolution_parameters["NUM_GENERATIONS"]) + \
+                        "_dur" + str(self.evolution_parameters["SIMULATION_DURATION"]) + \
+                        "_res" + str(self.evolution_parameters["TIME_STEP_RESOLUTION"]) + \
+                        "_mut" + str(self.evolution_parameters["MUTATION_P"]) + \
+                        "_par" + str(self.evolution_parameters["PARENTS_P"]) + \
+                        "_ret" + str(self.evolution_parameters["RETAINED_ADULTS_P"]) + \
+                        "_version"
         if os.path.exists(self.dir_path + str(0)):
             n = 1
             while os.path.exists(self.dir_path + str(n)):
@@ -40,36 +55,29 @@ class Summary:
 
         To create histogram it is necessary to specify bin-size. For spikes per second "bin_size" = simulation length [seconds]
         """
-
         self.phenotype_reference = Data.read_recording(
             self.evolution_parameters["REFERENCE_PHENOTYPE"], 
-            recording_len = self.evolution_parameters["SIMULATION_DURATION"],
-            recording_start= 0 # where to start reading experimental data [s]
+            recording_len=self.evolution_parameters["SIMULATION_DURATION"],
+            #   Where to start reading experimental data [s]
+            recording_start=0
             )
-
-        self.bin_size = self.evolution_parameters["SIMULATION_DURATION"]
-        
-        # check if input is correct format    
+        #   Check if input is in the correct format
         self.best_individual.phenotype = np.array(
             [(row[0], row[1]) for row in self.best_individual.phenotype], 
             dtype=[("t", "float64"), ("electrode", "int64")])
         self.phenotype_reference = np.array(
             [(row[0], row[1]) for row in self.phenotype_reference], 
             dtype=[("t", "float64"), ("electrode", "int64")])
-
-        # sort spikes by electrode
-        self.A_spikes_per_array = [ [] for _ in range(64)]
+        #   Sort spikes by electrode
+        self.A_spikes_per_array = [[] for _ in range(64)]
         for row in self.best_individual.phenotype:
             self.A_spikes_per_array[row[1]].append(row[0])
-
-        self.B_spikes_per_array = [ [] for _ in range(64)]
+        self.B_spikes_per_array = [[] for _ in range(64)]
         for row in self.phenotype_reference:
             self.B_spikes_per_array[row[1]].append(row[0])
-
-        # initiate plot
+        #   Initialize plot
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, sharex="all", sharey="row")
-
-        # make raster plots
+        #   Make raster plots
         ax1.eventplot(
             self.A_spikes_per_array,
             linewidths=0.5
@@ -85,8 +93,7 @@ class Summary:
             )
         ax2.set_xlabel("Seconds")
         ax2.set_title("Neural culture")
-
-        # make histograms
+        #   Make histograms
         ax3.hist(self.best_individual.phenotype["t"], bins=self.bin_size)
         ax3.set_xlabel("Seconds")
         ax3.set_ylabel("Spikes per second")
@@ -96,14 +103,13 @@ class Summary:
 
         fig.savefig(self.dir_path + "/Best_individual.png")
 
-        # self.raster_plot_fig = fig
-
     def parameter_trend_plot(self, parameter_data):
-        # Plot parameter trend
+        """
+        Plot parameter trend
+        """
         par, ax_par = plt.subplots()
         for param, label in zip(list(map(list, zip(*parameter_data))), self.evolution_parameters["MODEL_TYPE"][2]):
             ax_par.plot(param, label=label)
-        #ax_par.plot(parameter_data, label="Parameter")
         ax_par.legend(loc="upper left")
         ax_par.set_title("Parameter trend")
         ax_par.set_xlabel("Generation")
@@ -111,6 +117,9 @@ class Summary:
         par.savefig(self.dir_path + "/Parameter_trend.png")
     
     def fitness_trend_plot(self, fitness_data):
+        """
+        Plot Fitness trend
+        """
         avg_fit, ax_avg_fit = plt.subplots()
         ax_avg_fit.plot(fitness_data[0], linestyle="",marker=".", color="red")
         ax_avg_fit.plot(fitness_data[1], label="Average fitness", color="blue")
@@ -122,6 +131,9 @@ class Summary:
         avg_fit.savefig(self.dir_path + "/Fitness_trend.png")
 
     def average_distance_plot(self):
+        """
+        Plot average distance
+        """
         simulation_s = sorted(self.simulation_spikes)
         reference_s = sorted(self.reference_spikes[:len(self.simulation_spikes)])
         simulation = self.simulation_spikes
@@ -151,8 +163,10 @@ class Summary:
                            where=[_y2 > _y1 for _y2, _y1 in zip(simulation, reference)])
         fig.savefig(self.dir_path + "/Average_distance.png")
 
-
     def output_text(self, simulation_time):
+        """
+        Write a text file with relevant information about the population when the Evolution is over.
+        """
         if self.top_five:
             top_five_string = "| INDIVIDUAL 2 | " + "Parameters: " + str(self.top_five[1].genotype) + " Fitness score: " + str(self.top_five[1].fitness) + "\n" + "| INDIVIDUAL 3 | " + "Parameters: " + str(self.top_five[2].genotype) + " Fitness score: " + str(self.top_five[2].fitness) + "\n" + "| INDIVIDUAL 4 | " + "Parameters: " + str(self.top_five[3].genotype) + " Fitness score: " + str(self.top_five[3].fitness) + "\n" + "| INDIVIDUAL 5 | " + "Parameters: " + str(self.top_five[4].genotype) + " Fitness score: " + str(self.top_five[4].fitness) + "\n" + "TOP 5 AVERAGE: " + str((sum([self.top_five[i].fitness for i in range(1,5)]) + self.best_individual.fitness) / 5)
         else:
@@ -161,8 +175,10 @@ class Summary:
         n = text_file.write("EVOLUTION PARAMETERS: " + str(self.evolution_parameters) + " Simulation time [min]: " + str(simulation_time/60) + "\n" + "*LAST GENERATION*" + "\n| INDIVIDUAL 1 | " + "Parameters: " + str(self.best_individual.genotype) + " Fitness score: " + str(self.best_individual.fitness) + "\n" + top_five_string + "\n" + "| MEDIAN INDIVIDUAL |" + " Fitness score: " + str(self.median_individual.fitness) + "\n\nBEST OVERALL\n" + "| TOP INDIVIDUAL | " + "Generation: " + str(self.best_individual_overall[0]) + " Parameters: "+ str(self.best_individual_overall[1].genotype) + " Fitness score: " + str(self.best_individual_overall[1].fitness))
         text_file.close()
 
-
     def write_csv(self, fitness_data):
+        """
+        Write a CSV file with average fitness score per generation.
+        """
         with open(self.dir_path + "/fitness.csv", "w", newline="") as csvfile:
             writer = csv.writer(csvfile, delimiter='\t')
             writer.writerow(["generation", "avg_fitness"])
