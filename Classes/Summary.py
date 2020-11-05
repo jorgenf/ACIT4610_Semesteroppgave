@@ -11,8 +11,8 @@ class Summary:
     """
     def __init__(self, population, evolution_parameters, evo):
         self.population = population
-        self.bin_size = self.evolution_parameters["SIMULATION_DURATION"]
         self.evolution_parameters = evolution_parameters
+        self.bin_size = self.evolution_parameters["SIMULATION_DURATION"]
         self.population.individuals.sort(key=lambda x: x.fitness, reverse=True)
         self.median_individual = self.population.individuals[int(round(len(self.population.individuals)/2))]
         self.best_individual = self.population.individuals[0]
@@ -21,7 +21,7 @@ class Summary:
         self.reference_spikes = Data.get_spikes_file(self.evolution_parameters["REFERENCE_PHENOTYPE"])
         self.simulation_spikes = Data.get_spikes_pheno(
             self.best_individual.phenotype, self.evolution_parameters["SIMULATION_DURATION"])
-        self.dir_path = "Output/" + self.evolution_parameters["MODEL_TYPE"][0] + \
+        self.dir_path = "../Output/" + self.evolution_parameters["MODEL_TYPE"][0] + \
                         "_dim" + str(self.evolution_parameters["DIMENSION"]) + \
                         "_pop" + str(self.evolution_parameters["POPULATION_SIZE"]) + \
                         "_gen" + str(self.evolution_parameters["NUM_GENERATIONS"]) + \

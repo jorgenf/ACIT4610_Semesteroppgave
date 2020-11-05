@@ -45,20 +45,20 @@ TYPE = {
 evolution_parameters = {
     #   Choose between CA and Network by commenting out the other.
     "MODEL_TYPE": TYPE["CA"],
-    # "MODEL_TYPE": TYPE["Network"],
+    #   "MODEL_TYPE": TYPE["Network"],
     # Size of one dimension in the array / grid / matrix
     "DIMENSION": 10,
     #   Number of individuals in the population
-    "POPULATION_SIZE": 20,
+    "POPULATION_SIZE": 50,
     #   Number of generations to run.
     #   Each generation will run one simulation of the model for every individual in the population
-    "NUM_GENERATIONS": 10,
+    "NUM_GENERATIONS": 50,
     #   Simulation duration in seconds
     "SIMULATION_DURATION": 100,
     #   Number of simulation iterations per second
     "TIME_STEP_RESOLUTION": 40,
     #   The probability of mutation in any gene
-    "MUTATION_P": 0.10,
+    "MUTATION_P": 0.15,
     #   The percentage of the current population that will create offspring
     "PARENTS_P": 0.5,
     #   The percentage of the current population that will carry over to the next generation
