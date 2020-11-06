@@ -76,19 +76,19 @@ class CellularAutomataModel:
 	"""
 	
 	def __init__(self, individual=INDIVIDUAL, dimension=DIMENSION, duration=DURATION, resolution=RESOLUTION):
-		#   The width of the neighborhood   1-11
+		#   The width of the neighborhood   0-3
 		self.neighborhood_width = round(individual.genotype[0] * 3)
-		#   Chance to randomly fire (1-20)/100000
+		#   Chance to randomly fire (0-20)/100000
 		self.random_fire_prob = individual.genotype[1] * (20 / 100000)
 		#   Refractory period: time to recharge after firing    0-10
 		self.refractory_period = round(individual.genotype[2] * 10)
-		#   The distribution of inhibiting and exciting neurons 0.01-0.1
+		#   The distribution of inhibiting and exciting neurons 0-0.1
 		self.type_dist = individual.genotype[3] / 10
 		#   Integrating constant 40-100
 		self.integrate_constant = round(individual.genotype[4] * 60 + 40)
 		#   Leak constant 0-30
 		self.leak_constant = round(individual.genotype[5] * 30)
-		#   How many iterations make up 1 second    1-20
+		#   How many iterations make up 1 second
 		self.resolution = resolution
 		self.max_membrane_potential = 100
 		self.step = 0
