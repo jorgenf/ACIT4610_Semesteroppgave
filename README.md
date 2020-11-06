@@ -5,6 +5,13 @@ The group consists of Jørgen Farner, Christian Ruben Alexander Jahren & Håkon 
 ##  Implementation
 The application is implemented in Python 3.8.
 We recommend using the Conda 3.8 distribution.
+##  Contents
+**Archive:**
+Scripts used to implement the models and test them visually using pycxsimulator.
+**Code:**
+Our submitted solution. An evolutionary algorithm which evolves CA and Network models in order to emulate features of in vitro cortical networks.
+**Resources:**
+The real data-sets that were provided for the project.
 ##  Running the code
 You can run the program by editing the *evolution_parameters* in Main.py, and simply executing the script in your prefered environment.
 ##  Documentation
