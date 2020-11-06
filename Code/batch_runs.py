@@ -6,13 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import CellularAutomataModel, Population, Data, Fitness, Evolution, Summary
-'''from Classes.CellularAutomataModel import CellularAutomataModel
-from Classes.Population import Population
-from Classes import Data
-from Classes.Population import Population
-from Classes import Fitness
-from Classes.Evolution import Evolution
-from Classes.Summary import Summary'''
 
 
 
