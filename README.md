@@ -16,3 +16,4 @@ We recommend using the Conda 3.8 distribution.
 You can run the program by editing the *evolution_parameters* in Main.py, and simply executing the script in your prefered environment.
 ##  Documentation
 Please refer to our project report and the class diagram for an overview of the program and its applications.
+![Class Diagram](Class_Diagram_ACIT4610-P2.png)
