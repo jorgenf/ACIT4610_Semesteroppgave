@@ -4,10 +4,11 @@ import networkx as nx
 import math as m
 import numpy as np
 import time
-#   Defaults
-DURATION = 120
+
+# Defaults
+DURATION = 100
 DIMENSION = 10
-RESOLUTION = 50
+RESOLUTION = 40
 RESTING_POTENTIAL = 0.5
 FIRING_THRESHOLD = 1
 NEIGHBORHOOD_WIDTH = 1
@@ -16,6 +17,8 @@ REFRACTORY_PERIOD = 1
 TYPE_DISTRIBUTION = 0.25
 LEAK_RATIO = 0.1
 INTEGRATION_RATIO = 0.25
+
+# Convert into genotype
 INDIVIDUAL = Population.Individual([
 	FIRING_THRESHOLD - 1,
 	NEIGHBORHOOD_WIDTH / 2,
@@ -31,20 +34,23 @@ def test_class():
 	"""
 	Run the model/simulation with defaults and plot the results.
 	"""
-	from Data import read_recording
+	from Summary import make_raster_plot
+
 	# use model to generate a phenotype
 	model = NetworkModel()
-	s = time.time_ns()
+	s = time.time()
 	output = model.run_simulation()
-	o = time.time_ns()
-	print(o - s)
+
+	print(f"{time.time() - s:.2f} seconds")
+	
 	# generate reference phenotype from experimental data
 	reference_file = {
-		"small": "../Resources/Small - 7-2-20.spk.txt",
+		"small": "../Resources/Small - 7-1-35.spk.txt",
 		"dense": "../Resources/Dense - 2-1-20.spk.txt"
 	}
-	reference = read_recording(reference_file["small"], recording_len=DURATION)
+
 	#  Compare model output with experimental data
+	make_raster_plot(reference_file["small"], output, DURATION)
 
 
 def get_electrodes(dimension):

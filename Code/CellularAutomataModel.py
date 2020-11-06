@@ -4,7 +4,7 @@ import numpy as np
 from random import random
 import time
 #  Defaults
-DURATION = 120
+DURATION = 100
 DIMENSION = 10
 RESOLUTION = 50
 INDIVIDUAL = Population.Individual([
@@ -27,23 +27,24 @@ def test_class():
 	"""
 	Run the model/simulation with defaults and plot the results.
 	"""
-	from Data import read_recording, get_spikes
+	from Summary import make_raster_plot
+
 	# use model to generate a phenotype
 	pop = Population.Population(1, 6)
 	model = CellularAutomataModel()
-	s = time.time_ns()
+	s = time.time()
 	output = model.run_simulation()
-	o = time.time_ns()
-	print(o - s)
+
+	print(f"{time.time() - s:.2f} seconds")
 	
 	# generate reference phenotype from experimental data
 	reference_file = {
 		"small": "../Resources/Small - 7-1-35.spk.txt",
 		"dense": "../Resources/Dense - 2-1-20.spk.txt"
 	}
-	reference = read_recording(reference_file["small"], recording_len=DURATION)
-	#  Compare model output with experimental data
 
+	#  Compare model output with experimental data
+	make_raster_plot(reference_file["small"], output, DURATION)
 
 def get_electrodes(dimension):
 	"""
