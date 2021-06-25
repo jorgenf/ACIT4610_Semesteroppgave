@@ -8,10 +8,11 @@ import itertools
 import random
 
 
-
+MODEL = "ca"
 DURATION = 100
 DIMENSION = 10
 RESOLUTION = 40
+BIDIRECTIONAL = False
 # E_L
 RESTING_POTENTIAL = 0.5
 FIRING_THRESHOLD = 1
@@ -63,7 +64,7 @@ def test_class():
 
     #  Compare model output with experimental data
     make_raster_plot(reference_file["small"], output, DURATION)
-    model.show_network()
+    model.show_network(grid=True)
 
 class Model:
     """
@@ -73,7 +74,7 @@ class Model:
     Takes an individual's genotype as input, and returns its phenotype.
     """
 
-    def __init__(self, individual=INDIVIDUAL, dimension=DIMENSION, duration=DURATION, resolution=RESOLUTION):
+    def __init__(self, individual=INDIVIDUAL, model=MODEL, dimension=DIMENSION, duration=DURATION, resolution=RESOLUTION, bidirectional=BIDIRECTIONAL):
         #   Firing Threshold in the membrane (Default: 1) (Range: ~1-2)
         self.firing_threshold = individual.genotype[0] + 1
         #   Extra possible neighbour in the network (Default: 1) (Range: 2-10)
@@ -95,6 +96,7 @@ class Model:
         #   Currently not controlled by the algorithm
         self.rest_pot = RESTING_POTENTIAL
         self.step = 0
+        self.model = model
         self.duration = duration
         self.dimension = dimension
         #   How many iterations make up 1 second (Default: 50)
@@ -104,22 +106,17 @@ class Model:
         #  Initialize Dataset
         self.spikes = []
         #  Initialize Network
-        self.config = nx.empty_graph(DIMENSION ** 2)
-        self.position = list(itertools.product(range(DIMENSION), range(DIMENSION)))
-        for node, pos in zip(self.config.nodes(), self.position):
-            self.config.nodes[node]["position"] = pos
-            self.config.nodes[node]['mem_pot'] = self.rest_pot
-            self.config.nodes[node]['connections'] = []
-            if random.random() < self.random_fire_prob:
-                self.config.nodes[node]['state'] = 1
-                self.config.nodes[node]['refractory'] = REFRACTORY_PERIOD
-            else:
-                self.config.nodes[node]['state'] = 0
-                self.config.nodes[node]['refractory'] = 0
-        for node in self.config.nodes():
-            self.create_connection(node)
-
-            #  Firing or not firing
+        self.config = nx.DiGraph()
+        self.create_nodes()
+        self.node_list = list(self.config.nodes)
+        if self.model == "network":
+            for node in range(len(self.node_list)):
+                self.create_random_connections(node)
+        elif self.model == "ca":
+            for node in self.config.nodes:
+                self.create_grid_connections(node)
+        else:
+            raise Exception("Invalid model chosen...")
 
 
         #   Position field can be used to invert coordinates for visualization
@@ -130,21 +127,44 @@ class Model:
     #   Copy position field (currently not needed)
     #   self.next_config.pos = self.config.pos
 
-    def create_connection(self, node):
-        pos = self.config.nodes[node]["position"]
-        for n in range(node + 1, len(self.config.nodes)):
+    def create_nodes(self):
+        self.position = list(itertools.product(range(self.dimension), range(self.dimension)))
+        for pos in self.position:
+            self.config.add_node(pos)
+        for node in self.config.nodes:
+            self.config.nodes[node]['mem_pot'] = self.rest_pot
+            if random.random() < self.random_fire_prob:
+                self.config.nodes[node]['state'] = 1
+                self.config.nodes[node]['refractory'] = REFRACTORY_PERIOD
+            else:
+                self.config.nodes[node]['state'] = 0
+                self.config.nodes[node]['refractory'] = 0
+
+    def create_random_connections(self, node):
+        pos = self.node_list[node]
+        for n in range(node + 1, len(self.node_list)):
             if random.random() > INHIBITION_PERCENTAGE:
                 weight = 1
             else:
                 weight = -1
-            distance = m.sqrt(((pos[0] - self.config.nodes[n]["position"][0])**2) + ((pos[1] - self.config.nodes[n]["position"][1])**2))
+            distance = m.sqrt(((pos[0] - self.node_list[n][0])**2) + ((pos[1] - self.node_list[n][1])**2))
             c = EXCITATION_CONSTANT if weight == 1 else INHIBITION_CONSTANT
             p = c*m.exp(-((distance/DENSITY_CONSTANT)**2))
             if p >= random.random():
-                order = random.choice([(node, n), (n, node)])
-                self.config.add_edge(node, n, order=order, weight=weight)
-                self.config.nodes[order[1]]['connections'].append(order)
+                order = random.choice([(pos, self.node_list[n]), (self.node_list[n], pos)])
+                self.config.add_edge(order[0], order[1], weight=weight)
 
+    def create_grid_connections(self, node):
+        for x in range(node[0] - 1, node[0] + 2):
+            for y in range(node[1] - 1, node[1] + 2):
+                if 0 <= x < self.dimension and 0 <= y < self.dimension and (x != node[0] or y != node[1]):
+                    if random.random() > INHIBITION_PERCENTAGE:
+                        weight = 1
+                    else:
+                        weight = -1
+                    self.config.add_edge(node, (x,y), weight=weight)
+                else:
+                    continue
 
     def alter_state(self, neuron, inp):
         """
@@ -166,9 +186,9 @@ class Model:
         for node in self.config.nodes:
             in_potential = 0
             if self.config.nodes[node]["refractory"] == 0:
-                neighbor_list = [elem for elem in self.config.edges(node, data=True) if elem[2]["order"][1] == node]
+                neighbor_list = self.config.in_edges(node, data=True)
                 for conn in neighbor_list:
-                    state = self.config.nodes[conn[2]["order"][0]]["state"]
+                    state = self.config.nodes[conn[0]]["state"]
                     weight = conn[2]["weight"]
                     in_potential += state * weight * ACTION_POTENTIAL
                 self.next_config.nodes[node]['state'], self.next_config.nodes[node]['mem_pot'],  self.next_config.nodes[node]["refractory"] = self.alter_state(self.config.nodes[node], in_potential)
@@ -213,7 +233,35 @@ class Model:
             r += 1
         return el_list
 
-    def run_simulation(self):
+    def print_weights(self):
+        for n, nbrs_dict in self.config.adjacency():
+            for nbr, e_attr in nbrs_dict.items():
+                if "weight" in e_attr:
+                    print(e_attr)
+
+    def show_network(self, grid=False):
+        edge_colors = []
+        for e in self.config.edges(data=True):
+            if e[2]["weight"] == 1:
+                edge_colors.append("green")
+            else:
+                edge_colors.append("red")
+        node_colors = []
+        for n in self.config.nodes(data=True):
+            if n[1]["state"] == 1:
+                node_colors.append("blue")
+            else:
+                node_colors.append("black")
+        if grid:
+            p = {}
+            for pos, node in zip(self.position, self.config.nodes):
+                p[node] = pos
+            nx.draw(self.config, p, edge_color=edge_colors, node_color=node_colors, node_size=50, width=0.5)
+        else:
+            nx.draw(self.config, edge_color=edge_colors, node_color=node_colors, node_size=50, width=0.5)
+        plt.pause(0.01)
+
+    def run_simulation(self, plot=False):
         """
         Simulation loop.
         Return: Numpy array with spikes on electrode ID's.
@@ -221,27 +269,13 @@ class Model:
         while self.step < self.steps:
             self.update()
             self.step += 1
+            if plot:
+                self.show_network(grid=False)
+        if plot:
+            plt.show()
+        self.show_network()
         #   Return phenotype
         return np.array(self.spikes, dtype=[("t", "float64"), ("electrode", "int64")])
-
-
-    def print_weights(self):
-        for n, nbrs_dict in self.config.adjacency():
-            for nbr, e_attr in nbrs_dict.items():
-                if "weight" in e_attr:
-                    print(e_attr)
-
-    def show_network(self):
-        colors  = []
-        for e in self.config.edges(data=True):
-            print(e)
-            if e[2]["weight"] == 1:
-                colors.append("green")
-            else:
-                colors.append("red")
-        nx.draw(self.config, self.position, edge_color=colors)
-        plt.show()
-
 
 
 #   Run the class test and print the result when the script is run standalone.
@@ -249,6 +283,17 @@ if __name__ == "__main__":
     test_class()
 
 
+g = nx.DiGraph()
+position = list(itertools.product(range(DIMENSION), range(DIMENSION)))
+p = {}
+for pos, node in  zip(position, range(DIMENSION**2)):
+        g.add_node(node)
+for pos, node in zip(position,g.nodes):
+    p[node] = pos
+
+#for n in range(1000):
+    #g.add_edge(random.choice(list(g.nodes)),random.choice(list(g.nodes)))
 
 
-
+nx.draw(g,  position, node_size=50)
+plt.show()
