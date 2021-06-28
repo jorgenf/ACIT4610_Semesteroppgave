@@ -8,15 +8,15 @@ import itertools
 import random
 
 
-MODEL = "ca"
+MODEL = "network"
 DURATION = 100
-DIMENSION = 10
+DIMENSION = 20
 RESOLUTION = 40
 
 BIDIRECTIONAL = False
 # E_L
-RESTING_POTENTIAL = 0.5
-FIRING_THRESHOLD = 1
+RESTING_POTENTIAL = -50
+FIRING_THRESHOLD = 30
 NEIGHBORHOOD_WIDTH = 1
 RANDOM_FIRE_PROBABILITY = 0.005
 REFRACTORY_PERIOD = 1
@@ -27,20 +27,19 @@ INTEGRATION_CONSTANT = 0.25
 # t_m
 TIME_CONSTANT = 0.1
 DENSITY_CONSTANT = 2
-INHIBITION_CONSTANT = 2
-EXCITATION_CONSTANT = 4
-INHIBITION_PERCENTAGE = INHIBITION_CONSTANT / (INHIBITION_CONSTANT + EXCITATION_CONSTANT)
+INHIBITION_PERCENTAGE = 0.25
 ACTION_POTENTIAL = 10
 
 
 INDIVIDUAL = Population.Individual([
     FIRING_THRESHOLD - 1,
-    NEIGHBORHOOD_WIDTH / 2,
     RANDOM_FIRE_PROBABILITY / 0.01,
     REFRACTORY_PERIOD / 2,
-    INHIBITION_PERCENTAGE / 0.5,
+    INHIBITION_PERCENTAGE,
     LEAK_CONSTANT / 0.2,
     INTEGRATION_CONSTANT / 0.5,
+    TIME_CONSTANT,
+    DENSITY_CONSTANT
 ])
 
 
@@ -65,7 +64,6 @@ def test_class():
 
     #  Compare model output with experimental data
     make_raster_plot(reference_file["small"], output, DURATION)
-    model.show_network(grid=True)
 
 class Model:
     """
@@ -86,21 +84,22 @@ class Model:
         ):
         #   Firing Threshold in the membrane (Default: 1) (Range: ~1-2)
         self.firing_threshold = individual.genotype[0] + 1
-        #   Extra possible neighbour in the network (Default: 1) (Range: 2-10)
-        self.neighborhood_width = round(individual.genotype[1] * 8) + 2
         #   Chance to randomly fire (Default: 0.005 (0.5%)) (Range: ~0-0.01)
-        self.random_fire_prob = individual.genotype[2] * 0.01
+        self.random_fire_prob = individual.genotype[1] * 0.01
         #   Refractory period: time to recharge after firing (Default: 1) (Range: ~0.3-1.3)
         #   Subtracts this constant from the membrane potential when a neuron fires.
-        self.refractory_period = individual.genotype[3] + 0.3
-        #   The distribution of inhibiting and exciting neurons (Default: 0.25) (Range: ~0-0.5)
-        self.type_dist = individual.genotype[4] * 0.5
+        self.refractory_period = individual.genotype[2] + 0.3
+        #   The distribution of inhibiting and exciting neurons. Inhibition constant determines likelyhood of a
+        self.inhibition_percentage = individual.genotype[3]
         #   By which ratio does the membrane potential passively move towards the
         #   resting potential every iteration. (Default: 0.1) (Range: ~0-0.2)
-        self.leak_ratio = individual.genotype[5] * 0.2
+        self.leak_constant = individual.genotype[4] * 0.2
         #   By which ratio does the input from the neighborhood integrate with the neuron
         #   (Default: 0.5) (Range: ~0-0.5)
-        self.integ_ratio = individual.genotype[6] * 0.5
+        self.integ_constant = individual.genotype[5] * 0.5
+        self.time_constant = individual.genotype[6]
+        self.density_constant = individual.genotype[7]
+
         #   Resting potential in the membrane (Default: 0.5)
         #   Currently not controlled by the algorithm
         self.rest_pot = RESTING_POTENTIAL
@@ -157,8 +156,7 @@ class Model:
             else:
                 weight = -1
             distance = m.sqrt(((pos[0] - self.node_list[n][0])**2) + ((pos[1] - self.node_list[n][1])**2))
-            c = EXCITATION_CONSTANT if weight == 1 else INHIBITION_CONSTANT
-            p = c*m.exp(-((distance/DENSITY_CONSTANT)**2))
+            p = m.exp(-((distance/DENSITY_CONSTANT)**2))
             if p >= random.random():
                 order = random.choice([(pos, self.node_list[n]), (self.node_list[n], pos)])
                 self.config.add_edge(order[0], order[1], weight=weight)
@@ -268,7 +266,7 @@ class Model:
             nx.draw(self.config, p, edge_color=edge_colors, node_color=node_colors, node_size=50, width=0.5)
         else:
             nx.draw(self.config, edge_color=edge_colors, node_color=node_colors, node_size=50, width=0.5)
-        plt.pause(0.01)
+        plt.show()
 
     def run_simulation(self, plot=False):
         """
@@ -278,11 +276,7 @@ class Model:
         while self.step < self.steps:
             self.update()
             self.step += 1
-            if plot:
-                self.show_network(grid=False)
-        if plot:
-            plt.show()
-        # self.show_network()
+        # self.show_network(grid=True)
         #   Return phenotype
         return np.array(self.spikes, dtype=[("t", "float64"), ("electrode", "int64")])
 
@@ -299,9 +293,3 @@ if __name__ == "__main__":
     for pos, node in zip(position,g.nodes):
         p[node] = pos
 
-    #for n in range(1000):
-        #g.add_edge(random.choice(list(g.nodes)),random.choice(list(g.nodes)))
-
-
-    nx.draw(g,  position, node_size=50)
-    plt.show()
