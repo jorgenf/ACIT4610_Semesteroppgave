@@ -12,6 +12,7 @@ MODEL = "ca"
 DURATION = 100
 DIMENSION = 10
 RESOLUTION = 40
+
 BIDIRECTIONAL = False
 # E_L
 RESTING_POTENTIAL = 0.5
@@ -74,7 +75,15 @@ class Model:
     Takes an individual's genotype as input, and returns its phenotype.
     """
 
-    def __init__(self, individual=INDIVIDUAL, model=MODEL, dimension=DIMENSION, duration=DURATION, resolution=RESOLUTION, bidirectional=BIDIRECTIONAL):
+    def __init__(
+        self, 
+        individual=INDIVIDUAL, 
+        model=MODEL, 
+        dimension=DIMENSION, 
+        duration=DURATION, 
+        resolution=RESOLUTION, 
+        bidirectional=BIDIRECTIONAL
+        ):
         #   Firing Threshold in the membrane (Default: 1) (Range: ~1-2)
         self.firing_threshold = individual.genotype[0] + 1
         #   Extra possible neighbour in the network (Default: 1) (Range: 2-10)
@@ -273,7 +282,7 @@ class Model:
                 self.show_network(grid=False)
         if plot:
             plt.show()
-        self.show_network()
+        # self.show_network()
         #   Return phenotype
         return np.array(self.spikes, dtype=[("t", "float64"), ("electrode", "int64")])
 
@@ -282,18 +291,17 @@ class Model:
 if __name__ == "__main__":
     test_class()
 
+    g = nx.DiGraph()
+    position = list(itertools.product(range(DIMENSION), range(DIMENSION)))
+    p = {}
+    for pos, node in  zip(position, range(DIMENSION**2)):
+            g.add_node(node)
+    for pos, node in zip(position,g.nodes):
+        p[node] = pos
 
-g = nx.DiGraph()
-position = list(itertools.product(range(DIMENSION), range(DIMENSION)))
-p = {}
-for pos, node in  zip(position, range(DIMENSION**2)):
-        g.add_node(node)
-for pos, node in zip(position,g.nodes):
-    p[node] = pos
-
-#for n in range(1000):
-    #g.add_edge(random.choice(list(g.nodes)),random.choice(list(g.nodes)))
+    #for n in range(1000):
+        #g.add_edge(random.choice(list(g.nodes)),random.choice(list(g.nodes)))
 
 
-nx.draw(g,  position, node_size=50)
-plt.show()
+    nx.draw(g,  position, node_size=50)
+    plt.show()

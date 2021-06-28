@@ -1,10 +1,11 @@
 from multiprocessing import Pool, current_process
 from random import random, choice, shuffle
 import Population
-import CellularAutomataModel
+# import CellularAutomataModel
 import Data
 import Fitness
-import NetworkModel
+# import NetworkModel
+from Model import Model
 
 
 class Evolution:
@@ -64,24 +65,34 @@ class Evolution:
         Runs the simulation and adds phenotype list to individual.
         Gets the fitness score and appends it to the individual.
         """
-        print(current_process().name, end=" ")
-        if self.model_type == "CA":
-            #   Run a simulation of the model to return a phenotype from the genotype.
-            phenotype = CellularAutomataModel.CellularAutomataModel(
-                individual=individual,
-                dimension=self.dimension,
-                duration=self.simulation_duration,
-                resolution=self.resolution
-                ).run_simulation()
+        # print(current_process().name, end=" ")
 
-        elif self.model_type == "Network":
-            #   Run a simulation of the model to return a phenotype from the genotype.
-            phenotype = NetworkModel.NetworkModel(
-                individual=individual,
-                dimension=self.dimension,
-                duration=self.simulation_duration,
-                resolution=self.resolution
-                ).run_simulation()
+        model = Model(
+            individual=individual,
+            dimension=self.dimension,
+            duration=self.simulation_duration,
+            resolution=self.resolution
+        )
+        phenotype = model.run_simulation()
+
+        # if self.model_type == "CA":
+        #     #   Run a simulation of the model to return a phenotype from the genotype.
+        #     phenotype = CellularAutomataModel.CellularAutomataModel(
+        #         individual=individual,
+        #         dimension=self.dimension,
+        #         duration=self.simulation_duration,
+        #         resolution=self.resolution
+        #         ).run_simulation()
+
+        # elif self.model_type == "Network":
+        #     #   Run a simulation of the model to return a phenotype from the genotype.
+        #     phenotype = NetworkModel.NetworkModel(
+        #         individual=individual,
+        #         dimension=self.dimension,
+        #         duration=self.simulation_duration,
+        #         resolution=self.resolution
+        #         ).run_simulation()
+
         #   Calculate the fitness of the phenotype
         burst_corr, avg_dist, fitness = Fitness.get_fitness_dist(
             Data.get_spikes_pheno(phenotype, self.simulation_duration), self.reference_spikes)
