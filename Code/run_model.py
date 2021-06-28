@@ -72,8 +72,9 @@ def process_arguments():
             sys.exit()
         elif opt in ("-i", "--input"):
             input_file = arg
+            print(input_file)
 
-    if input_file.endswith("*.csv"):
+    if input_file.endswith(".csv"):
         return input_file
     else:
         print("Error: A .csv file containing simulation parameters is required")
