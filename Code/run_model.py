@@ -86,14 +86,14 @@ def process_arguments():
 #Creates threads of run_thread method. Pool-size = threads - 1. Each thread result is mapped to a variable that is
 #returned when all processes are finished
 def grow_phenotype(individuals):
-    num_cpus = os.cpu_count() // 2
+    num_cpus = os.cpu_count() - 1
 
     """using multithreading"""    
     # p = Pool(num_cpus)
     # new_individuals = p.map(evo.generate_phenotype, individuals)
 
     """using tqdm (progressbar)"""
-    print(f"Using {num_cpus} CPU cores")
+    print(f"(using {num_cpus} CPU cores)")
     new_individuals = process_map(
         evo.generate_phenotype,
         individuals,
@@ -106,7 +106,7 @@ def grow_phenotype(individuals):
 PROGRAM
 
 """
-start_time = time.time()
+evo_start_time = time.time()
 
 
 evolution_parameters = list()
@@ -137,10 +137,12 @@ with open(input_file, newline="") as csvfile:
             "REFERENCE_PHENOTYPE": "Small - 7-1-35.spk.txt"
         })
 
-for params in evolution_parameters:
+for evo_i, params in enumerate(evolution_parameters):
+    model_start_time = time.time()
     
     # print summary of the running simulation parameters
-    print("\nRunning simulation:")
+    print("\n-------------------------------------")
+    print(f"Running simulation {evo_i+1}/{len(evolution_parameters)}:")
     iterator = iter(params)
     key = next(iterator)
     print(f"{key}: {params[key][0]} (genome size = {params[key][1]})")
@@ -167,7 +169,7 @@ for params in evolution_parameters:
     # Start the evolution. Runs loop for NUM_GENERATIONS
     
     for i in range(params["NUM_GENERATIONS"]):
-        print(f"\nGeneration {i+1}/{params['NUM_GENERATIONS']}")
+        print(f"\nGeneration {i+1}/{params['NUM_GENERATIONS']}", end=" ")
         # print("Workers: ", end="")
         pop_with_phenotypes = grow_phenotype(pop.individuals)
 
@@ -194,8 +196,7 @@ for params in evolution_parameters:
             pop.individuals = pop_with_phenotypes
 
     # Register the time it took to run the script
-    end_time = time.time()
-    total_time = end_time - start_time
+    model_total_time = time.time() - model_start_time
 
     # Save summary
     print("Saving summary to output folder...")
@@ -204,5 +205,8 @@ for params in evolution_parameters:
     summary.fitness_trend_plot((fitness_trend, average_fitness_trend))
     summary.parameter_trend_plot(parameter_trend)
     summary.average_distance_plot()
-    summary.output_text(total_time)
-    print(f"Simulation completed in {total_time:.2f} seconds")
+    summary.output_text(model_total_time)
+    print(f"Model simulated in {model_total_time:.2f} seconds")
+
+print(f"Evolution complete. Simulated in {time.time() - evo_start_time:.2f} seconds")
+
