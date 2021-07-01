@@ -15,7 +15,7 @@ RESOLUTION = 40
 
 BIDIRECTIONAL = False
 # E_L
-RESTING_POTENTIAL = -50
+RESTING_POTENTIAL = 0
 FIRING_THRESHOLD = 30
 NEIGHBORHOOD_WIDTH = 1
 RANDOM_FIRE_PROBABILITY = 0.005
@@ -24,12 +24,8 @@ REFRACTORY_PERIOD = 1
 LEAK_CONSTANT = 0.1
 # C_I
 INTEGRATION_CONSTANT = 0.25
-# t_m
-TIME_CONSTANT = 0.1
 DENSITY_CONSTANT = 2
 INHIBITION_PERCENTAGE = 0.25
-ACTION_POTENTIAL = 10
-
 
 INDIVIDUAL = Population.Individual([
     FIRING_THRESHOLD - 1,
@@ -38,7 +34,6 @@ INDIVIDUAL = Population.Individual([
     INHIBITION_PERCENTAGE,
     LEAK_CONSTANT / 0.2,
     INTEGRATION_CONSTANT / 0.5,
-    TIME_CONSTANT,
     DENSITY_CONSTANT
 ])
 
@@ -50,7 +45,7 @@ def test_class():
     from Summary import make_raster_plot
 
     # use model to generate a phenotype
-    model = Model()
+    model = Model(model="ca")
     s = time.time()
     output = model.run_simulation()
 
@@ -64,6 +59,7 @@ def test_class():
 
     #  Compare model output with experimental data
     make_raster_plot(reference_file["small"], output, DURATION)
+    #model.show_network(grid=True)
 
 class Model:
     """
@@ -97,8 +93,7 @@ class Model:
         #   By which ratio does the input from the neighborhood integrate with the neuron
         #   (Default: 0.5) (Range: ~0-0.5)
         self.integ_constant = individual.genotype[5] * 0.5
-        self.time_constant = individual.genotype[6]
-        self.density_constant = individual.genotype[7]
+        self.density_constant = individual.genotype[6]
 
         #   Resting potential in the membrane (Default: 0.5)
         #   Currently not controlled by the algorithm
@@ -143,7 +138,7 @@ class Model:
             self.config.nodes[node]['mem_pot'] = self.rest_pot
             if random.random() < self.random_fire_prob:
                 self.config.nodes[node]['state'] = 1
-                self.config.nodes[node]['refractory'] = REFRACTORY_PERIOD
+                self.config.nodes[node]['refractory'] = self.refractory_period
             else:
                 self.config.nodes[node]['state'] = 0
                 self.config.nodes[node]['refractory'] = 0
@@ -151,21 +146,21 @@ class Model:
     def create_random_connections(self, node):
         pos = self.node_list[node]
         for n in range(node + 1, len(self.node_list)):
-            if random.random() > INHIBITION_PERCENTAGE:
+            if random.random() > self.inhibition_percentage:
                 weight = 1
             else:
                 weight = -1
             distance = m.sqrt(((pos[0] - self.node_list[n][0])**2) + ((pos[1] - self.node_list[n][1])**2))
-            p = m.exp(-((distance/DENSITY_CONSTANT)**2))
+            p = m.exp(-((distance/self.density_constant)**2))
             if p >= random.random():
                 order = random.choice([(pos, self.node_list[n]), (self.node_list[n], pos)])
                 self.config.add_edge(order[0], order[1], weight=weight)
 
     def create_grid_connections(self, node):
-        for x in range(node[0] - 1, node[0] + 2):
-            for y in range(node[1] - 1, node[1] + 2):
+        for x in range(node[0] - round(self.density_constant), node[0] + round(self.density_constant) + 1):
+            for y in range(node[1] - round(self.density_constant), node[1] + round(self.density_constant) + 1):
                 if 0 <= x < self.dimension and 0 <= y < self.dimension and (x != node[0] or y != node[1]):
-                    if random.random() > INHIBITION_PERCENTAGE:
+                    if random.random() > self.inhibition_percentage:
                         weight = 1
                     else:
                         weight = -1
@@ -177,19 +172,17 @@ class Model:
         """
         Return new state and membrane potential for a node/neuron.
         """
-
-        dV = TIME_CONSTANT * (LEAK_CONSTANT * (self.rest_pot - neuron['mem_pot']) + (INTEGRATION_CONSTANT * inp))
+        dV = (self.leak_constant * (self.rest_pot - neuron['mem_pot']) + (self.integ_constant * inp))
         membrane_potential = neuron["mem_pot"] + dV
         if membrane_potential >= FIRING_THRESHOLD or random.random() < self.random_fire_prob:
-            return 1, self.rest_pot, REFRACTORY_PERIOD
+            return 1, self.rest_pot, self.refractory_period
         else:
-            return 0, membrane_potential, max(neuron["refractory"] - 1, 0)
+            return 0, membrane_potential, 0
 
     def update(self):
         """
         Apply the ruleset to the current Network and update the next iteration.
         """
-
         for node in self.config.nodes:
             in_potential = 0
             if self.config.nodes[node]["refractory"] == 0:
@@ -197,10 +190,10 @@ class Model:
                 for conn in neighbor_list:
                     state = self.config.nodes[conn[0]]["state"]
                     weight = conn[2]["weight"]
-                    in_potential += state * weight * ACTION_POTENTIAL
+                    in_potential += state * weight
                 self.next_config.nodes[node]['state'], self.next_config.nodes[node]['mem_pot'],  self.next_config.nodes[node]["refractory"] = self.alter_state(self.config.nodes[node], in_potential)
             else:
-                self.next_config.nodes[node]['state'], self.next_config.nodes[node]['mem_pot'], self.next_config.nodes[node]["refractory"] = self.alter_state(self.config.nodes[node], in_potential)
+                self.next_config.nodes[node]["refractory"] = max(0, self.config.nodes[node]["refractory"] - 1)
 
         #  Update the configuration for the next iteration
         self.config, self.next_config = self.next_config, self.config
@@ -276,7 +269,8 @@ class Model:
         while self.step < self.steps:
             self.update()
             self.step += 1
-        # self.show_network(grid=True)
+        if plot:
+            self.show_network()
         #   Return phenotype
         return np.array(self.spikes, dtype=[("t", "float64"), ("electrode", "int64")])
 
@@ -284,12 +278,4 @@ class Model:
 #   Run the class test and print the result when the script is run standalone.
 if __name__ == "__main__":
     test_class()
-
-    g = nx.DiGraph()
-    position = list(itertools.product(range(DIMENSION), range(DIMENSION)))
-    p = {}
-    for pos, node in  zip(position, range(DIMENSION**2)):
-            g.add_node(node)
-    for pos, node in zip(position,g.nodes):
-        p[node] = pos
 
