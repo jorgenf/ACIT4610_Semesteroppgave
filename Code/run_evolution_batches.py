@@ -211,5 +211,6 @@ for evo_i, params in enumerate(evolution_parameters):
     summary.output_text(model_total_time)
     print(f"Model simulated in {model_total_time:.2f} seconds")
 
-print(f"Evolution complete. Simulated in {time.time() - evo_start_time:.2f} seconds")
+evo_total_time = round(time.time() - evo_start_time)
+print(f"Evolution complete. Simulated in {evo_total_time // 60} minutes, {evo_total_time % 60} seconds")
 
