@@ -9,19 +9,19 @@ import random
 
 
 MODEL = "network"
-DURATION = 100
+DURATION = 10
 DIMENSION = 20
 RESOLUTION = 40
 
 BIDIRECTIONAL = False
 # E_L
 RESTING_POTENTIAL = 0
-FIRING_THRESHOLD = 30
+FIRING_THRESHOLD = 0.2
 NEIGHBORHOOD_WIDTH = 1
-RANDOM_FIRE_PROBABILITY = 0.005
-REFRACTORY_PERIOD = 1
+RANDOM_FIRE_PROBABILITY = 0.05
+REFRACTORY_PERIOD = 50
 # C_L
-LEAK_CONSTANT = 0.1
+LEAK_CONSTANT = 0.05
 # C_I
 INTEGRATION_CONSTANT = 0.25
 DENSITY_CONSTANT = 2
@@ -45,7 +45,7 @@ def test_class():
     from Summary import make_raster_plot
 
     # use model to generate a phenotype
-    model = Model(model="ca")
+    model = Model(model="network")
     s = time.time()
     output = model.run_simulation()
 
@@ -59,7 +59,12 @@ def test_class():
 
     #  Compare model output with experimental data
     make_raster_plot(reference_file["small"], output, DURATION)
-    #model.show_network(grid=True)
+    model.show_network(grid=True)
+    fig, axs = plt.subplots(2)
+    axs[0].plot(model.mem)
+    axs[1].plot(model.sp)
+    plt.show()
+
 
 class Model:
     """
@@ -75,8 +80,7 @@ class Model:
         model=MODEL, 
         dimension=DIMENSION, 
         duration=DURATION, 
-        resolution=RESOLUTION, 
-        bidirectional=BIDIRECTIONAL
+        resolution=RESOLUTION
         ):
         #   Firing Threshold in the membrane (Default: 1) (Range: ~1-2)
         self.firing_threshold = individual.genotype[0] + 1
@@ -86,7 +90,7 @@ class Model:
         #   Subtracts this constant from the membrane potential when a neuron fires.
         self.refractory_period = individual.genotype[2] + 0.3
         #   The distribution of inhibiting and exciting neurons. Inhibition constant determines likelyhood of a
-        self.inhibition_percentage = individual.genotype[3]
+        self.inhibition_percentage = individual.genotype[3] * 0.5
         #   By which ratio does the membrane potential passively move towards the
         #   resting potential every iteration. (Default: 0.1) (Range: ~0-0.2)
         self.leak_constant = individual.genotype[4] * 0.2
@@ -120,7 +124,8 @@ class Model:
                 self.create_grid_connections(node)
         else:
             raise Exception("Invalid model chosen...")
-
+        self.mem = []
+        self.sp = []
 
         #   Position field can be used to invert coordinates for visualization
         #   self.config.pos = {(x, y): (x, y) for x, y in self.config.nodes()}
@@ -174,15 +179,20 @@ class Model:
         """
         dV = (self.leak_constant * (self.rest_pot - neuron['mem_pot']) + (self.integ_constant * inp))
         membrane_potential = neuron["mem_pot"] + dV
-        if membrane_potential >= FIRING_THRESHOLD or random.random() < self.random_fire_prob:
+        if (membrane_potential >= self.firing_threshold or random.random() < self.random_fire_prob) and neuron["refractory"] <= 0:
+            if self.n == 0:
+                self.sp.append(1)
             return 1, self.rest_pot, self.refractory_period
         else:
-            return 0, membrane_potential, 0
+            if self.n == 0:
+                self.sp.append(0)
+            return 0, membrane_potential, max(0, neuron["refractory"] - 1)
 
     def update(self):
         """
         Apply the ruleset to the current Network and update the next iteration.
         """
+        self.n = 0
         for node in self.config.nodes:
             in_potential = 0
             if self.config.nodes[node]["refractory"] == 0:
@@ -193,8 +203,10 @@ class Model:
                     in_potential += state * weight
                 self.next_config.nodes[node]['state'], self.next_config.nodes[node]['mem_pot'],  self.next_config.nodes[node]["refractory"] = self.alter_state(self.config.nodes[node], in_potential)
             else:
-                self.next_config.nodes[node]["refractory"] = max(0, self.config.nodes[node]["refractory"] - 1)
-
+                self.next_config.nodes[node]['state'], self.next_config.nodes[node]['mem_pot'], self.next_config.nodes[node]["refractory"] = self.alter_state(self.config.nodes[node], 0)
+            if self.n == 0:
+                self.mem.append(self.config.nodes[node]["mem_pot"])
+            self.n += 1
         #  Update the configuration for the next iteration
         self.config, self.next_config = self.next_config, self.config
         #  Get the spikes from this iteration and append them to the list of spikes if there were any
@@ -209,7 +221,7 @@ class Model:
         """
         s = []
         for x, y in self.electrodes:
-            if any(node for node in self.config.nodes(data=True) if self.config[node]["position"]==(x,y) and self.config[node]["state"] == 1):
+            if self.config.nodes[(x,y)]["state"] == 1:
                 s.append((0 + (self.step / self.resolution), self.electrodes.index((x, y))))
         return s if s else 0
 

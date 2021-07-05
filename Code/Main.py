@@ -14,15 +14,16 @@ TYPE = {
         #   Name of model
         "CA",
         #   Size of genome (number of parameters in genotype)
-        6,
+        7,
         #   Labels
         (
-            "Neighborhood width", 
+            "Firing threshold"
             "Random fire probability", 
             "Refractory period",
-            "Type distribution",
+            "Inhibition percentage",
+            "Leak constant",
             "Integration constant",
-            "Leak constant"
+            "Density constant"
         )),
     # Set properties for network model
     "Network": (
@@ -44,8 +45,8 @@ TYPE = {
 #   Set general parameters for the evolutionary algorithm
 evolution_parameters = {
     #   Choose between CA and Network by commenting out the other.
-    "MODEL_TYPE": TYPE["CA"],
-    #   "MODEL_TYPE": TYPE["Network"],
+    #"MODEL_TYPE": TYPE["CA"],
+       "MODEL_TYPE": TYPE["Network"],
     # Size of one dimension in the array / grid / matrix
     "DIMENSION": 10,
     #   Number of individuals in the population
