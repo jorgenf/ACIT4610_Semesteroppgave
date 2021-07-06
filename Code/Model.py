@@ -9,7 +9,7 @@ import random
 
 
 MODEL = "network"
-DURATION = 10
+DURATION = 100
 DIMENSION = 20
 RESOLUTION = 40
 
@@ -17,14 +17,13 @@ BIDIRECTIONAL = False
 # E_L
 RESTING_POTENTIAL = 0
 FIRING_THRESHOLD = 0.2
-NEIGHBORHOOD_WIDTH = 1
 RANDOM_FIRE_PROBABILITY = 0.05
 REFRACTORY_PERIOD = 50
 # C_L
 LEAK_CONSTANT = 0.05
 # C_I
 INTEGRATION_CONSTANT = 0.25
-DENSITY_CONSTANT = 2
+DENSITY_CONSTANT = 10
 INHIBITION_PERCENTAGE = 0.25
 
 INDIVIDUAL = Population.Individual([
@@ -45,7 +44,7 @@ def test_class():
     from Summary import make_raster_plot
 
     # use model to generate a phenotype
-    model = Model(model="network")
+    model = Model(model=MODEL)
     s = time.time()
     output = model.run_simulation()
 
@@ -59,7 +58,7 @@ def test_class():
 
     #  Compare model output with experimental data
     make_raster_plot(reference_file["small"], output, DURATION)
-    model.show_network(grid=True)
+    #model.show_network(grid=True)
     fig, axs = plt.subplots(2)
     axs[0].plot(model.mem)
     axs[1].plot(model.sp)
@@ -231,18 +230,27 @@ class Model:
     	The index of an electrode can be used as its ID.
     	"""
         el_list = []
-        r = 0
-        f = 1 if dimension % 9 == 0 else 0
-        for row in range(dimension // 9, dimension + f - (dimension // 9), dimension // 9):
-            c = 0
-            for col in range(dimension // 9, dimension + f - (dimension // 9), dimension // 9):
-                if (r == 0 or r == 7) and (c == 0 or c == 7):
-                    c += 1
-                    continue
-                else:
-                    el_list.append((row, col))
-                    c += 1
-            r += 1
+        if dimension == 8:
+            for row in range(8):
+                for col in range(8):
+                    if (row == 0 or row == 7) and (col == 0 or col == 7):
+                        continue
+                    else:
+                        el_list.append((row,col))
+        else:
+            r = 0
+            f = 1 if dimension % 9 == 0 else 0
+            frac = dimension // 9
+            for row in range(frac, dimension + f - (frac), frac):
+                c = 0
+                for col in range(frac, dimension + f - (frac), frac):
+                    if (r == 0 or r == 7) and (c == 0 or c == 7):
+                        c += 1
+                        continue
+                    else:
+                        el_list.append((row, col))
+                        c += 1
+                r += 1
         return el_list
 
     def print_weights(self):
