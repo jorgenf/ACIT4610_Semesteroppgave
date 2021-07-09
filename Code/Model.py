@@ -114,9 +114,9 @@ class Model:
         self.create_nodes()
         self.node_list = list(self.config.nodes)
         if self.model == "network":
-            #self.create_grid_random_connections()
-            for node in range(len(self.node_list)):
-                self.create_distance_connections(node)
+            self.create_grid_random_connections()
+            #for node in range(len(self.node_list)):
+             #   self.create_distance_connections(node)
         elif self.model == "ca":
             for node in self.config.nodes:
                 self.create_grid_connections(node)
@@ -269,25 +269,22 @@ class Model:
                     print(e_attr)
 
     def show_network(self, grid=False):
-        edge_colors = []
+        edge_weights = []
         for e in self.config.edges(data=True):
-            if e[2]["weight"] == 1:
-                edge_colors.append("green")
-            else:
-                edge_colors.append("red")
+            edge_weights.append(e[2]["weight"])
         node_colors = []
         for n in self.config.nodes(data=True):
-            if n[1]["state"] == 1:
-                node_colors.append("blue")
+            if n[1]["type"] == 1:
+                node_colors.append("green")
             else:
-                node_colors.append("black")
+                node_colors.append("red")
         if grid:
             p = {}
             for pos, node in zip(self.position, self.config.nodes):
                 p[node] = pos
-            nx.draw(self.config, p, edge_color=edge_colors, node_color=node_colors, node_size=50, width=0.5)
+            nx.draw(self.config, p, edge_color=edge_weights, edge_cmap=plt.cm.Greys, node_color=node_colors, node_size=50, width=edge_weights)
         else:
-            nx.draw(self.config, edge_color=edge_colors, node_color=node_colors, node_size=50, width=0.5)
+            nx.draw(self.config, edge_color=edge_weights, edge_cmap=plt.cm.Greys, node_color=node_colors, node_size=50, width=edge_weights)
         plt.show()
 
     def run_simulation(self, plot=False):
