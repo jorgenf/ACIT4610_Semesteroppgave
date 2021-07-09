@@ -23,30 +23,32 @@ TYPE = {
     # Set properties for CA model
     "ca": (
         "ca",  # name of model
-        8, # size of genome (number of parameters in genotype)
+        7, # size of genome (number of parameters in genotype)
         ( # labels
-            "Resting potential",            # E_L
+            # "Resting potential",            # E_L
             "Firing threshold",
-            "Neighborhood width",
             "Random fire probability",
+            # "Neighborhood width",
+            "Inhibition percentage"
             "Refractory period",
             "Leak constant",                # C_L
             "Integration constant",         # C_I
-            "Time constant"                 # t_m
+            "Density constant"                 # t_m
             )),
 
     "network": (
         "network",  # name of model
-        8, # size of genome (number of parameters in genotype)
+        7, # size of genome (number of parameters in genotype)
         ( # labels
-            "Resting potential",            # E_L
+            # "Resting potential",            # E_L
             "Firing threshold",
-            "Neighborhood width",
             "Random fire probability",
+            # "Neighborhood width",
+            "Inhibition percentage"
             "Refractory period",
             "Leak constant",                # C_L
             "Integration constant",         # C_I
-            "Time constant"                 # t_m
+            "Density constant"                 # t_m
             )),
 }
 
@@ -59,14 +61,16 @@ FUNCTIONS
 # process the arguments given when running this script
 def process_arguments():
     input_file = ""
+    desired_workers = None
     help_string = f"{sys.argv[0]} -i <inputfile.csv>"
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hi:", ["input="])
+        opts, args = getopt.getopt(sys.argv[1:], "hi:w:", ["input=", "workers="])
     except getopt.GetoptError:
         print(help_string)
         sys.exit(2)
 
+    print(opts)
     for opt, arg in opts:
         if opt == "-h":
             print(help_string)
@@ -74,9 +78,16 @@ def process_arguments():
         elif opt in ("-i", "--input"):
             input_file = arg
             print(input_file)
+        elif opt in ("-w", "--workers"):
+            print(arg, type(arg))
+            try:
+                desired_workers = int(arg)
+            except:
+                print("Number of workers must be an integer")
+            
 
     if input_file.endswith(".csv"):
-        return input_file
+        return input_file, desired_workers
     else:
         print("Error: A .csv file containing simulation parameters is required")
         print(help_string)
@@ -86,8 +97,16 @@ def process_arguments():
 
 #Creates threads of run_thread method. Pool-size = threads - 1. Each thread result is mapped to a variable that is
 #returned when all processes are finished
-def grow_phenotype(individuals):
-    num_cpus = os.cpu_count() - 1
+def grow_phenotype(individuals, n_workers):
+    
+    # set desired numbers of cpu, if none is given it will use all available
+    if n_workers:
+        if n_workers < os.cpu_count():
+            num_cpus = n_workers
+        else:
+            num_cpus = os.cpu_count()
+    else:
+        num_cpus = os.cpu_count()
 
     """using multithreading"""    
     # p = Pool(num_cpus)
@@ -111,7 +130,7 @@ PROGRAM
 # initialize the evolution 
 evo_start_time = time.time()
 evolution_parameters = list()
-input_file = process_arguments()
+input_file, n_workers = process_arguments()
 with open(input_file, newline="") as csvfile:
     reader = csv.reader(csvfile, delimiter=';')
     reader_iter = iter(reader)
@@ -174,7 +193,7 @@ for evo_i, params in enumerate(evolution_parameters):
     for i in range(params["NUM_GENERATIONS"]):
         print(f"\nGeneration {i+1}/{params['NUM_GENERATIONS']}", end=" ")
         # print("Workers: ", end="")
-        pop_with_phenotypes = grow_phenotype(pop.individuals)
+        pop_with_phenotypes = grow_phenotype(pop.individuals, n_workers)
 
         # Record data of pupulation
         fitness_trend.append([i.fitness for i in pop_with_phenotypes])
