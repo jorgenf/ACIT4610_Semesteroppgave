@@ -8,7 +8,7 @@ import itertools
 import random
 
 
-MODEL = "ca"
+MODEL = "network"
 DURATION = 100
 DIMENSION = 10
 RESOLUTION = 40
@@ -94,7 +94,7 @@ class Model:
         #   (Default: 0.5) (Range: ~0-0.5)
         self.integ_constant = individual.genotype[5] * 0.5
         #   For CA it determines the radius of connections. For the network model it determines number of conenctions.
-        self.density_constant = individual.genotype[6] * 10
+        self.density_constant = round(individual.genotype[6] * 10)
 
         #   Resting potential in the membrane (Default: 0.5)
         #   Currently not controlled by the algorithm
