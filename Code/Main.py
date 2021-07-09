@@ -2,7 +2,6 @@ import os
 import time
 from multiprocessing import Pool, current_process
 import numpy as np
-import matplotlib.pyplot as plt
 import CellularAutomataModel, Population, Data, Fitness, Evolution, Summary
 """
 PARAMETERS
@@ -46,16 +45,16 @@ TYPE = {
 evolution_parameters = {
     #   Choose between CA and Network by commenting out the other.
     #"MODEL_TYPE": TYPE["CA"],
-       "MODEL_TYPE": TYPE["Network"],
+    "MODEL_TYPE": TYPE["Network"],
     # Size of one dimension in the array / grid / matrix
-    "DIMENSION": 10,
+    "DIMENSION": 20,
     #   Number of individuals in the population
-    "POPULATION_SIZE": 50,
+    "POPULATION_SIZE": 60,
     #   Number of generations to run.
     #   Each generation will run one simulation of the model for every individual in the population
-    "NUM_GENERATIONS": 5,
+    "NUM_GENERATIONS": 2,
     #   Simulation duration in seconds
-    "SIMULATION_DURATION": 100,
+    "SIMULATION_DURATION": 60,
     #   Number of simulation iterations per second
     "TIME_STEP_RESOLUTION": 40,
     #   The probability of mutation in any gene
@@ -139,4 +138,5 @@ if __name__ == "__main__":
     summary.parameter_trend_plot(parameter_trend)
     summary.average_distance_plot()
     summary.output_text(total_time)
+    summary.save_model(evo.best_individual_overall[1].model)
 

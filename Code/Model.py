@@ -10,20 +10,20 @@ import random
 
 MODEL = "network"
 DURATION = 100
-DIMENSION = 20
+DIMENSION = 10
 RESOLUTION = 40
 
 BIDIRECTIONAL = False
 # E_L
 RESTING_POTENTIAL = 0
-FIRING_THRESHOLD = 0.2
+FIRING_THRESHOLD = 3
 RANDOM_FIRE_PROBABILITY = 0.05
-REFRACTORY_PERIOD = 50
+REFRACTORY_PERIOD = 1
 # C_L
 LEAK_CONSTANT = 0.05
 # C_I
 INTEGRATION_CONSTANT = 0.25
-DENSITY_CONSTANT = 10
+DENSITY_CONSTANT = 2
 INHIBITION_PERCENTAGE = 0.25
 
 INDIVIDUAL = Population.Individual([
@@ -33,7 +33,7 @@ INDIVIDUAL = Population.Individual([
     INHIBITION_PERCENTAGE,
     LEAK_CONSTANT / 0.2,
     INTEGRATION_CONSTANT / 0.5,
-    DENSITY_CONSTANT
+    DENSITY_CONSTANT / 10
 ])
 
 
@@ -58,11 +58,8 @@ def test_class():
 
     #  Compare model output with experimental data
     make_raster_plot(reference_file["small"], output, DURATION)
-    #model.show_network(grid=True)
-    fig, axs = plt.subplots(2)
-    axs[0].plot(model.mem)
-    axs[1].plot(model.sp)
-    plt.show()
+    model.show_network(grid=True)
+
 
 
 class Model:
@@ -87,7 +84,7 @@ class Model:
         self.random_fire_prob = individual.genotype[1] * 0.01
         #   Refractory period: time to recharge after firing (Default: 1) (Range: ~0.3-1.3)
         #   Subtracts this constant from the membrane potential when a neuron fires.
-        self.refractory_period = individual.genotype[2] + 0.3
+        self.refractory_period = round(individual.genotype[2] * 10)
         #   The distribution of inhibiting and exciting neurons. Inhibition constant determines likelyhood of a
         self.inhibition_percentage = individual.genotype[3] * 0.5
         #   By which ratio does the membrane potential passively move towards the
@@ -96,7 +93,8 @@ class Model:
         #   By which ratio does the input from the neighborhood integrate with the neuron
         #   (Default: 0.5) (Range: ~0-0.5)
         self.integ_constant = individual.genotype[5] * 0.5
-        self.density_constant = individual.genotype[6]
+        #   For CA it determines the radius of connections. For the network model it determines number of conenctions.
+        self.density_constant = round(individual.genotype[6] * 10)
 
         #   Resting potential in the membrane (Default: 0.5)
         #   Currently not controlled by the algorithm
@@ -116,15 +114,14 @@ class Model:
         self.create_nodes()
         self.node_list = list(self.config.nodes)
         if self.model == "network":
-            for node in range(len(self.node_list)):
-                self.create_random_connections(node)
+            self.create_grid_random_connections()
+            #for node in range(len(self.node_list)):
+             #   self.create_distance_connections(node)
         elif self.model == "ca":
             for node in self.config.nodes:
                 self.create_grid_connections(node)
         else:
             raise Exception("Invalid model chosen...")
-        self.mem = []
-        self.sp = []
 
         #   Position field can be used to invert coordinates for visualization
         #   self.config.pos = {(x, y): (x, y) for x, y in self.config.nodes()}
@@ -138,25 +135,28 @@ class Model:
         self.position = list(itertools.product(range(self.dimension), range(self.dimension)))
         for pos in self.position:
             self.config.add_node(pos)
-        for node in self.config.nodes:
-            self.config.nodes[node]['mem_pot'] = self.rest_pot
-            if random.random() < self.random_fire_prob:
-                self.config.nodes[node]['state'] = 1
-                self.config.nodes[node]['refractory'] = self.refractory_period
-            else:
-                self.config.nodes[node]['state'] = 0
-                self.config.nodes[node]['refractory'] = 0
-
-    def create_random_connections(self, node):
-        pos = self.node_list[node]
-        for n in range(node + 1, len(self.node_list)):
+            node = self.config.nodes[pos]
+            node['mem_pot'] = self.rest_pot
             if random.random() > self.inhibition_percentage:
-                weight = 1
+                node["type"] = 1
             else:
-                weight = -1
+                node["type"] = -1
+            if random.random() < self.random_fire_prob:
+                node['state'] = 1
+                node['refractory'] = self.refractory_period
+            else:
+                node['state'] = 0
+                node['refractory'] = 0
+
+    def create_distance_connections(self, node):
+        pos = self.node_list[node]
+        max_coordinate = self.dimension - 1
+        max_distance = m.sqrt(max_coordinate**2 + max_coordinate**2)
+        for n in range(0 if BIDIRECTIONAL else node + 1, len(self.node_list)):
             distance = m.sqrt(((pos[0] - self.node_list[n][0])**2) + ((pos[1] - self.node_list[n][1])**2))
             p = m.exp(-((distance/self.density_constant)**2))
             if p >= random.random():
+                weight = round((max_distance - distance) / max_distance, 2)
                 order = random.choice([(pos, self.node_list[n]), (self.node_list[n], pos)])
                 self.config.add_edge(order[0], order[1], weight=weight)
 
@@ -164,13 +164,29 @@ class Model:
         for x in range(node[0] - round(self.density_constant), node[0] + round(self.density_constant) + 1):
             for y in range(node[1] - round(self.density_constant), node[1] + round(self.density_constant) + 1):
                 if 0 <= x < self.dimension and 0 <= y < self.dimension and (x != node[0] or y != node[1]):
-                    if random.random() > self.inhibition_percentage:
-                        weight = 1
-                    else:
-                        weight = -1
-                    self.config.add_edge(node, (x,y), weight=weight)
+                    self.config.add_edge(node, (x,y), weight=1)
                 else:
                     continue
+
+    def create_grid_random_connections(self):
+        max_coordinate = self.dimension - 1
+        max_distance = m.sqrt(max_coordinate**2 + max_coordinate**2)
+        for node in self.config.nodes:
+            for g in [(node[0], node[1] + 1), (node[0], node[1] - 1), (node[0] + 1, node[1]), (node[0] - 1, node[1])]:
+                if g in self.config.nodes:
+                    self.config.add_edge(node, g, weight=1)
+            current_neighbors = self.config.out_edges(node, data=True)
+            potential_neighbors = list(self.config.nodes)
+            potential_neighbors.remove(node)
+            for re in current_neighbors:
+                if re[1] in potential_neighbors:
+                    potential_neighbors.remove(re[1])
+            new_neighbors = np.random.choice(range(len(potential_neighbors)), self.density_constant)
+            for n in new_neighbors:
+                neighbor = potential_neighbors[n]
+                distance = m.sqrt(((node[0] - neighbor[0])**2) + ((node[1] - neighbor[1])**2))
+                weight = round((max_distance - distance) / max_distance, 2)
+                self.config.add_edge(node, neighbor, weight=weight)
 
     def alter_state(self, neuron, inp):
         """
@@ -179,19 +195,14 @@ class Model:
         dV = (self.leak_constant * (self.rest_pot - neuron['mem_pot']) + (self.integ_constant * inp))
         membrane_potential = neuron["mem_pot"] + dV
         if (membrane_potential >= self.firing_threshold or random.random() < self.random_fire_prob) and neuron["refractory"] <= 0:
-            if self.n == 0:
-                self.sp.append(1)
             return 1, self.rest_pot, self.refractory_period
         else:
-            if self.n == 0:
-                self.sp.append(0)
             return 0, membrane_potential, max(0, neuron["refractory"] - 1)
 
     def update(self):
         """
         Apply the ruleset to the current Network and update the next iteration.
         """
-        self.n = 0
         for node in self.config.nodes:
             in_potential = 0
             if self.config.nodes[node]["refractory"] == 0:
@@ -199,13 +210,11 @@ class Model:
                 for conn in neighbor_list:
                     state = self.config.nodes[conn[0]]["state"]
                     weight = conn[2]["weight"]
-                    in_potential += state * weight
+                    type = self.config.nodes[conn[0]]["type"]
+                    in_potential += state * weight * type
                 self.next_config.nodes[node]['state'], self.next_config.nodes[node]['mem_pot'],  self.next_config.nodes[node]["refractory"] = self.alter_state(self.config.nodes[node], in_potential)
             else:
                 self.next_config.nodes[node]['state'], self.next_config.nodes[node]['mem_pot'], self.next_config.nodes[node]["refractory"] = self.alter_state(self.config.nodes[node], 0)
-            if self.n == 0:
-                self.mem.append(self.config.nodes[node]["mem_pot"])
-            self.n += 1
         #  Update the configuration for the next iteration
         self.config, self.next_config = self.next_config, self.config
         #  Get the spikes from this iteration and append them to the list of spikes if there were any
@@ -260,25 +269,23 @@ class Model:
                     print(e_attr)
 
     def show_network(self, grid=False):
-        edge_colors = []
+        edge_weights = []
         for e in self.config.edges(data=True):
-            if e[2]["weight"] == 1:
-                edge_colors.append("green")
-            else:
-                edge_colors.append("red")
+            edge_weights.append(e[2]["weight"])
         node_colors = []
         for n in self.config.nodes(data=True):
-            if n[1]["state"] == 1:
-                node_colors.append("blue")
+            if n[1]["type"] == 1:
+                node_colors.append("green")
             else:
-                node_colors.append("black")
+                node_colors.append("red")
+        plt.figure(figsize=(10,10))
         if grid:
             p = {}
             for pos, node in zip(self.position, self.config.nodes):
                 p[node] = pos
-            nx.draw(self.config, p, edge_color=edge_colors, node_color=node_colors, node_size=50, width=0.5)
+            nx.draw(self.config, p, edge_color=edge_weights, edge_cmap=plt.cm.Greys, node_color=node_colors, node_size=50, width=edge_weights)
         else:
-            nx.draw(self.config, edge_color=edge_colors, node_color=node_colors, node_size=50, width=0.5)
+            nx.draw(self.config, edge_color=edge_weights, edge_cmap=plt.cm.Greys, node_color=node_colors, node_size=50, width=edge_weights)
         plt.show()
 
     def run_simulation(self, plot=False):

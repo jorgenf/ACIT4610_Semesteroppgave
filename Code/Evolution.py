@@ -66,14 +66,15 @@ class Evolution:
         Gets the fitness score and appends it to the individual.
         """
         # print(current_process().name, end=" ")
-
-        model = Model(
-            individual=individual,
-            dimension=self.dimension,
-            duration=self.simulation_duration,
-            resolution=self.resolution
-        )
-        phenotype = model.run_simulation()
+        if individual.model == None:
+            model = Model(
+                individual=individual,
+                dimension=self.dimension,
+                duration=self.simulation_duration,
+                resolution=self.resolution
+            )
+            individual.model = model
+        phenotype = individual.model.run_simulation()
 
         # if self.model_type == "CA":
         #     #   Run a simulation of the model to return a phenotype from the genotype.
