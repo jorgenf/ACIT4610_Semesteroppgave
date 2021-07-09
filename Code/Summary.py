@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import Data
+import networkx as nx
 
 
 class Summary:
@@ -184,6 +185,9 @@ class Summary:
             writer.writerow(["generation", "avg_fitness"])
             for i, score in enumerate(fitness_data):
                 writer.writerow([str(i), str(score)])
+
+    def save_model(self, model):
+        nx.write_graphml(model.config, self.dir_path + "/model.gml")
 
 
 """

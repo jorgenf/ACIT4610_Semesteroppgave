@@ -1,6 +1,7 @@
 """
 Methods for data processing.
 """
+import networkx as nx
 import numpy as np
 import pandas as pd
 
@@ -55,3 +56,7 @@ def read_recording(filename, recording_start=0, recording_len=30*60):
     data_points = data_points[start_index:stop_index]
     f.close
     return data_points
+
+def load_model(filename):
+    model = nx.read_graphml("../Output/" + filename + "/model.gml")
+    return model

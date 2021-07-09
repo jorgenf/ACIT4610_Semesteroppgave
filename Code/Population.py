@@ -37,3 +37,4 @@ class Individual:
         self.fitness = None
         self.burst_corr = None
         self.avg_dist = None
+        self.model = None

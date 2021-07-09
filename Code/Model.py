@@ -278,6 +278,7 @@ class Model:
                 node_colors.append("green")
             else:
                 node_colors.append("red")
+        plt.figure(figsize=(10,10))
         if grid:
             p = {}
             for pos, node in zip(self.position, self.config.nodes):

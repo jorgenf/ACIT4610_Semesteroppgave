@@ -209,6 +209,7 @@ for evo_i, params in enumerate(evolution_parameters):
     summary.parameter_trend_plot(parameter_trend)
     summary.average_distance_plot()
     summary.output_text(model_total_time)
+    summary.save_model(evo.best_individual_overall[1].model)
     print(f"Model simulated in {model_total_time:.2f} seconds")
 
 print(f"Evolution complete. Simulated in {time.time() - evo_start_time:.2f} seconds")
