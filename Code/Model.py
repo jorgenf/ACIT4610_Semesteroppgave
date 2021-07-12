@@ -96,9 +96,9 @@ class Model:
         self.integ_constant = individual.genotype[5] * 0.5
         #   For CA it determines the radius of connections. For the network model it determines number of conenctions.
         if self.model == "ca":
-            self.density_constant = round(individual.genotype[6] * 10) + 1
+            self.density_constant = round(individual.genotype[6] * 5) + 1
         elif self.model == "network":
-            self.density_constant = (individual.genotype[6] * 10) + 0.1
+            self.density_constant = (individual.genotype[6] * 4) + 0.1
         else:
             raise Exception("Invalid model chosen.")
 
