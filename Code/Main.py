@@ -79,8 +79,10 @@ if __name__ == "__main__":
         Pool-size = threads - 1.
         Each thread result is mapped to a variable that is returned when all processes are finished
         """
-        p = Pool(os.cpu_count()-1)
-        new_individuals = p.map(evo.generate_phenotype, individuals)
+
+        with Pool(os.cpu_count()-1) as p:
+            new_individuals = p.map(evo.generate_phenotype, individuals)
+            p.close()
         return new_individuals
     
     #   Creates population object with POPULATION_SIZE.
