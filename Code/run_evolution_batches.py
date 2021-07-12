@@ -186,6 +186,7 @@ for evo_i, params in enumerate(evolution_parameters):
     fitness_trend = []
     average_fitness_trend = []
     parameter_trend = []
+    generation_summary = {}
 
 
     # Start the evolution. Runs loop for NUM_GENERATIONS
@@ -203,8 +204,28 @@ for evo_i, params in enumerate(evolution_parameters):
         # Updates best individual if better than current best
         sorted_pop = pop_with_phenotypes
         sorted_pop.sort(key=lambda x: x.fitness, reverse=True)
+
+        # Save data of top 5 individuals
+        if i % 5 == 0 or i+1 == params["NUM_GENERATIONS"]:
+            top5_summary = {}
+            top5 = sorted_pop[:5]
+            for j in range(5):
+                top5_summary[f"rank {j+1}"] = {
+                    # "generation" : i,
+                    # "rank" : j+1,
+                    "genotype" : top5[j].genotype,
+                    "phenotype" : top5[j].phenotype.tolist(),
+                    "fitness" : top5[j].fitness,
+                    }
+            generation_summary[i+1] = top5_summary
+
+
+        #   If there is no recorded best individual, choose the best one of this generation
         if not evo.best_individual_overall:
             evo.best_individual_overall = (i, sorted_pop[0])
+
+        #   If the fitness of the best individual in this generation is better than the best recorded individual,
+        #   let the new one take its place as the best.
         elif evo.best_individual_overall[1].fitness < sorted_pop[0].fitness:
             evo.best_individual_overall = (i, sorted_pop[0])
 
@@ -229,6 +250,7 @@ for evo_i, params in enumerate(evolution_parameters):
     summary.average_distance_plot()
     summary.output_text(model_total_time)
     summary.save_model(evo.best_individual_overall[1].model)
+    summary.save_stats(generation_summary)
     print(f"Model simulated in {model_total_time:.2f} seconds")
 
 evo_total_time = round(time.time() - evo_start_time)

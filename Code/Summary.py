@@ -15,7 +15,7 @@ class Summary:
     """
     Creates summaries of relevant results and trends after the last generation of Evolution.
     """
-    def __init__(self, population, evolution_parameters, evo, save_data=True):
+    def __init__(self, population, evolution_parameters, evo):
         self.population = population
         self.evolution_parameters = evolution_parameters
         self.bin_size = self.evolution_parameters["SIMULATION_DURATION"]
@@ -46,12 +46,6 @@ class Summary:
         else:
             self.dir_path += str(0)
             os.makedirs(self.dir_path)
-        
-
-        # setup for saving data
-        self.save_data = save_data
-        if save_data:
-            Path(f"{self.dir_path}/numbers/").mkdir(parents=True, exist_ok=True)
 
     def raster_plot(self):
         """
@@ -73,6 +67,7 @@ class Summary:
             #   Where to start reading experimental data [s]
             recording_start=0
             )
+
         #   Check if input is in the correct format
         self.best_individual.phenotype = np.array(
             [(row[0], row[1]) for row in self.best_individual.phenotype], 
@@ -80,6 +75,7 @@ class Summary:
         self.phenotype_reference = np.array(
             [(row[0], row[1]) for row in self.phenotype_reference], 
             dtype=[("t", "float64"), ("electrode", "int64")])
+
         #   Sort spikes by electrode
         self.A_spikes_per_array = [[] for _ in range(64)]
         for row in self.best_individual.phenotype:
@@ -87,8 +83,10 @@ class Summary:
         self.B_spikes_per_array = [[] for _ in range(64)]
         for row in self.phenotype_reference:
             self.B_spikes_per_array[row[1]].append(row[0])
+
         #   Initialize plot
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, sharex="all", sharey="row")
+
         #   Make raster plots
         ax1.eventplot(
             self.A_spikes_per_array,
@@ -105,6 +103,7 @@ class Summary:
             )
         ax2.set_xlabel("Seconds")
         ax2.set_title("Neural culture")
+        
         #   Make histograms
         ax3.hist(self.best_individual.phenotype["t"], bins=self.bin_size)
         ax3.set_xlabel("Seconds")
@@ -114,29 +113,6 @@ class Summary:
         ax4.set_xlabel("Seconds")
 
         fig.savefig(self.dir_path + "/Best_individual.png")
-
-        # saves the model spikes as a text file
-        if self.save_data:
-            model_dict = {
-                "sorted" : self.A_spikes_per_array,
-                "unsorted" : self.best_individual.phenotype["t"].tolist()
-            }
-            reference_dict = {
-                "sorted" : self.B_spikes_per_array,
-                "unsorted" : self.phenotype_reference["t"].tolist()
-            }
-
-            data_dict = {
-                "model" : model_dict,
-                "reference" : reference_dict
-                }
-            
-            data_dict["bin_size"] = self.bin_size
-
-            data_path = Path(f"{self.dir_path}/numbers/best_model_spikes.json")
-            with data_path.open("w") as file:
-                json.dump(data_dict, file)
-
 
     def parameter_trend_plot(self, parameter_data):
         """
@@ -222,6 +198,15 @@ class Summary:
 
     def save_model(self, model):
         nx.write_graphml(model.config, self.dir_path + "/model.gml")
+    
+    def save_stats(self, generation_summary):
+        self.evolution_parameters["generations"] = generation_summary
+
+        # save output
+        data_path = Path(f"{self.dir_path}/evolution_data.json")
+        with data_path.open("w") as file:
+            json.dump(self.evolution_parameters, file)
+
 
 
 """
