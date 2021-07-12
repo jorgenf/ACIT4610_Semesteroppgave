@@ -1,16 +1,21 @@
 import csv
+import os
+from pathlib import Path
+import json
+
 import numpy as np
 import matplotlib.pyplot as plt
-import os
-import Data
 import networkx as nx
+
+
+import Data
 
 
 class Summary:
     """
     Creates summaries of relevant results and trends after the last generation of Evolution.
     """
-    def __init__(self, population, evolution_parameters, evo):
+    def __init__(self, population, evolution_parameters, evo, save_data=True):
         self.population = population
         self.evolution_parameters = evolution_parameters
         self.bin_size = self.evolution_parameters["SIMULATION_DURATION"]
@@ -41,6 +46,12 @@ class Summary:
         else:
             self.dir_path += str(0)
             os.makedirs(self.dir_path)
+        
+
+        # setup for saving data
+        self.save_data = save_data
+        if save_data:
+            Path(f"{self.dir_path}/numbers/").mkdir(parents=True, exist_ok=True)
 
     def raster_plot(self):
         """
@@ -103,6 +114,29 @@ class Summary:
         ax4.set_xlabel("Seconds")
 
         fig.savefig(self.dir_path + "/Best_individual.png")
+
+        # saves the model spikes as a text file
+        if self.save_data:
+            model_dict = {
+                "sorted" : self.A_spikes_per_array,
+                "unsorted" : self.best_individual.phenotype["t"].tolist()
+            }
+            reference_dict = {
+                "sorted" : self.B_spikes_per_array,
+                "unsorted" : self.phenotype_reference["t"].tolist()
+            }
+
+            data_dict = {
+                "model" : model_dict,
+                "reference" : reference_dict
+                }
+            
+            data_dict["bin_size"] = self.bin_size
+
+            data_path = Path(f"{self.dir_path}/numbers/best_model_spikes.json")
+            with data_path.open("w") as file:
+                json.dump(data_dict, file)
+
 
     def parameter_trend_plot(self, parameter_data):
         """
