@@ -97,16 +97,7 @@ def process_arguments():
 
 #Creates threads of run_thread method. Pool-size = threads - 1. Each thread result is mapped to a variable that is
 #returned when all processes are finished
-def grow_phenotype(individuals, n_workers):
-    
-    # set desired numbers of cpu, if none is given it will use all available
-    if n_workers:
-        if n_workers < os.cpu_count():
-            num_cpus = n_workers
-        else:
-            num_cpus = os.cpu_count()
-    else:
-        num_cpus = os.cpu_count()
+def grow_phenotype(individuals, num_cpus):
 
     """using multithreading"""    
     # p = Pool(num_cpus)
@@ -156,8 +147,19 @@ with open(input_file, newline="") as csvfile:
             #Percentage of current population that will be included in next generation
             "RETAINED_ADULTS_P": float(row[8]),
             #Name of the file of experimental data used as reference for fitness function and raster plot
-            "REFERENCE_PHENOTYPE": "Small - 7-1-35.spk.txt"
+            # "REFERENCE_PHENOTYPE": "Small - 7-1-35.spk.txt"
+            "REFERENCE_PHENOTYPE": row[9]
         })
+
+    
+# set desired numbers of cpu, if none is given it will use all available
+if n_workers:
+    if n_workers < os.cpu_count():
+        num_cpus = n_workers
+    else:
+        num_cpus = os.cpu_count()
+else:
+    num_cpus = os.cpu_count()
 
 for evo_i, params in enumerate(evolution_parameters):
     model_start_time = time.time()
@@ -194,7 +196,7 @@ for evo_i, params in enumerate(evolution_parameters):
     for i in range(params["NUM_GENERATIONS"]):
         print(f"\nGeneration {i+1}/{params['NUM_GENERATIONS']}", end=" ")
         # print("Workers: ", end="")
-        pop_with_phenotypes = grow_phenotype(pop.individuals, n_workers)
+        pop_with_phenotypes = grow_phenotype(pop.individuals, num_cpus)
 
         # Record data of pupulation
         fitness_trend.append([i.fitness for i in pop_with_phenotypes])
