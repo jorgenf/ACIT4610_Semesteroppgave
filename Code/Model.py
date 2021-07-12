@@ -23,7 +23,7 @@ REFRACTORY_PERIOD = 1
 LEAK_CONSTANT = 0.05
 # C_I
 INTEGRATION_CONSTANT = 0.25
-DENSITY_CONSTANT = 2
+DENSITY_CONSTANT = 6
 INHIBITION_PERCENTAGE = 0.25
 
 INDIVIDUAL = Population.Individual([
@@ -78,6 +78,7 @@ class Model:
         duration=DURATION, 
         resolution=RESOLUTION
         ):
+        self.model = model
         #   Firing Threshold in the membrane (Default: 1) (Range: ~1-2)
         self.firing_threshold = individual.genotype[0] + 1
         #   Chance to randomly fire (Default: 0.005 (0.5%)) (Range: ~0-0.01)
@@ -94,13 +95,17 @@ class Model:
         #   (Default: 0.5) (Range: ~0-0.5)
         self.integ_constant = individual.genotype[5] * 0.5
         #   For CA it determines the radius of connections. For the network model it determines number of conenctions.
-        self.density_constant = round(individual.genotype[6] * 10)
+        if self.model == "ca":
+            self.density_constant = round(individual.genotype[6] * 10) + 1
+        elif self.model == "network":
+            self.density_constant = (individual.genotype[6] * 10) + 0.1
+        else:
+            raise Exception("Invalid model chosen.")
 
         #   Resting potential in the membrane (Default: 0.5)
         #   Currently not controlled by the algorithm
         self.rest_pot = RESTING_POTENTIAL
         self.step = 0
-        self.model = model
         self.duration = duration
         self.dimension = dimension
         #   How many iterations make up 1 second (Default: 50)
@@ -114,9 +119,9 @@ class Model:
         self.create_nodes()
         self.node_list = list(self.config.nodes)
         if self.model == "network":
-            self.create_grid_random_connections()
-            #for node in range(len(self.node_list)):
-             #   self.create_distance_connections(node)
+            #self.create_grid_random_connections()
+            for node in range(len(self.node_list)):
+                self.create_distance_connections(node)
         elif self.model == "ca":
             for node in self.config.nodes:
                 self.create_grid_connections(node)
@@ -156,7 +161,8 @@ class Model:
             distance = m.sqrt(((pos[0] - self.node_list[n][0])**2) + ((pos[1] - self.node_list[n][1])**2))
             p = m.exp(-((distance/self.density_constant)**2))
             if p >= random.random():
-                weight = round((max_distance - distance) / max_distance, 2)
+                #weight = round((max_distance - distance) / max_distance, 2)
+                weight = 1
                 order = random.choice([(pos, self.node_list[n]), (self.node_list[n], pos)])
                 self.config.add_edge(order[0], order[1], weight=weight)
 
