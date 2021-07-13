@@ -7,7 +7,7 @@ from multiprocessing import Pool
 
 import numpy as np
 import matplotlib.pyplot as plt
-from tqdm.contrib.concurrent import process_map
+# from tqdm.contrib.concurrent import process_map
 
 from Model import Model
 import Population, Evolution, Summary
@@ -100,16 +100,16 @@ def process_arguments():
 def grow_phenotype(individuals, num_cpus):
 
     """using multithreading"""    
-    # p = Pool(num_cpus)
-    # new_individuals = p.map(evo.generate_phenotype, individuals)
+    p = Pool(num_cpus)
+    new_individuals = p.map(evo.generate_phenotype, individuals)
 
     """using tqdm (progressbar)"""
-    print(f"(using {num_cpus} CPU cores)")
-    new_individuals = process_map(
-        evo.generate_phenotype,
-        individuals,
-        max_workers=num_cpus
-    )
+    # print(f"(using {num_cpus} CPU cores)")
+    # new_individuals = process_map(
+    #     evo.generate_phenotype,
+    #     individuals,
+    #     max_workers=num_cpus
+    # )
 
     return new_individuals
 
@@ -172,6 +172,7 @@ for evo_i, params in enumerate(evolution_parameters):
     print(f"{key}: {params[key][0]} (genome size = {params[key][1]})")
     for key in iterator:
         print(f"{key}: {params[key]}")
+    print()
 
 
     # Creates population object with POPULATION_SIZE. 
@@ -192,9 +193,10 @@ for evo_i, params in enumerate(evolution_parameters):
 
 
     # Start the evolution. Runs loop for NUM_GENERATIONS
-    
+    est_time = 0
     for i in range(params["NUM_GENERATIONS"]):
-        print(f"\nGeneration {i+1}/{params['NUM_GENERATIONS']}", end=" ")
+        t_generation_start = time.time()
+        print(f"Simulating generation {i+1}/{params['NUM_GENERATIONS']} ({round(est_time)} s per generation)", end="\r")
         # print("Workers: ", end="")
         pop_with_phenotypes = grow_phenotype(pop.individuals, num_cpus)
 
@@ -236,9 +238,14 @@ for evo_i, params in enumerate(evolution_parameters):
             parents = evo.select_parents(pop_with_phenotypes)
             new_gen = evo.reproduce(parents, pop_with_phenotypes)
             pop.individuals = new_gen
-            print()
+            # print()
         else:
             pop.individuals = pop_with_phenotypes
+        
+        if est_time == "?":
+            est_time = time.time() - t_generation_start
+        else:
+            est_time = (est_time + (time.time() - t_generation_start)) / 2
 
     # Register the time it took to run the script
     model_total_time = time.time() - model_start_time
