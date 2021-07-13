@@ -2,6 +2,7 @@ import csv
 import os
 from pathlib import Path
 import json
+from datetime import datetime
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,6 +28,9 @@ class Summary:
         self.reference_spikes = Data.get_spikes_file(self.evolution_parameters["REFERENCE_PHENOTYPE"])
         self.simulation_spikes = Data.get_spikes_pheno(
             self.best_individual.phenotype, self.evolution_parameters["SIMULATION_DURATION"])
+
+        reference_name = str(self.evolution_parameters["REFERENCE_PHENOTYPE"]).replace(".spk.txt", "")
+        now = datetime.now().strftime("%Y%m%d%H%M%S")
         self.dir_path = "../Output/" + self.evolution_parameters["MODEL_TYPE"][0] + \
                         "_dim" + str(self.evolution_parameters["DIMENSION"]) + \
                         "_pop" + str(self.evolution_parameters["POPULATION_SIZE"]) + \
@@ -36,16 +40,13 @@ class Summary:
                         "_mut" + str(self.evolution_parameters["MUTATION_P"]) + \
                         "_par" + str(self.evolution_parameters["PARENTS_P"]) + \
                         "_ret" + str(self.evolution_parameters["RETAINED_ADULTS_P"]) + \
-                        "_version"
-        if os.path.exists(self.dir_path + str(0)):
-            n = 1
-            while os.path.exists(self.dir_path + str(n)):
-                n += 1
-            self.dir_path += str(n)
+                        "_" + reference_name + \
+                        "_" + now
+        
+        try:
             os.makedirs(self.dir_path)
-        else:
-            self.dir_path += str(0)
-            os.makedirs(self.dir_path)
+        except:
+            print(f"Failed to create folder {self.dir_path}")
 
     def raster_plot(self):
         """
