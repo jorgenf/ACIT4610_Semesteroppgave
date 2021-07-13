@@ -3,6 +3,7 @@ import time
 from multiprocessing import Pool, current_process
 import numpy as np
 import CellularAutomataModel, Population, Data, Fitness, Evolution, Summary
+import pandas as pd
 """
 PARAMETERS
 """
@@ -73,74 +74,24 @@ PROGRAM
 """
 if __name__ == "__main__":
     start_time = time.time()
-    evo_list = [{
-        "MODEL_TYPE": TYPE["CA"],
-        "DIMENSION": 10,
-        "POPULATION_SIZE": 60,
-        "NUM_GENERATIONS": 80,
-        "SIMULATION_DURATION": 60,
-        "TIME_STEP_RESOLUTION": 40,
-        "MUTATION_P": 0.1,
-        "PARENTS_P": 0.5,
-        "RETAINED_ADULTS_P": 0.05,
-        "REFERENCE_PHENOTYPE": "6-2-10.spk.txt"},
-        {
-            "MODEL_TYPE": TYPE["CA"],
-            "DIMENSION": 10,
-            "POPULATION_SIZE": 60,
-            "NUM_GENERATIONS": 80,
-            "SIMULATION_DURATION": 60,
-            "TIME_STEP_RESOLUTION": 40,
-            "MUTATION_P": 0.1,
-            "PARENTS_P": 0.5,
-            "RETAINED_ADULTS_P": 0.05,
-            "REFERENCE_PHENOTYPE": "6-2-13.spk.txt"},
-        {
-            "MODEL_TYPE": TYPE["CA"],
-            "DIMENSION": 10,
-            "POPULATION_SIZE": 60,
-            "NUM_GENERATIONS": 80,
-            "SIMULATION_DURATION": 60,
-            "TIME_STEP_RESOLUTION": 40,
-            "MUTATION_P": 0.1,
-            "PARENTS_P": 0.5,
-            "RETAINED_ADULTS_P": 0.05,
-            "REFERENCE_PHENOTYPE": "6-2-17.spk.txt"},
-        {
-            "MODEL_TYPE": TYPE["CA"],
-            "DIMENSION": 10,
-            "POPULATION_SIZE": 60,
-            "NUM_GENERATIONS": 80,
-            "SIMULATION_DURATION": 60,
-            "TIME_STEP_RESOLUTION": 40,
-            "MUTATION_P": 0.1,
-            "PARENTS_P": 0.5,
-            "RETAINED_ADULTS_P": 0.05,
-            "REFERENCE_PHENOTYPE": "6-2-24.spk.txt"},
-        {
-            "MODEL_TYPE": TYPE["CA"],
-            "DIMENSION": 10,
-            "POPULATION_SIZE": 60,
-            "NUM_GENERATIONS": 80,
-            "SIMULATION_DURATION": 60,
-            "TIME_STEP_RESOLUTION": 40,
-            "MUTATION_P": 0.1,
-            "PARENTS_P": 0.5,
-            "RETAINED_ADULTS_P": 0.05,
-            "REFERENCE_PHENOTYPE": "6-2-28.spk.txt"},
-        {
-            "MODEL_TYPE": TYPE["CA"],
-            "DIMENSION": 10,
-            "POPULATION_SIZE": 60,
-            "NUM_GENERATIONS": 80,
-            "SIMULATION_DURATION": 60,
-            "TIME_STEP_RESOLUTION": 40,
-            "MUTATION_P": 0.1,
-            "PARENTS_P": 0.5,
-            "RETAINED_ADULTS_P": 0.05,
-            "REFERENCE_PHENOTYPE": "6-2-31.spk.txt"},
+    evo_list = []
+    file = "run_ea_ca_small.csv"
 
-    ]
+    data = pd.read_csv("batch_configs/" + file, delimiter=";")
+
+    for i, row in data.iterrows():
+        evo_list.append({
+            "MODEL_TYPE": TYPE[row["MODEL_TYPE"]],
+            "DIMENSION": row["DIMENSION"],
+            "POPULATION_SIZE": row["POPULATION_SIZE"],
+            "NUM_GENERATIONS": row["NUM_GENERATIONS"],
+            "SIMULATION_DURATION": row["SIMULATION_DURATION"],
+            "TIME_STEP_RESOLUTION": row["TIME_STEP_RESOLUTION"],
+            "MUTATION_P": row["MUTATION"],
+            "PARENTS_P": row["PARENTS_P"],
+            "RETAINED_ADULTS_P": row["RETAINED_ADULTS"],
+            "REFERENCE_PHENOTYPE": row["REFERENCE_DATA"]
+        })
 
     def run_threads(individuals):
         """
