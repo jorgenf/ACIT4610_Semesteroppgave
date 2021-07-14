@@ -23,17 +23,17 @@ REFRACTORY_PERIOD = 1
 LEAK_CONSTANT = 0.05
 # C_I
 INTEGRATION_CONSTANT = 0.25
-DENSITY_CONSTANT = 6
+DENSITY_CONSTANT = 4.1
 INHIBITION_PERCENTAGE = 0.25
-
+#   The Default Individual for testing
 INDIVIDUAL = Population.Individual([
     FIRING_THRESHOLD - 1,
-    RANDOM_FIRE_PROBABILITY / 0.01,
-    REFRACTORY_PERIOD / 2,
-    INHIBITION_PERCENTAGE,
+    RANDOM_FIRE_PROBABILITY / 0.15,
+    REFRACTORY_PERIOD / 10,
+    INHIBITION_PERCENTAGE / 0.5,
     LEAK_CONSTANT / 0.2,
     INTEGRATION_CONSTANT / 0.5,
-    DENSITY_CONSTANT / 10
+    DENSITY_CONSTANT / 4 - 0.1
 ])
 
 
@@ -79,14 +79,18 @@ class Model:
         resolution=RESOLUTION
         ):
         self.model = model
-        #   Firing Threshold in the membrane (Default: 1) (Range: ~1-2)
-        self.firing_threshold = individual.genotype[0] + 1
-        #   Chance to randomly fire (Default: 0.005 (0.5%)) (Range: ~0-0.01)
-        self.random_fire_prob = individual.genotype[1] * 0.01
-        #   Refractory period: time to recharge after firing (Default: 1) (Range: ~0.3-1.3)
+        #   Firing Threshold in the membrane.
+        #   (Default: 3) (Range: ~1-5)
+        self.firing_threshold = (individual.genotype[0] * 2) + 1
+        #   Chance to randomly fire (Default: 0.05 (5%)) (Range: ~0-0.15)
+        self.random_fire_prob = individual.genotype[1] * 0.15
+        #   Refractory period: time to recharge after firing.
         #   Subtracts this constant from the membrane potential when a neuron fires.
+        #   (Default: 1) (Range: ~0-10)
         self.refractory_period = round(individual.genotype[2] * 10)
-        #   The distribution of inhibiting and exciting neurons. Inhibition constant determines likelyhood of a
+        #   The distribution of inhibiting and exciting neurons.
+        #   Determines the likelihood of setting a neuron's type to inhibitory.
+        #   (Default: 0.25) (Range: ~0-0.5)
         self.inhibition_percentage = individual.genotype[3] * 0.5
         #   By which ratio does the membrane potential passively move towards the
         #   resting potential every iteration. (Default: 0.1) (Range: ~0-0.2)
