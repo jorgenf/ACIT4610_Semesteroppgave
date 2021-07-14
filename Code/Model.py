@@ -16,25 +16,26 @@ RESOLUTION = 40
 BIDIRECTIONAL = False
 # E_L
 RESTING_POTENTIAL = 0
-FIRING_THRESHOLD = 3
+FIRING_THRESHOLD = 1
 RANDOM_FIRE_PROBABILITY = 0.05
 REFRACTORY_PERIOD = 1
 # C_L
 LEAK_CONSTANT = 0.05
 # C_I
 INTEGRATION_CONSTANT = 0.25
-DENSITY_CONSTANT = 4.1
+DENSITY_CONSTANT = 2.1
 INHIBITION_PERCENTAGE = 0.25
 #   The Default Individual for testing
-INDIVIDUAL = Population.Individual([
-    FIRING_THRESHOLD - 1,
+INDIVIDUAL = Population.Individual(
+    [(FIRING_THRESHOLD - 0.1) / 5,
     RANDOM_FIRE_PROBABILITY / 0.15,
     REFRACTORY_PERIOD / 10,
     INHIBITION_PERCENTAGE / 0.5,
     LEAK_CONSTANT / 0.2,
     INTEGRATION_CONSTANT / 0.5,
-    DENSITY_CONSTANT / 4 - 0.1
-])
+    (DENSITY_CONSTANT - 0.1) / 4
+     ]
+)
 
 
 def test_class():
@@ -80,8 +81,8 @@ class Model:
         ):
         self.model = model
         #   Firing Threshold in the membrane.
-        #   (Default: 3) (Range: ~1-5)
-        self.firing_threshold = (individual.genotype[0] * 2) + 1
+        #   (Default: 1) (Range: ~0.1-5.1)
+        self.firing_threshold = (individual.genotype[0] * 5) + 0.1
         #   Chance to randomly fire (Default: 0.05 (5%)) (Range: ~0-0.15)
         self.random_fire_prob = individual.genotype[1] * 0.15
         #   Refractory period: time to recharge after firing.
@@ -99,6 +100,7 @@ class Model:
         #   (Default: 0.5) (Range: ~0-0.5)
         self.integ_constant = individual.genotype[5] * 0.5
         #   For CA it determines the radius of connections. For the network model it determines number of conenctions.
+        #   (Default: 2.1 (Network))
         if self.model == "ca":
             self.density_constant = round(individual.genotype[6] * 5) + 1
         elif self.model == "network":
