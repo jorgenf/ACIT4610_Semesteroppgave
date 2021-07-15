@@ -9,7 +9,7 @@ import random
 
 
 MODEL = "network"
-DURATION = 100
+DURATION = 60
 DIMENSION = 10
 RESOLUTION = 40
 
@@ -59,7 +59,7 @@ def test_class():
 
     #  Compare model output with experimental data
     make_raster_plot(reference_file["small"], output, DURATION)
-    model.show_network(grid=True)
+    # model.show_network(grid=True)
 
 
 
@@ -251,28 +251,47 @@ class Model:
     	The index of an electrode can be used as its ID.
     	"""
         el_list = []
-        if dimension == 8:
-            for row in range(8):
-                for col in range(8):
-                    if (row == 0 or row == 7) and (col == 0 or col == 7):
-                        continue
-                    else:
-                        el_list.append((row,col))
-        else:
-            r = 0
-            f = 1 if dimension % 9 == 0 else 0
-            frac = dimension // 9
-            for row in range(frac, dimension + f - (frac), frac):
-                c = 0
-                for col in range(frac, dimension + f - (frac), frac):
-                    if (r == 0 or r == 7) and (c == 0 or c == 7):
-                        c += 1
-                        continue
-                    else:
-                        el_list.append((row, col))
-                        c += 1
-                r += 1
+        r = 0
+        target = 8
+
+        low = round((dimension % target) / 2)
+        high = round(dimension - (dimension % target) / 2)
+
+        for row in range(low, high, dimension // target):
+            c = 0
+            for col in range(low, high, dimension // target):
+                if (r == 0 or r == 7) and (c == 0 or c == 7):
+                    c += 1
+                    continue
+                else:
+                    el_list.append((row, col))
+                    c += 1
+            r += 1
         return el_list
+
+        # el_list = []
+        # if dimension == 8:
+        #     for row in range(8):
+        #         for col in range(8):
+        #             if (row == 0 or row == 7) and (col == 0 or col == 7):
+        #                 continue
+        #             else:
+        #                 el_list.append((row,col))
+        # else:
+        #     r = 0
+        #     f = 1 if dimension % 9 == 0 else 0
+        #     frac = dimension // 9
+        #     for row in range(frac, dimension + f - (frac), frac):
+        #         c = 0
+        #         for col in range(frac, dimension + f - (frac), frac):
+        #             if (r == 0 or r == 7) and (c == 0 or c == 7):
+        #                 c += 1
+        #                 continue
+        #             else:
+        #                 el_list.append((row, col))
+        #                 c += 1
+        #         r += 1
+        # return el_list
 
     def print_weights(self):
         for n, nbrs_dict in self.config.adjacency():
