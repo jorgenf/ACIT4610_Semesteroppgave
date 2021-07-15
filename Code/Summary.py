@@ -114,6 +114,7 @@ class Summary:
         ax4.set_xlabel("Seconds")
 
         fig.savefig(self.dir_path + "/Best_individual.png")
+        plt.close()
 
     def parameter_trend_plot(self, parameter_data):
         """
@@ -127,6 +128,7 @@ class Summary:
         ax_par.set_xlabel("Generation")
         ax_par.set_ylabel("Normalized genome value")
         par.savefig(self.dir_path + "/Parameter_trend.png")
+        plt.close()
     
     def fitness_trend_plot(self, fitness_data):
         """
@@ -141,6 +143,7 @@ class Summary:
         ax_avg_fit.set_ylabel("Fitness score")
         ax_avg_fit.set_ylim(ymin=0, ymax=1)
         avg_fit.savefig(self.dir_path + "/Fitness_trend.png")
+        plt.close()
 
     def average_distance_plot(self):
         """
@@ -174,6 +177,7 @@ class Summary:
         ax[1].fill_between(range(len(simulation)), simulation, reference, color='green', alpha=0.2,
                            where=[_y2 > _y1 for _y2, _y1 in zip(simulation, reference)])
         fig.savefig(self.dir_path + "/Average_distance.png")
+        plt.close()
 
     def output_text(self, simulation_time):
         """

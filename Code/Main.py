@@ -24,7 +24,7 @@ TYPE = {
         7,
         #   Labels
         (
-            "Firing threshold"
+            "Firing threshold",
             "Random fire probability", 
             "Refractory period",
             "Inhibition percentage",
@@ -40,7 +40,7 @@ TYPE = {
         7,
         #   Labels
         (
-            "Firing threshold"
+            "Firing threshold",
             "Random fire probability", 
             "Refractory period",
             "Inhibition percentage",
