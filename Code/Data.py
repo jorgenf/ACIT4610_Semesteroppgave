@@ -4,7 +4,8 @@ Methods for data processing.
 import networkx as nx
 import numpy as np
 import pandas as pd
-
+import re
+import json
 
 def get_spikes_file(filename, recording_start=0, recording_len=30*60):
     """
@@ -59,4 +60,16 @@ def read_recording(filename, recording_start=0, recording_len=30*60):
 
 def load_model(filename):
     model = nx.read_graphml("../Output/" + filename + "/model.gml")
-    return model
+    file = open("../output/" + filename + "/evolution_data.json")
+    data = json.load(file)
+    dimension = data["DIMENSION"]
+    model_type = data["MODEL_TYPE"][0]
+    info = open("../Output/" + filename + "/Info.txt", "r")
+    top_ind = ""
+    for i, line in enumerate(info):
+        if line.startswith("| TOP INDIVIDUAL |"):
+            top_ind = line
+            break
+    info.close()
+    genome = [float(i) for i in re.findall("\[(.+)\]", top_ind)[0].split(", ")]
+    return model, genome, dimension, model_type
