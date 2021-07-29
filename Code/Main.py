@@ -228,22 +228,22 @@ if __name__ == "__main__":
             else:
                 est_time = round(est_time * 0.8 + (time.time() - t_generation_start) * 0.2)
             
-            # record phenotype top individuals every 5th generation
-            top5_summary = {}
-            top5 = sorted_pop[:5]
-            for j in range(5):
-                top5_summary[f"rank {j+1}"] = {
-                    # "generation" : i,
-                    # "rank" : j+1,
-                    "genotype" : top5[j].genotype,
-                    "phenotype" : top5[j].phenotype.tolist(),
-                    "fitness" : top5[j].fitness,
-                    }
+            # record the phenotype top individuals every 5th generation
+            gen_summary = {}
+            if i % 5 == 0 or i+1 == params["NUM_GENERATIONS"]:
+                for j in range(5):
+                    gen_summary[f"rank {j+1}"] = {
+                        # "generation" : i,
+                        # "rank" : j+1,
+                        "genotype" : sorted_pop[j].genotype,
+                        "phenotype" : sorted_pop[j].phenotype.tolist(),
+                        "fitness" : sorted_pop[j].fitness,
+                        }
 
             # record fitness and genotype of all individuals every generation
-            top5_summary["all"] = [{"fitness": indiv.fitness, "genotype": indiv.genotype} for indiv in sorted_pop]
-            top5_summary["time"] = round(time.time() - t_generation_start, 3)
-            generation_summary[i+1] = top5_summary
+            gen_summary["all"] = [{"fitness": indiv.fitness, "genotype": indiv.genotype} for indiv in sorted_pop]
+            gen_summary["time"] = round(time.time() - t_generation_start, 3)
+            generation_summary[i+1] = gen_summary
 
         #   Save the running time of the script
         end_time = time.time()
