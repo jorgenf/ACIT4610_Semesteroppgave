@@ -63,7 +63,7 @@ default_parameters = {
     #   Each generation will run one simulation of the model for every individual in the population
     "NUM_GENERATIONS": 7,
     #   Simulation duration in seconds
-    "SIMULATION_DURATION": 60,
+    "SIMULATION_DURATION": 30,
     #   Number of simulation iterations per second
     "TIME_STEP_RESOLUTION": 40,
     #   The probability of mutation in any gene
@@ -204,20 +204,6 @@ if __name__ == "__main__":
             # Sort the population in order to pick out the best fitness
             sorted_pop = pop_with_phenotypes
             sorted_pop.sort(key=lambda x: x.fitness, reverse=True)
-            
-            # record data of top individuals every 5th generation
-            if i % 5 == 0 or i+1 == params["NUM_GENERATIONS"]:
-                top5_summary = {}
-                top5 = sorted_pop[:5]
-                for j in range(5):
-                    top5_summary[f"rank {j+1}"] = {
-                        # "generation" : i,
-                        # "rank" : j+1,
-                        "genotype" : top5[j].genotype,
-                        "phenotype" : top5[j].phenotype.tolist(),
-                        "fitness" : top5[j].fitness,
-                        }
-                generation_summary[i+1] = top5_summary
 
             #   If there is no recorded best individual, choose the best one of this generation
             if not evo.best_individual_overall:
@@ -241,6 +227,23 @@ if __name__ == "__main__":
                 est_time = round(time.time() - t_generation_start)
             else:
                 est_time = round(est_time * 0.8 + (time.time() - t_generation_start) * 0.2)
+            
+            # record phenotype top individuals every 5th generation
+            top5_summary = {}
+            top5 = sorted_pop[:5]
+            for j in range(5):
+                top5_summary[f"rank {j+1}"] = {
+                    # "generation" : i,
+                    # "rank" : j+1,
+                    "genotype" : top5[j].genotype,
+                    "phenotype" : top5[j].phenotype.tolist(),
+                    "fitness" : top5[j].fitness,
+                    }
+
+            # record fitness and genotype of all individuals every generation
+            top5_summary["all"] = [{"fitness": indiv.fitness, "genotype": indiv.genotype} for indiv in sorted_pop]
+            top5_summary["time"] = round(time.time() - t_generation_start, 3)
+            generation_summary[i+1] = top5_summary
 
         #   Save the running time of the script
         end_time = time.time()
