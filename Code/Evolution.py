@@ -22,11 +22,12 @@ class Evolution:
         self.population_size = parameters["POPULATION_SIZE"]
         self.simulation_duration = parameters["SIMULATION_DURATION"]
         self.resolution = parameters["TIME_STEP_RESOLUTION"]
-        self.reference_phenotype = parameters["REFERENCE_PHENOTYPE"]
-        self.reference_spikes = Data.get_spikes_file(
-            parameters["REFERENCE_PHENOTYPE"], 
+        self.reference_file = parameters["REFERENCE_PHENOTYPE"]
+        self.reference_phenotype = Data.get_spikes_file(
+            parameters["REFERENCE_PHENOTYPE"],
             recording_len=self.simulation_duration
             )
+        self.reference_spikes = Data.get_spikerate(self.reference_phenotype, self.simulation_duration)
         self.parents_p = parameters["PARENTS_P"]
         self.retained_adults_p = parameters["RETAINED_ADULTS_P"]
         self.mutation_p = parameters["MUTATION_P"]
@@ -95,11 +96,8 @@ class Evolution:
         #         ).run_simulation()
 
         #   Calculate the fitness of the phenotype
-        burst_corr, avg_dist, fitness = Fitness.get_fitness_dist(
-            Data.get_spikes_pheno(phenotype, self.simulation_duration), self.reference_spikes)
+        fitness, spike_dist, electrode_dist = Fitness.get_fitness(phenotype, self.reference_phenotype, self.simulation_duration, self.resolution)
         #   Append results to the individual
         individual.phenotype = phenotype
         individual.fitness = fitness
-        individual.burst_corr = burst_corr
-        individual.avg_dist = avg_dist
         return individual

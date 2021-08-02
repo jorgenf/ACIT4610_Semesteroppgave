@@ -9,7 +9,6 @@ import numpy as np
 
 import Population, Evolution, Summary
 
-
 """
 PARAMETERS
 """
@@ -25,7 +24,7 @@ TYPE = {
         #   Labels
         (
             "Firing threshold",
-            "Random fire probability", 
+            "Random fire probability",
             "Refractory period",
             "Inhibition percentage",
             "Leak constant",
@@ -41,7 +40,7 @@ TYPE = {
         #   Labels
         (
             "Firing threshold",
-            "Random fire probability", 
+            "Random fire probability",
             "Refractory period",
             "Inhibition percentage",
             "Leak constant",
@@ -53,17 +52,17 @@ TYPE = {
 #   Use these parameters if no .CSV file is given
 default_parameters = {
     #   Choose between CA and Network by commenting out the other.
-    #"MODEL_TYPE": TYPE["CA"],
+    # "MODEL_TYPE": TYPE["CA"],
     "MODEL_TYPE": TYPE["network"],
     # Size of one dimension in the array / grid / matrix
     "DIMENSION": 10,
     #   Number of individuals in the population
-    "POPULATION_SIZE": 10,
+    "POPULATION_SIZE": 60,
     #   Number of generations to run.
     #   Each generation will run one simulation of the model for every individual in the population
-    "NUM_GENERATIONS": 7,
+    "NUM_GENERATIONS": 60,
     #   Simulation duration in seconds
-    "SIMULATION_DURATION": 30,
+    "SIMULATION_DURATION": 60,
     #   Number of simulation iterations per second
     "TIME_STEP_RESOLUTION": 40,
     #   The probability of mutation in any gene
@@ -73,13 +72,13 @@ default_parameters = {
     #   The percentage of the current population that will carry over to the next generation
     "RETAINED_ADULTS_P": 0.05,
     #   Name of the file of experimental data used as reference for the fitness function and raster plot
-    "REFERENCE_PHENOTYPE": "Small - 7-1-35.spk.txt"
+    "REFERENCE_PHENOTYPE": "6-2-10.spk.txt"
 }
-
 
 """ 
 FUNCTIONS
 """
+
 
 def run_threads(individuals):
     """
@@ -88,7 +87,7 @@ def run_threads(individuals):
     Each thread result is mapped to a variable that is returned when all processes are finished
     """
 
-    with Pool(os.cpu_count()-1) as p:
+    with Pool(os.cpu_count() - 1) as p:
         new_individuals = p.map(evo.generate_phenotype, individuals)
         p.close()
     return new_individuals
@@ -96,7 +95,7 @@ def run_threads(individuals):
 
 def process_arguments():
     """
-    Will process arguments given from terminal. 
+    Will process arguments given from terminal.
     If no arguments are given, script will run with defaults
     """
     input_file = ""
@@ -115,16 +114,16 @@ def process_arguments():
         elif opt in ("-i", "--input"):
             input_file = arg
             print(input_file)
-            
+
     return input_file
-      
+
 
 """
 PROGRAM
 """
 if __name__ == "__main__":
 
-    # initialize the evolution 
+    # initialize the evolution
     t_simulation_start = time.time()
     evolution_parameters = list()
     input_file = process_arguments()
@@ -141,7 +140,7 @@ if __name__ == "__main__":
                 evolution_parameters.append({
                     "MODEL_TYPE": TYPE[str(row[0])],
                     "DIMENSION": int(row[1]),
-                    "POPULATION_SIZE" : int(row[2]),
+                    "POPULATION_SIZE": int(row[2]),
                     "NUM_GENERATIONS": int(row[3]),
                     "SIMULATION_DURATION": int(row[4]),
                     "TIME_STEP_RESOLUTION": int(row[5]),
@@ -153,27 +152,27 @@ if __name__ == "__main__":
 
     for evo_i, params in enumerate(evolution_parameters):
         t_evo_start = time.time()
-        
+
         # print summary of the running simulation parameters
         print("\n-------------------------------------")
-        print(f"Running simulation {evo_i+1}/{len(evolution_parameters)}:")
+        print(f"Running simulation {evo_i + 1}/{len(evolution_parameters)}:")
         iterator = iter(params)
         key = next(iterator)
         print(f"{key}: {params[key][0]} (genome size = {params[key][1]})")
         for key in iterator:
             print(f"{key}: {params[key]}")
         print()
-        
+
         #   Creates population object with POPULATION_SIZE.
         #   Creates the set of genes that apply to this specific population
         pop = Population.Population(
-            params["POPULATION_SIZE"], 
+            params["POPULATION_SIZE"],
             params["MODEL_TYPE"][1]
-            )
+        )
 
-        # Creates Evolution object with parameters set 
+        # Creates Evolution object with parameters set
         evo = Evolution.Evolution(params)
-        
+
         # Initialize datasets
         fitness_trend = []
         average_fitness_trend = []
@@ -187,8 +186,7 @@ if __name__ == "__main__":
             t_generation_start = time.time()
             # print("\nGeneration:", i)
             # print("Workers: ", end="")
-            print(f"Simulating generation {i+1}/{params['NUM_GENERATIONS']} ({est_time} s per generation)", end="\r")
-
+            print(f"Simulating generation {i + 1}/{params['NUM_GENERATIONS']} ({est_time} s per generation)", end="\r")
 
             #   Run the evolutionary algorithm on the population
             pop_with_phenotypes = run_threads(pop.individuals)
@@ -197,9 +195,9 @@ if __name__ == "__main__":
             fitness_trend.append([i.fitness for i in pop_with_phenotypes])
             average_fitness_trend.append(sum(
                 [i.fitness for i in pop_with_phenotypes]
-            )/params["POPULATION_SIZE"])
+            ) / params["POPULATION_SIZE"])
             parameter_trend.append(np.sum(
-                [i.genotype for i in pop_with_phenotypes], 0)/params["POPULATION_SIZE"])
+                [i.genotype for i in pop_with_phenotypes], 0) / params["POPULATION_SIZE"])
 
             # Sort the population in order to pick out the best fitness
             sorted_pop = pop_with_phenotypes
@@ -227,28 +225,27 @@ if __name__ == "__main__":
                 est_time = round(time.time() - t_generation_start)
             else:
                 est_time = round(est_time * 0.8 + (time.time() - t_generation_start) * 0.2)
-            
+
             # record the phenotype top individuals every 5th generation
             gen_summary = {}
-            if i % 5 == 0 or i+1 == params["NUM_GENERATIONS"]:
+            if i % 5 == 0 or i + 1 == params["NUM_GENERATIONS"]:
                 for j in range(5):
-                    gen_summary[f"rank {j+1}"] = {
+                    gen_summary[f"rank {j + 1}"] = {
                         # "generation" : i,
                         # "rank" : j+1,
-                        "genotype" : sorted_pop[j].genotype,
-                        "phenotype" : sorted_pop[j].phenotype.tolist(),
-                        "fitness" : sorted_pop[j].fitness,
-                        }
+                        "genotype": sorted_pop[j].genotype,
+                        "phenotype": sorted_pop[j].phenotype.tolist(),
+                        "fitness": sorted_pop[j].fitness,
+                    }
 
             # record fitness and genotype of all individuals every generation
             gen_summary["all"] = [{"fitness": indiv.fitness, "genotype": indiv.genotype} for indiv in sorted_pop]
             gen_summary["time"] = round(time.time() - t_generation_start, 3)
-            generation_summary[i+1] = gen_summary
+            generation_summary[i + 1] = gen_summary
 
         #   Save the running time of the script
         end_time = time.time()
         t_evo_total = time.time() - t_evo_start
-
 
         # Save a summary of the evolution
         summary = Summary.Summary(pop, params, evo)

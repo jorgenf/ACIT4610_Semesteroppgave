@@ -1,10 +1,13 @@
 """
 Methods for fitness calculations.
 """
+import time
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
-from Data import get_spikes_pheno
+import Data
+from collections import Counter
 
 
 def get_fitness_corr(spike_rate_X, spike_rate_control, plot_graph=False):
@@ -67,21 +70,82 @@ def get_fitness_spike_dist(spike_rate_x, spike_rate_control, order=6, threshold=
     return burst_corr, avg_dist, fitness
 
 
-def get_fitness_dist(spike_rate_x, spike_rate_control):
+def get_fitness_sorted_dist_ned(phenotype, phenotype_control, duration):
     """
     Sorts the lists of spike data from both the experiment and the model.
     The average distance between them is returned as the fitness score.
     """
     #   Sort spike rate lists
-    a = sorted(spike_rate_control)
-    b = sorted(spike_rate_x)
-    dist = []
-    #   Append the distance between each data point in the lists to a new list.
-    for i, j in zip(a, b):
-        dist.append(abs(i - j))
+    spike_rate_x = Data.get_spikerate(phenotype, duration)
+    spike_rate_control = Data.get_spikerate(phenotype_control, duration)
+    a = np.array(sorted(spike_rate_x))
+    b = np.array(sorted(spike_rate_control))
+    return normalized_euclidean_distance(a, b)
+
+def get_fitness_normalized_dist(phenotype, phenotype_control, duration, resolution):
+    spike_rate_x = Data.get_spikerate(phenotype, duration)
+    spike_rate_control = Data.get_spikerate(phenotype_control, duration)
+    dist = np.mean(abs(spike_rate_x-spike_rate_control))
+    mean_control = np.mean(spike_rate_control)
+    normalized_dist = 0.5 * (mean_control + abs(mean_control - resolution * 60))
+    fitness = (normalized_dist - dist) / normalized_dist
+    return fitness
+
+def get_fitness_electrode_dist_ned(phenotype, phenotype_control):
+    cnt_x = Counter(elem[1] for elem in phenotype)
+    cnt_control = Counter(elem[1] for elem in phenotype_control)
+    sorted_cnt_x = sorted(cnt_x.values())
+    sorted_cnt_control = sorted(cnt_control.values())
+    sorted_cnt_x = np.pad(np.array(sorted_cnt_x), (60 - len(sorted_cnt_x),0))
+    sorted_cnt_control = np.pad(np.array(sorted_cnt_control), (60 - len(sorted_cnt_control), 0))
+    return normalized_euclidean_distance(sorted_cnt_x, sorted_cnt_control)
+
+def get_fitness_electrode_dist(phenotype, phenotype_control, duration):
+    cnt_x = Counter(elem[1] for elem in phenotype)
+    cnt_control = Counter(elem[1] for elem in phenotype_control)
+    x_avg = [x / duration for x in cnt_x.values()]
+    control_avg = [x / duration for x in cnt_control.values()]
+    sorted_x = np.array(sorted(x_avg))
+    sorted_control = np.array(sorted(control_avg))
+    sorted_cnt_x = np.pad(np.array(sorted_x), (60 - len(sorted_x),0))
+    sorted_cnt_control = np.pad(np.array(sorted_control), (60 - len(sorted_control), 0))
+    dist = abs(sorted_cnt_x - sorted_cnt_control)
+    mean_control = np.mean(sorted_cnt_control)
+    mean_dist = np.mean(dist)
+    fitness = (mean_control - mean_dist) / mean_control
+    if fitness < 0:
+        fitness = 0
+    return fitness
+
+def get_fitness_sorted_dist(phenotype, phenotype_control, duration):
+    #   Sort spike rate lists
+    spike_rate = Data.get_spikerate(phenotype, duration)
+    spike_rate_control = Data.get_spikerate(phenotype_control, duration)
+    a = np.array(sorted(spike_rate))
+    b = np.array(sorted(spike_rate_control))
+    dist = abs(a-b)
+    mean_control = np.mean(spike_rate_control)
     #   Calculate the average distance
-    avg_dist = (np.mean(spike_rate_control) - (np.mean(dist))) / np.mean(spike_rate_control)
-    if avg_dist < 0:
-        avg_dist = 0
-    fitness = avg_dist
-    return "NA", avg_dist, fitness
+    fitness = (mean_control - np.mean(dist)) / mean_control
+    if fitness < 0:
+        fitness = 0
+    return fitness
+
+def normalized_euclidean_distance(x,y):
+    return 1 - (np.std(x-y)**2) / (np.std(x)**2 + np.std(y)**2)
+
+
+def get_fitness(phenotype, phenotype_control, duration, resolution):
+    spike_dist = get_fitness_sorted_dist(phenotype, phenotype_control, duration)
+    electrode_dist = get_fitness_electrode_dist(phenotype, phenotype_control, duration)
+    fitness = (get_fitness_sorted_dist(phenotype, phenotype_control, duration) + get_fitness_electrode_dist(phenotype, phenotype_control, duration)) / 2
+    return fitness, spike_dist, electrode_dist
+
+
+'''
+x = Data.get_spikes_file("Sparse - 7-3-20.spk.txt", recording_len=60)
+y = Data.get_spikes_file("Small - 7-1-20.spk.txt", recording_len=60)
+z = Data.get_spikes_file("Small - 7-1-20.spk.txt", recording_len=60)
+
+print(get_fitness(x,z, 60, 40))
+'''
