@@ -100,4 +100,6 @@ class Evolution:
         #   Append results to the individual
         individual.phenotype = phenotype
         individual.fitness = fitness
+        individual.spike_dist = spike_dist
+        individual.electrode_dist = electrode_dist
         return individual

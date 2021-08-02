@@ -36,3 +36,5 @@ class Individual:
         self.phenotype = None
         self.fitness = None
         self.model = None
+        self.spike_dist = None
+        self.electrode_dist = None
