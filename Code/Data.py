@@ -7,7 +7,7 @@ import pandas as pd
 import re
 import json
 
-def get_spikes_file(filename, recording_start=0, recording_len=30*60):
+def get_spikes_file(filename, recording_start=900, recording_len=30*60):
     """
     Get spikes per electrode data from a file.
     Uses helper method get_spikes_pheno.
@@ -23,19 +23,18 @@ def get_spikes_file(filename, recording_start=0, recording_len=30*60):
     #   Edit according to specified recording length
     start_index, stop_index = np.searchsorted(data_points["t"], [recording_start, recording_start+recording_len])
     data_points = data_points[start_index:stop_index]
-
     return data_points
     #return get_spikes_pheno(data_points, recording_len)
 
 
-def get_spikerate(phenotype, recording_len):
+def get_spikerate(phenotype, recording_len, recording_start=900):
     """
     Get spikes per electrode data from input phenotype.
     Return: Numpy Array
     """
     array_wide_spikes_per_second = pd.cut(
         phenotype["t"],
-        bins=pd.interval_range(start=0, end=recording_len),
+        bins=pd.interval_range(start=recording_start, end=recording_start + recording_len),
         precision=0
     )
     return np.array(array_wide_spikes_per_second.value_counts().tolist(), dtype="float64")
