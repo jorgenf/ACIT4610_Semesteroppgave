@@ -141,7 +141,7 @@ if __name__ == "__main__":
                     "MODEL_TYPE": TYPE[str(row[0])],
                     "DIMENSION": int(row[1]),
                     "POPULATION_SIZE": int(row[2]),
-                    "NUM_GENERATIONS": int(row[3]) if max(Data.get_spikerate(Data.get_spikes_file(row[9], recording_len=int(row[4])), recording_len=int(row[4]))) < 1000 else int(row[3] * 1.5),
+                    "NUM_GENERATIONS": int(row[3]) if max(Data.get_spikerate(Data.get_spikes_file(row[9], recording_len=int(row[4])), recording_len=int(row[4]))) < 1000 else int(int(row[3]) * 1.5),
                     "SIMULATION_DURATION": int(row[4]),
                     "TIME_STEP_RESOLUTION": int(row[5]),
                     "MUTATION_P": float(row[6]),
@@ -175,8 +175,6 @@ if __name__ == "__main__":
         # Initialize datasets
         fitness_trend = []
         average_fitness_trend = []
-        spike_dist_trend = []
-        electrode_dist_trend = []
         parameter_trend = []
         generation_summary = {}
 
@@ -194,8 +192,6 @@ if __name__ == "__main__":
 
             #   Record data of the population
             fitness_trend.append([i.fitness for i in pop_with_phenotypes])
-            spike_dist_trend.append([i.spike_dist for i in pop_with_phenotypes])
-            electrode_dist_trend.append([i.electrode_dist for i in pop_with_phenotypes])
             average_fitness_trend.append(sum(
                 [i.fitness for i in pop_with_phenotypes]
             ) / params["POPULATION_SIZE"])
@@ -239,12 +235,10 @@ if __name__ == "__main__":
                         "genotype": sorted_pop[j].genotype,
                         "phenotype": sorted_pop[j].phenotype.tolist(),
                         "fitness": sorted_pop[j].fitness,
-                        "spike_dist": sorted_pop[j].spike_dist,
-                        "electrode_dist": sorted_pop[j].electrode_dist
                     }
 
             # record fitness and genotype of all individuals every generation
-            gen_summary["all"] = [{"fitness": indiv.fitness, "spike_dist": indiv.spike_dist, "electrode_dist": indiv.electrode_dist,"genotype": indiv.genotype} for indiv in sorted_pop]
+            gen_summary["all"] = [{"fitness": indiv.fitness,"genotype": indiv.genotype} for indiv in sorted_pop]
             gen_summary["time"] = round(time.time() - t_generation_start, 3)
             generation_summary[i + 1] = gen_summary
 

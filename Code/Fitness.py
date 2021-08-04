@@ -135,11 +135,9 @@ def normalized_euclidean_distance(x,y):
     return 1 - (np.std(x-y)**2) / (np.std(x)**2 + np.std(y)**2)
 
 
-def get_fitness(phenotype, phenotype_control, duration, resolution):
-    spike_dist = get_fitness_sorted_dist(phenotype, phenotype_control, duration)
-    electrode_dist = get_fitness_electrode_dist(phenotype, phenotype_control, duration)
-    fitness = (get_fitness_sorted_dist(phenotype, phenotype_control, duration) + get_fitness_electrode_dist(phenotype, phenotype_control, duration)) / 2
-    return fitness, spike_dist, electrode_dist
+def get_fitness(phenotype, phenotype_control, duration):
+    fitness =get_fitness_sorted_dist(phenotype, phenotype_control, duration)
+    return fitness
 
 
 '''
@@ -147,5 +145,5 @@ x = Data.get_spikes_file("Sparse - 7-3-20.spk.txt", recording_len=60)
 y = Data.get_spikes_file("Small - 7-1-20.spk.txt", recording_len=60)
 z = Data.get_spikes_file("Small - 7-1-20.spk.txt", recording_len=60)
 
-print(get_fitness(x,z, 60, 40))
+print(get_fitness(x,z, 60))
 '''

@@ -96,10 +96,8 @@ class Evolution:
         #         ).run_simulation()
 
         #   Calculate the fitness of the phenotype
-        fitness, spike_dist, electrode_dist = Fitness.get_fitness(phenotype, self.reference_phenotype, self.simulation_duration, self.resolution)
+        fitness = Fitness.get_fitness(phenotype, self.reference_phenotype, self.simulation_duration)
         #   Append results to the individual
         individual.phenotype = phenotype
         individual.fitness = fitness
-        individual.spike_dist = spike_dist
-        individual.electrode_dist = electrode_dist
         return individual
