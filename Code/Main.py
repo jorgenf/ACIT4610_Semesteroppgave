@@ -87,7 +87,7 @@ def run_threads(individuals):
     Each thread result is mapped to a variable that is returned when all processes are finished
     """
 
-    with Pool(os.cpu_count() - 16) as p:
+    with Pool(os.cpu_count()) as p:
         new_individuals = p.map(evo.generate_phenotype, individuals)
         p.close()
     return new_individuals
