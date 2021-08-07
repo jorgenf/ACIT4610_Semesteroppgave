@@ -141,7 +141,7 @@ if __name__ == "__main__":
                     "MODEL_TYPE": TYPE[str(row[0])],
                     "DIMENSION": int(row[1]),
                     "POPULATION_SIZE": int(row[2]),
-                    "NUM_GENERATIONS": int(row[3]) if max(Data.get_spikerate(Data.get_spikes_file(row[9], recording_len=int(row[4])), recording_len=int(row[4]), recording_start=900)) < 1000 else int(int(row[3]) * 1.5),
+                    "NUM_GENERATIONS": int(row[3]) if max(Data.get_spikerate(Data.get_spikes_file(row[9], recording_start=900, recording_len=int(row[4])), recording_len=int(row[4]), recording_start=900)) < 1000 else int(int(row[3]) * 1.5),
                     "SIMULATION_DURATION": int(row[4]),
                     "TIME_STEP_RESOLUTION": int(row[5]),
                     "MUTATION_P": float(row[6]),
