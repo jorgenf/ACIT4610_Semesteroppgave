@@ -53,14 +53,14 @@ TYPE = {
 default_parameters = {
     #   Choose between CA and Network by commenting out the other.
     # "MODEL_TYPE": TYPE["CA"],
-    "MODEL_TYPE": TYPE["network"],
+    "MODEL_TYPE": TYPE["ca"],
     # Size of one dimension in the array / grid / matrix
     "DIMENSION": 10,
     #   Number of individuals in the population
     "POPULATION_SIZE": 60,
     #   Number of generations to run.
     #   Each generation will run one simulation of the model for every individual in the population
-    "NUM_GENERATIONS": 100,
+    "NUM_GENERATIONS": 80,
     #   Simulation duration in seconds
     "SIMULATION_DURATION": 60,
     #   Number of simulation iterations per second
@@ -72,7 +72,7 @@ default_parameters = {
     #   The percentage of the current population that will carry over to the next generation
     "RETAINED_ADULTS_P": 0.05,
     #   Name of the file of experimental data used as reference for the fitness function and raster plot
-    "REFERENCE_PHENOTYPE": "2-1-31.spk.txt"
+    "REFERENCE_PHENOTYPE": "6-2-31.spk.txt"
 }
 
 """ 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
                     "MODEL_TYPE": TYPE[str(row[0])],
                     "DIMENSION": int(row[1]),
                     "POPULATION_SIZE": int(row[2]),
-                    "NUM_GENERATIONS": int(row[3]) if max(Data.get_spikerate(Data.get_spikes_file(row[9], recording_len=int(row[4])), recording_len=int(row[4]))) < 1000 else int(int(row[3]) * 1.5),
+                    "NUM_GENERATIONS": int(row[3]) if max(Data.get_spikerate(Data.get_spikes_file(row[9], recording_len=int(row[4])), recording_len=int(row[4]), recording_start=900)) < 1000 else int(int(row[3]) * 1.5),
                     "SIMULATION_DURATION": int(row[4]),
                     "TIME_STEP_RESOLUTION": int(row[5]),
                     "MUTATION_P": float(row[6]),

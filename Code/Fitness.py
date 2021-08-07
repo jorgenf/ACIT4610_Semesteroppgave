@@ -76,15 +76,15 @@ def get_fitness_sorted_dist_ned(phenotype, phenotype_control, duration):
     The average distance between them is returned as the fitness score.
     """
     #   Sort spike rate lists
-    spike_rate_x = Data.get_spikerate(phenotype, duration)
-    spike_rate_control = Data.get_spikerate(phenotype_control, duration)
+    spike_rate_x = Data.get_spikerate(phenotype, duration, recording_start=0)
+    spike_rate_control = Data.get_spikerate(phenotype_control, duration, recording_start=900)
     a = np.array(sorted(spike_rate_x))
     b = np.array(sorted(spike_rate_control))
     return normalized_euclidean_distance(a, b)
 
 def get_fitness_normalized_dist(phenotype, phenotype_control, duration, resolution):
-    spike_rate_x = Data.get_spikerate(phenotype, duration)
-    spike_rate_control = Data.get_spikerate(phenotype_control, duration)
+    spike_rate_x = Data.get_spikerate(phenotype, duration, recording_start=0)
+    spike_rate_control = Data.get_spikerate(phenotype_control, duration, recording_start=900)
     dist = np.mean(abs(spike_rate_x-spike_rate_control))
     mean_control = np.mean(spike_rate_control)
     normalized_dist = 0.5 * (mean_control + abs(mean_control - resolution * 60))
@@ -117,10 +117,10 @@ def get_fitness_electrode_dist(phenotype, phenotype_control, duration):
         fitness = 0
     return fitness
 
-def get_fitness_sorted_dist(phenotype, phenotype_control, duration):
+def get_fitness_sorted_dist(phenotype, phenotype_start, phenotype_control, phenotype_control_start, duration):
     #   Sort spike rate lists
-    spike_rate = Data.get_spikerate(phenotype, duration)
-    spike_rate_control = Data.get_spikerate(phenotype_control, duration)
+    spike_rate = Data.get_spikerate(phenotype, recording_len=duration, recording_start=phenotype_start)
+    spike_rate_control = Data.get_spikerate(phenotype_control, recording_len=duration, recording_start=phenotype_control_start)
     a = np.array(sorted(spike_rate))
     b = np.array(sorted(spike_rate_control))
     dist = abs(a-b)
@@ -135,15 +135,15 @@ def normalized_euclidean_distance(x,y):
     return 1 - (np.std(x-y)**2) / (np.std(x)**2 + np.std(y)**2)
 
 
-def get_fitness(phenotype, phenotype_control, duration):
-    fitness =get_fitness_sorted_dist(phenotype, phenotype_control, duration)
+def get_fitness(phenotype, phenotype_start, phenotype_control, phenotype_control_start, duration):
+    fitness =get_fitness_sorted_dist(phenotype, phenotype_start, phenotype_control, phenotype_control_start, duration)
     return fitness
 
 
 '''
-x = Data.get_spikes_file("Sparse - 7-3-20.spk.txt", recording_len=60)
-y = Data.get_spikes_file("Small - 7-1-20.spk.txt", recording_len=60)
-z = Data.get_spikes_file("Small - 7-1-20.spk.txt", recording_len=60)
+x = Data.get_spikes_file("Sparse - 7-3-20.spk.txt", recording_start=0,recording_len=60)
+y = Data.get_spikes_file("Small - 7-1-20.spk.txt", recording_start=0, recording_len=60)
+z = Data.get_spikes_file("Small - 7-1-20.spk.txt", recording_start=900, recording_len=60)
 
-print(get_fitness(x,z, 60))
+print(get_fitness(x,0,z,900, 60))
 '''

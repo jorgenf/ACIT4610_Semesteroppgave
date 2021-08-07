@@ -26,10 +26,10 @@ class Summary:
         self.best_individual_overall = evo.best_individual_overall
         self.top_five = self.population.individuals[0:5] if len(self.population.individuals) >= 5 else False
         self.reference_spikes = Data.get_spikerate(
-            Data.get_spikes_file(self.evolution_parameters["REFERENCE_PHENOTYPE"]),
-            self.evolution_parameters["SIMULATION_DURATION"])
+            Data.get_spikes_file(self.evolution_parameters["REFERENCE_PHENOTYPE"], recording_start=900, recording_len=self.evolution_parameters["SIMULATION_DURATION"]),
+            self.evolution_parameters["SIMULATION_DURATION"], recording_start=900)
         self.simulation_spikes = Data.get_spikerate(
-            self.best_individual.phenotype, self.evolution_parameters["SIMULATION_DURATION"])
+            self.best_individual.phenotype, recording_len=self.evolution_parameters["SIMULATION_DURATION"], recording_start=0)
 
         reference_name = str(self.evolution_parameters["REFERENCE_PHENOTYPE"]).replace(".spk.txt", "")
         now = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -65,10 +65,10 @@ class Summary:
         To create histogram it is necessary to specify bin-size. For spikes per second "bin_size" = simulation length [seconds]
         """
         self.phenotype_reference = Data.read_recording(
-            self.evolution_parameters["REFERENCE_PHENOTYPE"],
+            self.evolution_parameters["REFERENCE_PHENOTYPE"], recording_start=900,
             recording_len=self.evolution_parameters["SIMULATION_DURATION"],
-            #   Where to start reading experimental data [s]
-            recording_start=0
+               #Where to start reading experimental data [s]
+
         )
 
         #   Check if input is in the correct format
@@ -76,14 +76,14 @@ class Summary:
             [(row[0], row[1]) for row in self.best_individual.phenotype],
             dtype=[("t", "float64"), ("electrode", "int64")])
         self.phenotype_reference = np.array(
-            [(row[0], row[1]) for row in self.phenotype_reference],
+            [(row[0] - 900, row[1]) for row in self.phenotype_reference],
             dtype=[("t", "float64"), ("electrode", "int64")])
 
         #   Sort spikes by electrode
-        self.A_spikes_per_array = [[] for _ in range(64)]
+        self.A_spikes_per_array = [[] for _ in range(60)]
         for row in self.best_individual.phenotype:
             self.A_spikes_per_array[row[1]].append(row[0])
-        self.B_spikes_per_array = [[] for _ in range(64)]
+        self.B_spikes_per_array = [[] for _ in range(60)]
         for row in self.phenotype_reference:
             self.B_spikes_per_array[row[1]].append(row[0])
 
@@ -152,9 +152,9 @@ class Summary:
         Plot average distance
         """
         simulation_s = sorted(self.simulation_spikes)
-        reference_s = sorted(self.reference_spikes[:len(self.simulation_spikes)])
+        reference_s = sorted(self.reference_spikes)
         simulation = self.simulation_spikes
-        reference = self.reference_spikes[:len(simulation)]
+        reference = self.reference_spikes
         fig, ax = plt.subplots(2, sharex="all")
         ax[0].set_xlabel("Sorted time [s]")
         ax[0].set_ylabel("Spikes per second")
@@ -275,8 +275,7 @@ def read_neural_recording(filename, recording_start=0, recording_len=30 * 60):
 def make_raster_plot(neural_data_filepath, phenotype, simulation_length):
     # read reference neural data
     neuron_spikes, neuron_spikes_per_array = read_neural_recording(
-        neural_data_filepath,
-        recording_start=60 * 0,  # starting point in seconds
+        neural_data_filepath,  # starting point in seconds
         recording_len=simulation_length  # simlation length in seconds, set to match simulation
     )
 
