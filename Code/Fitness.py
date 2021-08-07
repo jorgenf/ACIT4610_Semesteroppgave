@@ -143,7 +143,7 @@ def get_fitness(phenotype, phenotype_start, phenotype_control, phenotype_control
 '''
 x = Data.get_spikes_file("Sparse - 7-3-20.spk.txt", recording_start=0,recording_len=60)
 y = Data.get_spikes_file("Small - 7-1-20.spk.txt", recording_start=0, recording_len=60)
-z = Data.get_spikes_file("Small - 7-1-20.spk.txt", recording_start=900, recording_len=60)
+z = Data.get_spikes_file("Small - 7-1-20.spk.txt", recording_start=300, recording_len=60)
 
-print(get_fitness(x,0,z,900, 60))
+print(get_fitness(x,0,z,300, 60))
 '''

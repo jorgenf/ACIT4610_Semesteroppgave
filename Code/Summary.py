@@ -26,8 +26,8 @@ class Summary:
         self.best_individual_overall = evo.best_individual_overall
         self.top_five = self.population.individuals[0:5] if len(self.population.individuals) >= 5 else False
         self.reference_spikes = Data.get_spikerate(
-            Data.get_spikes_file(self.evolution_parameters["REFERENCE_PHENOTYPE"], recording_start=900, recording_len=self.evolution_parameters["SIMULATION_DURATION"]),
-            self.evolution_parameters["SIMULATION_DURATION"], recording_start=900)
+            Data.get_spikes_file(self.evolution_parameters["REFERENCE_PHENOTYPE"], recording_start=300, recording_len=self.evolution_parameters["SIMULATION_DURATION"]),
+            self.evolution_parameters["SIMULATION_DURATION"], recording_start=300)
         self.simulation_spikes = Data.get_spikerate(
             self.best_individual.phenotype, recording_len=self.evolution_parameters["SIMULATION_DURATION"], recording_start=0)
 
@@ -65,7 +65,7 @@ class Summary:
         To create histogram it is necessary to specify bin-size. For spikes per second "bin_size" = simulation length [seconds]
         """
         self.phenotype_reference = Data.read_recording(
-            self.evolution_parameters["REFERENCE_PHENOTYPE"], recording_start=900,
+            self.evolution_parameters["REFERENCE_PHENOTYPE"], recording_start=300,
             recording_len=self.evolution_parameters["SIMULATION_DURATION"],
                #Where to start reading experimental data [s]
 
@@ -76,7 +76,7 @@ class Summary:
             [(row[0], row[1]) for row in self.best_individual.phenotype],
             dtype=[("t", "float64"), ("electrode", "int64")])
         self.phenotype_reference = np.array(
-            [(row[0] - 900, row[1]) for row in self.phenotype_reference],
+            [(row[0] - 300, row[1]) for row in self.phenotype_reference],
             dtype=[("t", "float64"), ("electrode", "int64")])
 
         #   Sort spikes by electrode

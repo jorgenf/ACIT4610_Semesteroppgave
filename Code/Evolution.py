@@ -25,9 +25,9 @@ class Evolution:
         self.reference_file = parameters["REFERENCE_PHENOTYPE"]
         self.reference_phenotype = Data.get_spikes_file(
             parameters["REFERENCE_PHENOTYPE"],
-            recording_len=self.simulation_duration, recording_start=900
+            recording_len=self.simulation_duration, recording_start=300
             )
-        self.reference_spikes = Data.get_spikerate(self.reference_phenotype, self.simulation_duration, recording_start=900)
+        self.reference_spikes = Data.get_spikerate(self.reference_phenotype, self.simulation_duration, recording_start=300)
         self.parents_p = parameters["PARENTS_P"]
         self.retained_adults_p = parameters["RETAINED_ADULTS_P"]
         self.mutation_p = parameters["MUTATION_P"]
@@ -96,7 +96,7 @@ class Evolution:
         #         ).run_simulation()
 
         #   Calculate the fitness of the phenotype
-        fitness = Fitness.get_fitness(phenotype, 0, self.reference_phenotype, 900, self.simulation_duration)
+        fitness = Fitness.get_fitness(phenotype, 0, self.reference_phenotype, 300, self.simulation_duration)
         #   Append results to the individual
         individual.phenotype = phenotype
         individual.fitness = fitness
