@@ -4,9 +4,22 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-pickle_name = Path("plots/pickles/individual_20210816.pkl")
+# where to find data
+pickle_name = Path("plots/pickles/20210816/")
 
-df = pd.read_pickle(pickle_name)
+# where to save plots
+savepath = Path("plots/figures/fitness_vs_div_clusters")
+
+# esthetics
+sns.set_context("paper")
+font_size = 9
+width = 7.16 / 1
+aspect_ratio = 1.9
+culture_order = ["Sparse", "Small & sparse", "Small", "Dense"] # "Ultra sparse" left out
+
+# do stuff
+savepath.mkdir(parents=True, exist_ok=True)
+df = pd.read_pickle(Path(f"{pickle_name}/individual_data.pkl"))
 df["Generation"] = df["Generation"].astype(int)
 
 # pick only top individuals from each experiment
@@ -17,15 +30,9 @@ for parameter_name in df["DIV"].unique():
 df = filtered_df
 print(df)
 
-sns.set_context("paper")
-font_size = 9
-width = 7.16 / 1
-aspect_ratio = 1.9
-culture_order = ["Sparse", "Small & sparse", "Small", "Dense"] # "Ultra sparse" left out
-
 # plot fitness vs div
 for model_type in df["Model type"].unique():
-    min_gen = df["Number of generations"].min() # normalize gens to minimum
+    # min_gen = df["Number of generations"].min() # normalize gens to minimum
     
     if model_type == "CA":
         color_theme = "Greens_d"
@@ -55,5 +62,5 @@ for model_type in df["Model type"].unique():
     
     fig = ax.get_figure()
     fig.set_size_inches(width, width/aspect_ratio)
-    fig.savefig(Path(f"plots/figures/fitness_vs_div_clusters/{model_type}_top-{rank}"), dpi=300)
+    fig.savefig(Path(f"{savepath}/{model_type}_top-{rank}"), dpi=300)
     plt.close()

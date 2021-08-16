@@ -50,10 +50,6 @@ def read_json(experiment_data_path):
                 data_unit["reference culture"] = find_culture(data_unit["REFERENCE_PHENOTYPE"])
                 data.append(data_unit)
 
-    # transform data to a list of dictionaries
-    # individual_data_list_dict = []
-    # parameter_data_list_dict = []
-
     for i_simulation, element in enumerate(data):
 
         # transform data to a list of dictionaries
@@ -116,7 +112,7 @@ def read_json(experiment_data_path):
 
                     parameter_data_list_dict.append(parameter_data)
 
-            # superfluous?
+            # superfluous? reads the old top 5 data. only useful to extract phenotype
             # if "rank 1" in element["generations"][i_gen].keys():
             #     for i, key in enumerate(element["generations"][i_gen]):
             #         if "rank" in key:
@@ -139,6 +135,7 @@ def read_json(experiment_data_path):
     # clean temp data
     shutil.rmtree(temp_data_path_indiv)
     shutil.rmtree(temp_data_path_param)
+    temp_data_path_indiv.parent.rmdir()
     
     return individual_data, parameter_data
 
@@ -148,16 +145,16 @@ if __name__ == "__main__":
     experiment_path = Path("/home/wehak/code/ACIT4610_Semesteroppgave/results_20210816")
 
     # name of pickle file
-    individual_data_pickle_name = Path("plots/pickles/individual_20210816.pkl")
-    parameter_data_pickle_name = Path("plots/pickles/param_20210816.pkl")
+    savepath = Path("plots/pickles/20210816")
+    savepath.mkdir(parents=True, exist_ok=True)
+    individual_data_pickle_name = Path(f"{savepath}/individual_data.pkl")
+    parameter_data_pickle_name = Path(f"{savepath}/param_data.pkl")
 
     # save data as pickle file
     individual_data, parameter_data = read_json(experiment_path)
-    # df1 = pd.DataFrame(individual_data)
-    # df2 = pd.DataFrame(parameter_data)
     individual_data.to_pickle(individual_data_pickle_name)
     parameter_data.to_pickle(parameter_data_pickle_name)
 
     print(individual_data)
     print(parameter_data)
-    print(f"Data saved to \"{individual_data_pickle_name}\"")
+    print(f"Data saved to \"{savepath}\"")

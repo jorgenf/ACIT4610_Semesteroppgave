@@ -5,6 +5,13 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
+rank = 10 # plot top x individuals
+
+# where to read data
+pickle_name = Path("plots/pickles/20210816")
+
+# where to save plots
+savepath = Path("plots/figures/parameter_vs_divclusters")
 
 # plot esthetics
 sns.set_context("paper")
@@ -13,14 +20,12 @@ width = 7.16 / 2
 aspect_ratio = 1.9
 culture_order = ["Small & sparse", "Sparse", "Small", "Dense"] # "Ultra sparse" left out
 
-pickle_name = Path("plots/pickles/param_20210816.pkl")
-savepath = Path("plots/figures/parameter_vs_divclusters")
+# do stuff
+df = pd.read_pickle(Path(f"{pickle_name}/param_data.pkl"))
 savepath.mkdir(parents=True, exist_ok=True)
-rank = 10 # plot top x individuals
-
-df = pd.read_pickle(pickle_name)
 df["Generation"] = df["Generation"].astype(int)
 
+# for normalizing genes to parameter values
 gene_functions = {
         "Firing threshold" : lambda x : (x * 5) + 0.1,
         "Random fire probability" : lambda x : x * 0.15,

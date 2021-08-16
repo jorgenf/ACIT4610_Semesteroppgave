@@ -4,21 +4,26 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-pickle_name = Path("plots/pickles/individual_20210816.pkl")
 
-df = pd.read_pickle(pickle_name)
+# where to find data
+pickle_name = Path("plots/pickles/20210816")
 
+# where to save plots
+savepath = Path("plots/figures/fitness_vs_generations")
+
+# esthetics
 sns.set_context("paper")
 width = 7.16
 aspect_ratio = 1.9
-# print(df["Number of generations"])
-# n_gens = int(df["Number of generations"][0])
 
-# set hue theme
+# set color theme
 model_palette = {
     "CA" : "#509A29", # green
     "Network" : "#2A74BC" # blue
     }
+
+savepath.mkdir(parents=True, exist_ok=True)
+df = pd.read_pickle(Path(f"{pickle_name}/individual_data.pkl"))
 
 # df = pd.melt(
 #     df, 
@@ -74,8 +79,7 @@ for culture in df["Culture"].unique():
                 # xticks=range(0, n_gens, n_gens//5)
                 )
             
-            ax.savefig(Path(f"plots/figures/fitness_vs_gen/{culture}-{div}_top-{rank}"))
+            ax.savefig(Path(f"{savepath}/{culture}-{div}_top-{rank}"))
             plt.close()
 
-# plt.show()
 print("\nDone")
