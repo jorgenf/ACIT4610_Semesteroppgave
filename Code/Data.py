@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 import re
 import json
+import os
+import shutil
 
 def get_spikes_file(filename, recording_start, recording_len):
     """
@@ -74,4 +76,31 @@ def load_model(filename):
     genome = [float(i) for i in re.findall("\[(.+)\]", top_ind)[0].split(", ")]
     return model, genome, dimension, model_type
 
+
+def get_best_models(density_file, divs):
+    if divs == 6:
+        best_individuals = {"div10": "", "div10f": 0, "div13": "", "div13f": 0, "div17": "", "div17f": 0, "div24": "", "div24f": 0, "div28": "", "div28f": 0, "div31": "", "div31f": 0}
+    elif divs == 2:
+        best_individuals = {"div10": "", "div10f": 0, "div31": "", "div31f": 0}
+    else:
+        raise Exception("Wrong number of divs")
+    path = "C:/Users/jorge/OneDrive - OsloMet/ACIT4410 semesteroppgave/SSCI ICES paper/NEW NEW RESULTS - Now with more results/" + density_file
+    dir = path + "/BEST"
+    if not os.path.exists(dir):
+        os.mkdir(dir)
+    for root, dirs, files in os.walk(path):
+        for filename in files:
+            if filename == "evolution_data.json":
+                with open(root + "/evolution_data.json") as file:
+                    data = json.load(file)
+                    num_gen = data["NUM_GENERATIONS"]
+                    fitness = data["generations"][str(num_gen)]["rank 1"]["fitness"]
+                    div = re.findall("-(\d{2})_", os.path.basename(root))[0]
+                    if fitness > best_individuals[f"div{str(div)}f"]:
+                        best_individuals[f"div{str(div)}f"] = fitness
+                        best_individuals[f"div{str(div)}"] = os.path.basename(root)
+            #print(os.path.join(root, filename))
+    for ind in best_individuals.values():
+        if isinstance(ind, str):
+            shutil.copytree(os.path.join(path, ind), f"{dir}/{ind}")
 
