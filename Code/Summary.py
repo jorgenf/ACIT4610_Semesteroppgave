@@ -35,6 +35,7 @@ class Summary:
                         "_dim" + str(self.evolution_parameters["DIMENSION"]) + \
                         "_pop" + str(self.evolution_parameters["POPULATION_SIZE"]) + \
                         "_gen" + str(self.evolution_parameters["NUM_GENERATIONS"]) + \
+                        "_sta" + str(self.evolution_parameters["RECORDING_START"]) + \
                         "_dur" + str(self.evolution_parameters["SIMULATION_DURATION"]) + \
                         "_res" + str(self.evolution_parameters["TIME_STEP_RESOLUTION"]) + \
                         "_mut" + str(self.evolution_parameters["MUTATION_P"]) + \
@@ -106,13 +107,13 @@ class Summary:
         ax2.set_title("Neural culture")
 
         #   Make histograms
-        ax3.hist(self.simulation_spikes)
-        #ax3.hist(self.best_individual.phenotype["t"], bins=range(self.evolution_parameters["SIMULATION_DURATION"]))
+        #ax3.hist(self.simulation_spikes)
+        ax3.hist(self.best_individual.phenotype["t"], bins=self.bin_size)
         ax3.set_xlabel("Seconds")
         ax3.set_ylabel("Spikes per second")
 
-        ax4.plot(self.reference_spikes, color="black")
-        #ax4.hist(self.phenotype_reference["t"], bins=range(self.evolution_parameters["SIMULATION_DURATION"]), color="black")
+        #ax4.plot(self.reference_spikes, color="black")
+        ax4.hist(self.phenotype_reference["t"], bins=self.bin_size, color="black")
         ax4.set_xlabel("Seconds")
 
         fig.savefig(self.dir_path + "/Best_individual.png")

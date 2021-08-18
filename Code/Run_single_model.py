@@ -10,6 +10,9 @@ import Data
 import getopt
 import sys
 import json
+from datetime import datetime
+import os
+from multiprocessing import Pool
 
 RESOLUTION = 40
 RESTING_POTENTIAL = 0
@@ -216,20 +219,39 @@ def process_arguments():
             print("Input file: ", input_file)
             duration = int(sys.argv[3])
             print("Duration: ", duration)
-    return input_file, duration
+            num_runs = int(sys.argv[4])
+            print("Number of runs: ", num_runs)
+    return input_file, duration, num_runs
+
+
+def run_model(duration, input):
+    model = Model(duration=duration, model=input)
+    output = model.run_simulation()
+    return output
+
 
 #   Run the class test and print the result when the script is run standalone.
 if __name__ == "__main__":
 
-    input, duration = process_arguments()
+    input, duration, num_runs = process_arguments()
+    dir = "../Output/" + input + "/single_runs/"
+    if not os.path.exists(dir):
+        os.mkdir(dir)
     # use model to generate a phenotype
-    model = Model(duration=duration, model=input)
     s = time.time()
-    output = model.run_simulation()
-    data = {"duration": duration, "spike_times": [float(x[0]) for x in output], "electrod_id": [int(x[1]) for x in output]}
-    dir = "../Output/" + input + "/"
-    with open(dir + "single_run_" + str(duration) + ".json", "w") as f:
-        json.dump(data, f)
-    print(len(output))
+    with Pool(os.cpu_count() - 1) as p:
+        arg1 = [duration] * num_runs
+        arg2 = [input] * num_runs
+        args = [*zip(arg1, arg2)]
+        model_output = p.starmap(run_model, args)
+        p.close()
+    run = 0
+    for out in model_output:
+        with open(dir + str(run) + ".txt", "w") as f:
+            for line in out:
+                digit = "%.5f" % line[0]
+                text = f"{digit} {line[1]}\n"
+                f.write(text)
+        run += 1
     print(f"{time.time() - s:.2f} seconds")
 

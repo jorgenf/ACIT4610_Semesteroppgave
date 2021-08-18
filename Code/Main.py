@@ -60,11 +60,11 @@ default_parameters = {
     "POPULATION_SIZE": 60,
     #   Number of generations to run.
     #   Each generation will run one simulation of the model for every individual in the population
-    "NUM_GENERATIONS": 1,
+    "NUM_GENERATIONS": 40,
     #   Start of recording
-    "RECORDING_START": 1000,
+    "RECORDING_START": 300,
     #   Simulation duration in seconds
-    "SIMULATION_DURATION": 1000,
+    "SIMULATION_DURATION": 60,
     #   Number of simulation iterations per second
     "TIME_STEP_RESOLUTION": 40,
     #   The probability of mutation in any gene
@@ -74,7 +74,7 @@ default_parameters = {
     #   The percentage of the current population that will carry over to the next generation
     "RETAINED_ADULTS_P": 0.05,
     #   Name of the file of experimental data used as reference for the fitness function and raster plot
-    "REFERENCE_PHENOTYPE": "2-1-31.spk.txt"
+    "REFERENCE_PHENOTYPE": "6-2-17.spk.txt"
 }
 
 """ 
