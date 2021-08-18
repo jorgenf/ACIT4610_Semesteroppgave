@@ -3,11 +3,9 @@ import os
 from pathlib import Path
 import json
 from datetime import datetime
-
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
-
 import Data
 
 
@@ -26,8 +24,8 @@ class Summary:
         self.best_individual_overall = evo.best_individual_overall
         self.top_five = self.population.individuals[0:5] if len(self.population.individuals) >= 5 else False
         self.reference_spikes = Data.get_spikerate(
-            Data.get_spikes_file(self.evolution_parameters["REFERENCE_PHENOTYPE"], recording_start=300, recording_len=self.evolution_parameters["SIMULATION_DURATION"]),
-            self.evolution_parameters["SIMULATION_DURATION"], recording_start=300)
+            Data.get_spikes_file(self.evolution_parameters["REFERENCE_PHENOTYPE"], recording_start=self.evolution_parameters["RECORDING_START"], recording_len=self.evolution_parameters["SIMULATION_DURATION"]),
+            self.evolution_parameters["SIMULATION_DURATION"], recording_start=self.evolution_parameters["RECORDING_START"])
         self.simulation_spikes = Data.get_spikerate(
             self.best_individual.phenotype, recording_len=self.evolution_parameters["SIMULATION_DURATION"], recording_start=0)
 
@@ -65,7 +63,7 @@ class Summary:
         To create histogram it is necessary to specify bin-size. For spikes per second "bin_size" = simulation length [seconds]
         """
         self.phenotype_reference = Data.read_recording(
-            self.evolution_parameters["REFERENCE_PHENOTYPE"], recording_start=300,
+            self.evolution_parameters["REFERENCE_PHENOTYPE"], recording_start=self.evolution_parameters["RECORDING_START"],
             recording_len=self.evolution_parameters["SIMULATION_DURATION"],
                #Where to start reading experimental data [s]
 
@@ -76,7 +74,7 @@ class Summary:
             [(row[0], row[1]) for row in self.best_individual.phenotype],
             dtype=[("t", "float64"), ("electrode", "int64")])
         self.phenotype_reference = np.array(
-            [(row[0] - 300, row[1]) for row in self.phenotype_reference],
+            [(row[0] - self.evolution_parameters["RECORDING_START"], row[1]) for row in self.phenotype_reference],
             dtype=[("t", "float64"), ("electrode", "int64")])
 
         #   Sort spikes by electrode
@@ -108,11 +106,13 @@ class Summary:
         ax2.set_title("Neural culture")
 
         #   Make histograms
-        ax3.hist(self.best_individual.phenotype["t"], bins=self.bin_size)
+        ax3.hist(self.simulation_spikes)
+        #ax3.hist(self.best_individual.phenotype["t"], bins=range(self.evolution_parameters["SIMULATION_DURATION"]))
         ax3.set_xlabel("Seconds")
         ax3.set_ylabel("Spikes per second")
 
-        ax4.hist(self.phenotype_reference["t"], bins=self.bin_size, color="black")
+        ax4.plot(self.reference_spikes, color="black")
+        #ax4.hist(self.phenotype_reference["t"], bins=range(self.evolution_parameters["SIMULATION_DURATION"]), color="black")
         ax4.set_xlabel("Seconds")
 
         fig.savefig(self.dir_path + "/Best_individual.png")
@@ -279,7 +279,7 @@ def make_raster_plot(neural_data_filepath, phenotype, simulation_length):
         recording_len=simulation_length  # simlation length in seconds, set to match simulation
     )
 
-    sim_spikes_per_array = [[] for _ in range(64)]
+    sim_spikes_per_array = [[] for _ in range(60)]
     for row in phenotype:
         sim_spikes_per_array[row[1]].append(row[0])
 

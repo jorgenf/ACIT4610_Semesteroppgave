@@ -55,7 +55,7 @@ def read_recording(filename, recording_start, recording_len):
     #   Edit according to specified recording length
     start_index, stop_index = np.searchsorted(data_points["t"], [recording_start, recording_start+recording_len])
     data_points = data_points[start_index:stop_index]
-    f.close
+    f.close()
     return data_points
 
 def load_model(filename):
@@ -73,3 +73,5 @@ def load_model(filename):
     info.close()
     genome = [float(i) for i in re.findall("\[(.+)\]", top_ind)[0].split(", ")]
     return model, genome, dimension, model_type
+
+

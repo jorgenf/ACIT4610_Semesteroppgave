@@ -226,9 +226,10 @@ if __name__ == "__main__":
     model = Model(duration=duration, model=input)
     s = time.time()
     output = model.run_simulation()
+    data = {"duration": duration, "spike_times": [float(x[0]) for x in output], "electrod_id": [int(x[1]) for x in output]}
     dir = "../Output/" + input + "/"
     with open(dir + "single_run_" + str(duration) + ".json", "w") as f:
-        json.dump(output.tolist(), f)
+        json.dump(data, f)
     print(len(output))
     print(f"{time.time() - s:.2f} seconds")
 

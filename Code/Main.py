@@ -6,8 +6,8 @@ import csv
 from multiprocessing import Pool
 import Data
 import numpy as np
-
 import Population, Evolution, Summary
+
 
 """
 PARAMETERS
@@ -60,9 +60,11 @@ default_parameters = {
     "POPULATION_SIZE": 60,
     #   Number of generations to run.
     #   Each generation will run one simulation of the model for every individual in the population
-    "NUM_GENERATIONS": 80,
+    "NUM_GENERATIONS": 1,
+    #   Start of recording
+    "RECORDING_START": 1000,
     #   Simulation duration in seconds
-    "SIMULATION_DURATION": 60,
+    "SIMULATION_DURATION": 1000,
     #   Number of simulation iterations per second
     "TIME_STEP_RESOLUTION": 40,
     #   The probability of mutation in any gene
@@ -72,7 +74,7 @@ default_parameters = {
     #   The percentage of the current population that will carry over to the next generation
     "RETAINED_ADULTS_P": 0.05,
     #   Name of the file of experimental data used as reference for the fitness function and raster plot
-    "REFERENCE_PHENOTYPE": "6-2-31.spk.txt"
+    "REFERENCE_PHENOTYPE": "2-1-31.spk.txt"
 }
 
 """ 
@@ -87,7 +89,7 @@ def run_threads(individuals):
     Each thread result is mapped to a variable that is returned when all processes are finished
     """
 
-    with Pool(os.cpu_count()) as p:
+    with Pool(os.cpu_count() - 1) as p:
         new_individuals = p.map(evo.generate_phenotype, individuals)
         p.close()
     return new_individuals
@@ -141,13 +143,14 @@ if __name__ == "__main__":
                     "MODEL_TYPE": TYPE[str(row[0])],
                     "DIMENSION": int(row[1]),
                     "POPULATION_SIZE": int(row[2]),
-                    "NUM_GENERATIONS": int(row[3]) if max(Data.get_spikerate(Data.get_spikes_file(row[9], recording_start=300, recording_len=int(row[4])), recording_len=int(row[4]), recording_start=300)) < 1000 else int(int(row[3]) * 1.5),
-                    "SIMULATION_DURATION": int(row[4]),
-                    "TIME_STEP_RESOLUTION": int(row[5]),
-                    "MUTATION_P": float(row[6]),
-                    "PARENTS_P": float(row[7]),
-                    "RETAINED_ADULTS_P": float(row[8]),
-                    "REFERENCE_PHENOTYPE": row[9]
+                    "NUM_GENERATIONS": int(row[3]) if max(Data.get_spikerate(Data.get_spikes_file(row[10], recording_start=int(row[4]), recording_len=int(row[5])), recording_len=int(row[5]), recording_start=int(row[4]))) < 1000 else int(int(row[3]) * 1.5),
+                    "RECORDING_START": int(row[4]),
+                    "SIMULATION_DURATION": int(row[5]),
+                    "TIME_STEP_RESOLUTION": int(row[6]),
+                    "MUTATION_P": float(row[7]),
+                    "PARENTS_P": float(row[8]),
+                    "RETAINED_ADULTS_P": float(row[9]),
+                    "REFERENCE_PHENOTYPE": row[10]
                 })
 
     for evo_i, params in enumerate(evolution_parameters):
