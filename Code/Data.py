@@ -7,14 +7,18 @@ import pandas as pd
 import re
 import json
 
-def get_spikes_file(filename, recording_start, recording_len):
+
+def get_spikes_file(filename, recording_start, recording_len, fullpath=False):
     """
     Get spikes per electrode data from a file.
     Uses helper method get_spikes_pheno.
     Return: Numpy Array
     """
     #   Clean up the data and create a numpy array from it
-    f = open("../Resources/" + filename, "r")
+    if fullpath:
+        f = open(filename, "r")
+    else:
+        f = open("../Resources/" + filename, "r")
     data_points = [line.split(" ") for line in f]
     data_points = np.array(
         [(row[0].rstrip(), row[1].rstrip()) for row in data_points], 
