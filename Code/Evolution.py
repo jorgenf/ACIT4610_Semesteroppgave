@@ -8,6 +8,7 @@ import Fitness
 from Model import Model
 
 
+
 class Evolution:
     """
     Creates an evolution object with the defined parameters.
@@ -20,14 +21,15 @@ class Evolution:
         self.model_type = parameters["MODEL_TYPE"][0]
         self.dimension = parameters["DIMENSION"]
         self.population_size = parameters["POPULATION_SIZE"]
+        self.recording_start = parameters["RECORDING_START"]
         self.simulation_duration = parameters["SIMULATION_DURATION"]
         self.resolution = parameters["TIME_STEP_RESOLUTION"]
         self.reference_file = parameters["REFERENCE_PHENOTYPE"]
         self.reference_phenotype = Data.get_spikes_file(
             parameters["REFERENCE_PHENOTYPE"],
-            recording_len=self.simulation_duration, recording_start=300
+            recording_len=self.simulation_duration, recording_start=self.recording_start
             )
-        self.reference_spikes = Data.get_spikerate(self.reference_phenotype, self.simulation_duration, recording_start=300)
+        self.reference_spikes = Data.get_spikerate(self.reference_phenotype, self.simulation_duration, recording_start=self.recording_start)
         self.parents_p = parameters["PARENTS_P"]
         self.retained_adults_p = parameters["RETAINED_ADULTS_P"]
         self.mutation_p = parameters["MUTATION_P"]
@@ -96,7 +98,7 @@ class Evolution:
         #         ).run_simulation()
 
         #   Calculate the fitness of the phenotype
-        fitness = Fitness.get_fitness(phenotype, 0, self.reference_phenotype, 300, self.simulation_duration)
+        fitness = Fitness.get_fitness(phenotype, 0, self.reference_phenotype, self.recording_start, self.simulation_duration)
         #   Append results to the individual
         individual.phenotype = phenotype
         individual.fitness = fitness

@@ -58,7 +58,7 @@ def test_class():
     }
 
     #  Compare model output with experimental data
-    make_raster_plot(reference_file["small"], output, DURATION)
+    #make_raster_plot(reference_file["small"], output, DURATION)
     # model.show_network(grid=True)
 
 
