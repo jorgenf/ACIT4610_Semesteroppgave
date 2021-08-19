@@ -80,6 +80,12 @@ for model_parameter in df["Model parameter"].unique():
         else:
             color_theme = "Blues_d"
 
+        div_order = df["DIV"].loc[
+                    (df["Model parameter"] == model_parameter) &
+                    (df["Model type"] == model_type)
+                    ].unique()
+        div_order.sort()
+
         # plutting function
         ax = sns.barplot(
             data=df.loc[
@@ -90,6 +96,7 @@ for model_parameter in df["Model parameter"].unique():
             x="Culture",
             y="Parameter value",
             hue="DIV",
+            hue_order=div_order,
             ci="sd",
             palette=color_theme,
         )

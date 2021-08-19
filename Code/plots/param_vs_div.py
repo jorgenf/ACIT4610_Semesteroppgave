@@ -131,14 +131,20 @@ for model_parameter in df["Model parameter"].unique():
         #     hue="Model type",
         #     palette=model_palette,
         # )
-        
+        ax.set_xlabel("Culture and DIV", fontsize=font_size)
+        ax.set_ylabel(model_parameter, fontsize=font_size)
+        ax.tick_params(labelsize=font_size)
+
         ax.set(
             title=f"{model_parameter} {culture} top-{rank}",
             yticks=(param_min, param_max),
             )
         
+        ax.get_legend().remove()
+        
         fig = ax.get_figure()
-        fig.savefig(Path(f"{savepath}/{model_parameter}_{culture}_top-{rank}"))
+        fig.set_size_inches(width, width/aspect_ratio)
+        fig.savefig(Path(f"{savepath}/{model_parameter}_{culture}_top-{rank}"), dpi=300)
         plt.close()
 
 print("\nDone")
