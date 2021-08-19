@@ -29,6 +29,7 @@ def find_culture(filename):
 def read_json(experiment_data_path):
     experiment_number = 0
     experiment_data_path = Path(experiment_data_path)
+    # processed_cultures = []
 
     # path to save temporary dataframes
     temp_data_path_indiv = Path(f"{experiment_data_path}/temp/indiv")
@@ -46,10 +47,22 @@ def read_json(experiment_data_path):
                 experiment_number += 1
                 json_file = Path(filepath).open("r")
                 data_unit = json.load(json_file)
-                data_unit["experiment_number"] = experiment_number
-                data_unit["reference culture"] = find_culture(data_unit["REFERENCE_PHENOTYPE"])
-                data.append(data_unit)
 
+            data_unit["experiment_number"] = experiment_number
+            data_unit["reference culture"] = find_culture(data_unit["REFERENCE_PHENOTYPE"])
+            # processed_cultures.append(data_unit["reference culture"])
+            data.append(data_unit)
+        
+    # unique_cultures = set(processed_cultures)
+    # culture_summary = {}
+    # for culture in unique_cultures:
+    #     culture_summary[culture] = processed_cultures.count(culture)
+    
+    # print("Processed cultures:")
+    # for key in culture_summary:
+    #     print(key, ":", culture_summary[key])
+
+    experiment_summary_list_dict = []
     for i_simulation, element in enumerate(data):
 
         # transform data to a list of dictionaries
@@ -67,6 +80,17 @@ def read_json(experiment_data_path):
             model_type = "Network"
         else:
             print(f"Error: Unknown model type \"{individual_data['Model type']}\"")
+
+        simulation_summary = {
+                "model" : model_type,
+                "culture" : element["reference culture"],
+                "reference file" : element["REFERENCE_PHENOTYPE"],
+                "div" : div,
+                "population" : element["POPULATION_SIZE"],
+                "generations" : element["NUM_GENERATIONS"],
+            }
+        
+        experiment_summary_list_dict.append(simulation_summary)
 
         # create dataframe by writing the json data to a list of dictionaries
         for i_gen in element["generations"]:
@@ -136,8 +160,10 @@ def read_json(experiment_data_path):
     shutil.rmtree(temp_data_path_indiv)
     shutil.rmtree(temp_data_path_param)
     temp_data_path_indiv.parent.rmdir()
+
+    experiment_summary = pd.DataFrame(experiment_summary_list_dict)
     
-    return individual_data, parameter_data
+    return individual_data, parameter_data, experiment_summary
 
 if __name__ == "__main__":
 
@@ -151,10 +177,15 @@ if __name__ == "__main__":
     parameter_data_pickle_name = Path(f"{savepath}/param_data.pkl")
 
     # save data as pickle file
-    individual_data, parameter_data = read_json(experiment_path)
+    individual_data, parameter_data, experiment_summary = read_json(experiment_path)
     individual_data.to_pickle(individual_data_pickle_name)
     parameter_data.to_pickle(parameter_data_pickle_name)
+    experiment_summary.to_pickle(Path(f"{savepath}/summary.pkl"))
 
     print(individual_data)
     print(parameter_data)
+    print(experiment_summary)
+
+
     print(f"Data saved to \"{savepath}\"")
+
