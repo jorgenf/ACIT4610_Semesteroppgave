@@ -7,25 +7,36 @@ import time
 import itertools
 import random
 
-
+'''
+Default values for Model class
+'''
+# Model-type. "network" or "ca".
 MODEL = "network"
+# Duration of simulation in seconds.
 DURATION = 60
+# Dimensions of model in number of neurons.
 DIMENSION = 10
+# Number of simulation updates per second.
 RESOLUTION = 40
-
+# Whether bidirectional connections should be allowed or not.
 BIDIRECTIONAL = False
-# E_L
+# Potential at rest.
 RESTING_POTENTIAL = 0
+# Threshold for firing spike.
 FIRING_THRESHOLD = 1
+# Probability for a neuron to spontaneously spike.
 RANDOM_FIRE_PROBABILITY = 0.05
+# Refractory period in simulation time-steps.
 REFRACTORY_PERIOD = 1
-# C_L
+# Leak constant of the LIF model.
 LEAK_CONSTANT = 0.05
-# C_I
+# integration constant of the LIF model.
 INTEGRATION_CONSTANT = 0.25
+# Determines connection radius for CA and density constant for Network.
 DENSITY_CONSTANT = 2.1
+# Percentage of neurons that are inhibitory.
 INHIBITION_PERCENTAGE = 0.25
-#   The Default Individual for testing
+#   The Default Individual for testing. Normalizes values.
 INDIVIDUAL = Population.Individual(
     [(FIRING_THRESHOLD - 0.1) / 5,
     RANDOM_FIRE_PROBABILITY / 0.15,
@@ -45,7 +56,7 @@ def test_class():
     from Summary import make_raster_plot
 
     # use model to generate a phenotype
-    model = Model(model=MODEL)
+    model = Model()
     s = time.time()
     output = model.run_simulation()
 
@@ -58,9 +69,10 @@ def test_class():
     }
 
     #  Compare model output with experimental data
-    #make_raster_plot(reference_file["small"], output, DURATION)
-    # model.show_network(grid=True)
-
+    make_raster_plot(reference_file["small"], output, DURATION)
+    # Plot the network topology
+    model.show_network(grid=True)
+    model.print_weights()
 
 
 class Model:
@@ -85,8 +97,7 @@ class Model:
         self.firing_threshold = (individual.genotype[0] * 5) + 0.1
         #   Chance to randomly fire (Default: 0.05 (5%)) (Range: ~0-0.15)
         self.random_fire_prob = individual.genotype[1] * 0.15
-        #   Refractory period: time to recharge after firing.
-        #   Subtracts this constant from the membrane potential when a neuron fires.
+        #   # Refractory period in simulation time-steps.
         #   (Default: 1) (Range: ~0-10)
         self.refractory_period = round(individual.genotype[2] * 10)
         #   The distribution of inhibiting and exciting neurons.
@@ -99,7 +110,7 @@ class Model:
         #   By which ratio does the input from the neighborhood integrate with the neuron
         #   (Default: 0.5) (Range: ~0-0.5)
         self.integ_constant = individual.genotype[5] * 0.5
-        #   For CA it determines the radius of connections. For the network model it determines number of conenctions.
+        #   For CA it determines the radius of connections. For the network model it determines the density of connections.
         #   (Default: 2.1 (Network))
         if self.model == "ca":
             self.density_constant = round(individual.genotype[6] * 5) + 1
@@ -125,7 +136,6 @@ class Model:
         self.create_nodes()
         self.node_list = list(self.config.nodes)
         if self.model == "network":
-            #self.create_grid_random_connections()
             for node in range(len(self.node_list)):
                 self.create_distance_connections(node)
         elif self.model == "ca":
@@ -133,16 +143,13 @@ class Model:
                 self.create_grid_connections(node)
         else:
             raise Exception("Invalid model chosen...")
-
-        #   Position field can be used to invert coordinates for visualization
-        #   self.config.pos = {(x, y): (x, y) for x, y in self.config.nodes()}
-
-        #  Copy Network
+        #  Copy Network for next simulation step.
         self.next_config = self.config.copy()
-    #   Copy position field (currently not needed)
-    #   self.next_config.pos = self.config.pos
 
     def create_nodes(self):
+        '''
+        Creates the nodes of the network with state values based on parameters.
+        '''
         self.position = list(itertools.product(range(self.dimension), range(self.dimension)))
         for pos in self.position:
             self.config.add_node(pos)
@@ -160,19 +167,23 @@ class Model:
                 node['refractory'] = 0
 
     def create_distance_connections(self, node):
+        '''
+        Method for creating connections for network based on distance-equation described further in the report.
+        '''
         pos = self.node_list[node]
-        max_coordinate = self.dimension - 1
-        max_distance = m.sqrt(max_coordinate**2 + max_coordinate**2)
         for n in range(0 if BIDIRECTIONAL else node + 1, len(self.node_list)):
             distance = m.sqrt(((pos[0] - self.node_list[n][0])**2) + ((pos[1] - self.node_list[n][1])**2))
             p = m.exp(-((distance/self.density_constant)**2))
             if p >= random.random():
-                #weight = round((max_distance - distance) / max_distance, 2)
                 weight = 1
                 order = random.choice([(pos, self.node_list[n]), (self.node_list[n], pos)])
                 self.config.add_edge(order[0], order[1], weight=weight)
 
+
     def create_grid_connections(self, node):
+        '''
+        Method for creating the grid connections of the CA.
+        '''
         for x in range(node[0] - round(self.density_constant), node[0] + round(self.density_constant) + 1):
             for y in range(node[1] - round(self.density_constant), node[1] + round(self.density_constant) + 1):
                 if 0 <= x < self.dimension and 0 <= y < self.dimension and (x != node[0] or y != node[1]):
@@ -180,7 +191,11 @@ class Model:
                 else:
                     continue
 
+
     def create_grid_random_connections(self):
+        '''
+        Method for creating grid connections for network model. Currently not used.
+        '''
         max_coordinate = self.dimension - 1
         max_distance = m.sqrt(max_coordinate**2 + max_coordinate**2)
         for node in self.config.nodes:
@@ -253,10 +268,8 @@ class Model:
         el_list = []
         r = 0
         target = 8
-
         low = round((dimension % target) / 2)
         high = round(dimension - (dimension % target) / 2)
-
         for row in range(low, high, dimension // target):
             c = 0
             for col in range(low, high, dimension // target):
@@ -269,37 +282,19 @@ class Model:
             r += 1
         return el_list
 
-        # el_list = []
-        # if dimension == 8:
-        #     for row in range(8):
-        #         for col in range(8):
-        #             if (row == 0 or row == 7) and (col == 0 or col == 7):
-        #                 continue
-        #             else:
-        #                 el_list.append((row,col))
-        # else:
-        #     r = 0
-        #     f = 1 if dimension % 9 == 0 else 0
-        #     frac = dimension // 9
-        #     for row in range(frac, dimension + f - (frac), frac):
-        #         c = 0
-        #         for col in range(frac, dimension + f - (frac), frac):
-        #             if (r == 0 or r == 7) and (c == 0 or c == 7):
-        #                 c += 1
-        #                 continue
-        #             else:
-        #                 el_list.append((row, col))
-        #                 c += 1
-        #         r += 1
-        # return el_list
-
     def print_weights(self):
+        '''
+        Prints the weights of the network.
+        '''
         for n, nbrs_dict in self.config.adjacency():
             for nbr, e_attr in nbrs_dict.items():
                 if "weight" in e_attr:
                     print(e_attr)
 
     def show_network(self, grid=False):
+        '''
+        Uses the networkx library to display the network. Red nodes are inhibitory, while green are excitatory.
+        '''
         edge_weights = []
         for e in self.config.edges(data=True):
             edge_weights.append(e[2]["weight"])
@@ -314,9 +309,9 @@ class Model:
             p = {}
             for pos, node in zip(self.position, self.config.nodes):
                 p[node] = pos
-            nx.draw(self.config, p, edge_color=edge_weights, edge_cmap=plt.cm.Greys, node_color=node_colors, node_size=50, width=edge_weights)
+            nx.draw(self.config, p, edge_cmap=plt.cm.Greys, node_color=node_colors, node_size=50, width=edge_weights)
         else:
-            nx.draw(self.config, edge_color=edge_weights, edge_cmap=plt.cm.Greys, node_color=node_colors, node_size=50, width=edge_weights)
+            nx.draw(self.config, edge_cmap=plt.cm.Greys, node_color=node_colors, node_size=50, width=edge_weights)
         plt.show()
 
     def run_simulation(self, plot=False):
