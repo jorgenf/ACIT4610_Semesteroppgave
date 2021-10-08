@@ -13,7 +13,6 @@ class Summary:
     """
     Creates summaries of relevant results and trends after the last generation of Evolution.
     """
-
     def __init__(self, population, evolution_parameters, evo):
         self.population = population
         self.evolution_parameters = evolution_parameters
@@ -28,7 +27,6 @@ class Summary:
             self.evolution_parameters["SIMULATION_DURATION"], recording_start=self.evolution_parameters["RECORDING_START"])
         self.simulation_spikes = Data.get_spikerate(
             self.best_individual.phenotype, recording_len=self.evolution_parameters["SIMULATION_DURATION"], recording_start=0)
-
         reference_name = str(self.evolution_parameters["REFERENCE_PHENOTYPE"]).replace(".spk.txt", "")
         now = datetime.now().strftime("%Y%m%d%H%M%S")
         self.dir_path = "../Output/" + self.evolution_parameters["MODEL_TYPE"][0] + \
@@ -42,7 +40,6 @@ class Summary:
                         "_ret" + str(self.evolution_parameters["RETAINED_ADULTS_P"]) + \
                         "_" + reference_name + \
                         "_" + now
-
         try:
             os.makedirs(self.dir_path)
         except:
@@ -66,9 +63,7 @@ class Summary:
             self.evolution_parameters["REFERENCE_PHENOTYPE"], recording_start=self.evolution_parameters["RECORDING_START"],
             recording_len=self.evolution_parameters["SIMULATION_DURATION"],
                #Where to start reading experimental data [s]
-
         )
-
         #   Check if input is in the correct format
         self.best_individual.phenotype = np.array(
             [(row[0], row[1]) for row in self.best_individual.phenotype],
@@ -76,7 +71,6 @@ class Summary:
         self.phenotype_reference = np.array(
             [(row[0] - self.evolution_parameters["RECORDING_START"], row[1]) for row in self.phenotype_reference],
             dtype=[("t", "float64"), ("electrode", "int64")])
-
         #   Sort spikes by electrode
         self.A_spikes_per_array = [[] for _ in range(60)]
         for row in self.best_individual.phenotype:
@@ -84,10 +78,8 @@ class Summary:
         self.B_spikes_per_array = [[] for _ in range(60)]
         for row in self.phenotype_reference:
             self.B_spikes_per_array[row[1]].append(row[0])
-
         #   Initialize plot
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, sharex="all", sharey="row")
-
         #   Make raster plots
         ax1.eventplot(
             self.A_spikes_per_array,
@@ -96,7 +88,6 @@ class Summary:
         ax1.set_xlabel("Seconds")
         ax1.set_ylabel("Electrode ID")
         ax1.set_title("Best model")
-
         ax2.eventplot(
             self.B_spikes_per_array,
             linewidths=0.5,
@@ -104,17 +95,14 @@ class Summary:
         )
         ax2.set_xlabel("Seconds")
         ax2.set_title("Neural culture")
-
         #   Make histograms
         ax3.hist(self.simulation_spikes)
         #ax3.hist(self.best_individual.phenotype["t"], bins=range(self.evolution_parameters["SIMULATION_DURATION"]))
         ax3.set_xlabel("Seconds")
         ax3.set_ylabel("Spikes per second")
-
         ax4.plot(self.reference_spikes, color="black")
         #ax4.hist(self.phenotype_reference["t"], bins=range(self.evolution_parameters["SIMULATION_DURATION"]), color="black")
         ax4.set_xlabel("Seconds")
-
         fig.savefig(self.dir_path + "/Best_individual.png")
         plt.close()
 
@@ -221,11 +209,16 @@ class Summary:
                 writer.writerow([str(i), str(score)])
 
     def save_model(self, model):
+        '''
+        Saved a GraphML document that stores the model configuration.
+        '''
         nx.write_graphml(model.config, self.dir_path + "/model.gml")
 
     def save_stats(self, generation_summary):
+        '''
+        Saves simulation data to JSON-file.
+        '''
         self.evolution_parameters["generations"] = generation_summary
-
         # save output
         data_path = Path(f"{self.dir_path}/evolution_data.json")
         with data_path.open("w") as file:
@@ -236,38 +229,32 @@ class Summary:
 Helper functions for testing models independently 
 
 """
-
-
 def read_neural_recording(filename, recording_start=0, recording_len=30 * 60):
+    '''
+    Reads neural recordings as txt files and returns spike times and electrode spike-rates.
+    '''
     # cleaning data, making array
     f = open(filename, "r")
     data_points = [line.split(" ") for line in f]
     data_points = np.array(
         [(row[0].rstrip(), row[1].rstrip()) for row in data_points],
         dtype=[("t", "float64"), ("electrode", "int64")])
-
     # edit to requested recording length
     start_index, stop_index = np.searchsorted(data_points["t"], [recording_start, recording_start + recording_len])
     data_points = data_points[start_index:stop_index]
-
     # bin the data spikes
     spikes = np.array(data_points["t"])
-
     # sort data by electrode ID
     data_by_electrode = [[] for _ in range(64)]
     for row in data_points:
         data_by_electrode[row["electrode"]].append(row["t"])
-
     # convert to array
     spikes_per_array = np.array(data_by_electrode, dtype="object")
-
     # count average fire rate per electrode (spikes per second)
     spike_rates = {key: [] for key in range(64)}
     for key, item in enumerate(data_by_electrode):
         f_c = len(data_by_electrode[key]) / recording_len
         spike_rates[key] = f_c  # spike rate
-    spike_rate_per_array = np.array([*spike_rates.values()])
-
     f.close
     return (spikes, spikes_per_array)
 
@@ -278,14 +265,11 @@ def make_raster_plot(neural_data_filepath, phenotype, simulation_length):
         neural_data_filepath,  # starting point in seconds
         recording_len=simulation_length  # simlation length in seconds, set to match simulation
     )
-
     sim_spikes_per_array = [[] for _ in range(60)]
     for row in phenotype:
         sim_spikes_per_array[row[1]].append(row[0])
-
     # plot neural spikes
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, sharex="all", sharey="row")
-
     # plot simulation spikes
     ax1.eventplot(
         sim_spikes_per_array,
@@ -294,7 +278,6 @@ def make_raster_plot(neural_data_filepath, phenotype, simulation_length):
     )
     ax1.set_xlabel("Seconds")
     ax1.set_title("Simulation raster plot")
-
     ax2.eventplot(
         neuron_spikes_per_array,
         linewidths=0.5
@@ -302,12 +285,9 @@ def make_raster_plot(neural_data_filepath, phenotype, simulation_length):
     ax2.set_xlabel("Seconds")
     ax2.set_ylabel("Electrode ID")
     ax2.set_title("Neural raster plot")
-
     ax3.hist(phenotype["t"], bins=simulation_length, color="black")
     ax3.set_ylabel("Spikes per second")
     ax3.set_xlabel("Seconds")
-
     ax4.hist(neuron_spikes, bins=simulation_length)
     ax4.set_xlabel("Seconds")
-
     plt.show()

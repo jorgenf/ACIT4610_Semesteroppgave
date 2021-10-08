@@ -39,12 +39,12 @@ INHIBITION_PERCENTAGE = 0.25
 #   The Default Individual for testing. Normalizes values.
 INDIVIDUAL = Population.Individual(
     [(FIRING_THRESHOLD - 0.1) / 5,
-    RANDOM_FIRE_PROBABILITY / 0.15,
-    REFRACTORY_PERIOD / 10,
-    INHIBITION_PERCENTAGE / 0.5,
-    LEAK_CONSTANT / 0.2,
-    INTEGRATION_CONSTANT / 0.5,
-    (DENSITY_CONSTANT - 0.1) / 4
+     RANDOM_FIRE_PROBABILITY / 0.15,
+     REFRACTORY_PERIOD / 10,
+     INHIBITION_PERCENTAGE / 0.5,
+     LEAK_CONSTANT / 0.2,
+     INTEGRATION_CONSTANT / 0.5,
+     (DENSITY_CONSTANT - 0.1) / 4
      ]
 )
 
@@ -54,20 +54,16 @@ def test_class():
     Run the model/simulation with defaults and plot the results.
     """
     from Summary import make_raster_plot
-
     # use model to generate a phenotype
     model = Model()
     s = time.time()
     output = model.run_simulation()
-
     print(f"{time.time() - s:.2f} seconds")
-
     # generate reference phenotype from experimental data
     reference_file = {
         "small": "../Resources/Small - 7-1-35.spk.txt",
         "dense": "../Resources/Dense - 2-1-20.spk.txt"
     }
-
     #  Compare model output with experimental data
     make_raster_plot(reference_file["small"], output, DURATION)
     # Plot the network topology
@@ -84,13 +80,13 @@ class Model:
     """
 
     def __init__(
-        self, 
-        individual=INDIVIDUAL, 
-        model=MODEL, 
-        dimension=DIMENSION, 
-        duration=DURATION, 
-        resolution=RESOLUTION
-        ):
+            self,
+            individual=INDIVIDUAL,
+            model=MODEL,
+            dimension=DIMENSION,
+            duration=DURATION,
+            resolution=RESOLUTION
+    ):
         self.model = model
         #   Firing Threshold in the membrane.
         #   (Default: 1) (Range: ~0.1-5.1)
@@ -118,7 +114,6 @@ class Model:
             self.density_constant = (individual.genotype[6] * 4) + 0.1
         else:
             raise Exception("Invalid model chosen.")
-
         #   Resting potential in the membrane (Default: 0.5)
         #   Currently not controlled by the algorithm
         self.rest_pot = RESTING_POTENTIAL
@@ -172,13 +167,12 @@ class Model:
         '''
         pos = self.node_list[node]
         for n in range(0 if BIDIRECTIONAL else node + 1, len(self.node_list)):
-            distance = m.sqrt(((pos[0] - self.node_list[n][0])**2) + ((pos[1] - self.node_list[n][1])**2))
-            p = m.exp(-((distance/self.density_constant)**2))
+            distance = m.sqrt(((pos[0] - self.node_list[n][0]) ** 2) + ((pos[1] - self.node_list[n][1]) ** 2))
+            p = m.exp(-((distance / self.density_constant) ** 2))
             if p >= random.random():
                 weight = 1
                 order = random.choice([(pos, self.node_list[n]), (self.node_list[n], pos)])
                 self.config.add_edge(order[0], order[1], weight=weight)
-
 
     def create_grid_connections(self, node):
         '''
@@ -187,17 +181,16 @@ class Model:
         for x in range(node[0] - round(self.density_constant), node[0] + round(self.density_constant) + 1):
             for y in range(node[1] - round(self.density_constant), node[1] + round(self.density_constant) + 1):
                 if 0 <= x < self.dimension and 0 <= y < self.dimension and (x != node[0] or y != node[1]):
-                    self.config.add_edge(node, (x,y), weight=1)
+                    self.config.add_edge(node, (x, y), weight=1)
                 else:
                     continue
-
 
     def create_grid_random_connections(self):
         '''
         Method for creating grid connections for network model. Currently not used.
         '''
         max_coordinate = self.dimension - 1
-        max_distance = m.sqrt(max_coordinate**2 + max_coordinate**2)
+        max_distance = m.sqrt(max_coordinate ** 2 + max_coordinate ** 2)
         for node in self.config.nodes:
             for g in [(node[0], node[1] + 1), (node[0], node[1] - 1), (node[0] + 1, node[1]), (node[0] - 1, node[1])]:
                 if g in self.config.nodes:
@@ -211,7 +204,7 @@ class Model:
             new_neighbors = np.random.choice(range(len(potential_neighbors)), self.density_constant)
             for n in new_neighbors:
                 neighbor = potential_neighbors[n]
-                distance = m.sqrt(((node[0] - neighbor[0])**2) + ((node[1] - neighbor[1])**2))
+                distance = m.sqrt(((node[0] - neighbor[0]) ** 2) + ((node[1] - neighbor[1]) ** 2))
                 weight = round((max_distance - distance) / max_distance, 2)
                 self.config.add_edge(node, neighbor, weight=weight)
 
@@ -221,7 +214,8 @@ class Model:
         """
         dV = (self.leak_constant * (self.rest_pot - neuron['mem_pot']) + (self.integ_constant * inp))
         membrane_potential = neuron["mem_pot"] + dV
-        if (membrane_potential >= self.firing_threshold or random.random() < self.random_fire_prob) and neuron["refractory"] <= 0:
+        if (membrane_potential >= self.firing_threshold or random.random() < self.random_fire_prob) and neuron[
+            "refractory"] <= 0:
             return 1, self.rest_pot, self.refractory_period
         else:
             return 0, membrane_potential, max(0, neuron["refractory"] - 1)
@@ -239,9 +233,11 @@ class Model:
                     weight = conn[2]["weight"]
                     type = self.config.nodes[conn[0]]["type"]
                     in_potential += state * weight * type
-                self.next_config.nodes[node]['state'], self.next_config.nodes[node]['mem_pot'],  self.next_config.nodes[node]["refractory"] = self.alter_state(self.config.nodes[node], in_potential)
+                self.next_config.nodes[node]['state'], self.next_config.nodes[node]['mem_pot'], \
+                self.next_config.nodes[node]["refractory"] = self.alter_state(self.config.nodes[node], in_potential)
             else:
-                self.next_config.nodes[node]['state'], self.next_config.nodes[node]['mem_pot'], self.next_config.nodes[node]["refractory"] = self.alter_state(self.config.nodes[node], 0)
+                self.next_config.nodes[node]['state'], self.next_config.nodes[node]['mem_pot'], \
+                self.next_config.nodes[node]["refractory"] = self.alter_state(self.config.nodes[node], 0)
         #  Update the configuration for the next iteration
         self.config, self.next_config = self.next_config, self.config
         #  Get the spikes from this iteration and append them to the list of spikes if there were any
@@ -256,7 +252,7 @@ class Model:
         """
         s = []
         for x, y in self.electrodes:
-            if self.config.nodes[(x,y)]["state"] == 1:
+            if self.config.nodes[(x, y)]["state"] == 1:
                 s.append((0 + (self.step / self.resolution), self.electrodes.index((x, y))))
         return s if s else 0
 
@@ -304,7 +300,7 @@ class Model:
                 node_colors.append("green")
             else:
                 node_colors.append("red")
-        plt.figure(figsize=(10,10))
+        plt.figure(figsize=(10, 10))
         if grid:
             p = {}
             for pos, node in zip(self.position, self.config.nodes):
@@ -331,4 +327,3 @@ class Model:
 #   Run the class test and print the result when the script is run standalone.
 if __name__ == "__main__":
     test_class()
-
