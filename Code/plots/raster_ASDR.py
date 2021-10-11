@@ -14,11 +14,14 @@ import Code.Data as Data
 
 sim_length = 1800
 sim_start = 0
-#  Model Type
-model_type = "CA"
+#  Model Type (Wagenarr, CA or Network)
+model_type = "Wagenaar"
 # where to find data
-culture_name = "ca_small_6-2"
+culture_name = "6-1-31"
 evo_folder_name = "ca_dim10_pop60_gen80_dur60_res40_mut0.1_par0.5_ret0.05_6-2-10_20210808074215"
+#  file_name = "0.txt"
+#  Wagenaar Switch - Uncomment above or below
+file_name = culture_name + ".spk.txt"
 #  Path magic
 pickle_name = Path("plots/pickles/20210818")
 experiment_folder = Path("E:/Library/Documents/OneDrive - OsloMet/SSCI ICES paper/NEW NEW RESULTS - Now with more results")
@@ -40,14 +43,17 @@ raster_width = 0.5
 model_palette = {
 	#  "CA": "#509A29",  # green
 	"CA": "#509A29",  # green
-	"Network": "#2A74BC"  # blue
+	"Network": "#2A74BC",  # blue
+	"Wagenaar": "#c76a18"   #orange
 }
 
 savepath.mkdir(parents=True, exist_ok=True)
 #  df = pd.read_pickle(Path(f"{pickle_name}/individual_data.pkl"))
 #  df = pd.read_pickle(Path(f"{pickle_name}/pheno_data.pkl"))
 
-spikes_file = Data.get_spikes_file(Path(single_runs_folder, "0.txt"), recording_start=sim_start, recording_len=sim_length, fullpath=True)
+#  spikes_file = Data.get_spikes_file(Path(single_runs_folder, file_name), recording_start=sim_start, recording_len=sim_length, fullpath=True)
+#  Wagenaar Switch - Uncomment above or below
+spikes_file = Data.get_spikes_file(Path("../../Resources", file_name), recording_start=sim_start, recording_len=sim_length, fullpath=True)
 spike_rate = Data.get_spikerate(spikes_file, sim_length, sim_start)
 
 #   Check if input is in the correct format
